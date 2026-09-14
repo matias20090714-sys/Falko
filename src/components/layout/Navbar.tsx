@@ -31,6 +31,7 @@ export function Navbar({ initialUser }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<any>(initialUser || null);
+  const userRoles: string[] = Array.isArray(user?.roles) ? user.roles : [];
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -141,7 +142,7 @@ export function Navbar({ initialUser }: NavbarProps) {
             {user ? (
               <>
                 {/* Quick Switch to Seller or Affiliate */}
-                {user.roles.includes("SELLER") ? (
+                {userRoles.includes("SELLER") ? (
                   <Link
                     href="/seller/products/new"
                     className="text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all"
@@ -185,7 +186,7 @@ export function Navbar({ initialUser }: NavbarProps) {
                         </p>
                         <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
                         <div className="flex flex-wrap gap-1 mt-1.5">
-                          {user.roles.map((r: string) => (
+                          {userRoles.map((r: string) => (
                             <span
                               key={r}
                               className="text-[9px] font-mono font-bold bg-slate-800 text-cyan-400 px-1.5 py-0.5 rounded border border-slate-700"
@@ -237,7 +238,7 @@ export function Navbar({ initialUser }: NavbarProps) {
                           <Wallet className="w-4 h-4 text-amber-400" />
                           Billetera & Retiros
                         </Link>
-                        {user.roles.includes("ADMIN") && (
+                        {userRoles.includes("ADMIN") && (
                           <Link
                             href="/admin"
                             onClick={() => setIsUserMenuOpen(false)}
@@ -343,7 +344,7 @@ export function Navbar({ initialUser }: NavbarProps) {
               >
                 Billetera & Retiros
               </Link>
-              {user.roles.includes("ADMIN") && (
+              {userRoles.includes("ADMIN") && (
                 <Link
                   href="/admin"
                   onClick={() => setIsMobileMenuOpen(false)}

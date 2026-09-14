@@ -37,7 +37,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const currentUser = await getCurrentUser();
+  let currentUser = null;
+  try {
+    currentUser = await getCurrentUser();
+  } catch (err) {
+    console.warn("RootLayout auth fallback:", err);
+  }
 
   return (
     <html lang="es" className="dark scroll-smooth">
