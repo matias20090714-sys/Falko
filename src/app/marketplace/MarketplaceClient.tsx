@@ -9,6 +9,7 @@ import {
   Percent,
   Search,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
   Star,
   Tag,
@@ -157,22 +158,36 @@ export function MarketplaceClient({
 
       {/* Products Grid */}
       {initialProducts.length === 0 ? (
-        <div className="glass-panel rounded-2xl p-12 text-center border border-slate-800 my-8">
-          <Tag className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-white mb-1">No se encontraron productos</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto mb-6">
-            Intenta cambiar los filtros de búsqueda o seleccionar otra categoría para descubrir más recursos digitales.
+        <div className="glass-panel rounded-2xl p-12 text-center border border-slate-800 my-8 max-w-2xl mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto mb-4 shadow-glow">
+            <ShoppingBag className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-heading font-black text-white mb-2">
+            El mercado está listo para despegar
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
+            Aún no se han publicado productos en esta sección. ¿Eres creador o desarrollador? ¡Sé el primer vendedor en publicar tu recurso digital en FALKO!
           </p>
-          <button
-            onClick={() => {
-              setSearch("");
-              setSelectedCategory("");
-              router.push("/marketplace");
-            }}
-            className="btn-falcon-primary text-xs py-2 px-4"
-          >
-            Restablecer Filtros
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/seller/products/new"
+              className="btn-falcon-primary text-xs py-2.5 px-6 shadow-glow"
+            >
+              Publicar Producto Digital
+            </Link>
+            {selectedCategory && (
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setSelectedCategory("");
+                  router.push("/marketplace");
+                }}
+                className="btn-falcon-secondary text-xs py-2.5 px-5"
+              >
+                Ver Todas las Categorías
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
