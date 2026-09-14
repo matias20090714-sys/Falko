@@ -1,0 +1,462 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  avatarUrl         String?
+  countryCode       String             @default("US")
+  preferredCurrency String             @default("USD")
+  isSuspended       Boolean            @default(false)
+  suspensionReason  String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  roles             UserRole[]
+  wallet            Wallet?
+  products          Product[]          @relation("SellerProducts")
+  affiliateProfile  AffiliateProfile?
+  orders            Order[]            @relation("BuyerOrders")
+  reviews           Review[]
+  favorites         Favorite[]
+  notifications     Notification[]
+  withdrawalMethods WithdrawalMethod[]
+  withdrawals       Withdrawal[]
+  refunds           Refund[]
+  rankingRecords    RankingRecord[]
+  adminLogs         AdminLog[]
+
+  @@index([email])
+  @@index([countryCode])
+  @@index([createdAt])
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String   @default("BUYER") // BUYER | SELLER | AFFILIATE | ADMIN
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  icon        String?
+  description String?
+  sortOrder   Int       @default(0)
+  products    Product[]
+}
+
+model Product {
+  id                     String                @id @default(cuid())
+  slug                   String                @unique
+  title                  String
+  description            String
+  shortDescription       String?
+  coverImageUrl          String
+  demoUrl                String?
+  price                  Float
+  currencyCode           String                @default("USD")
+  guaranteeDays          Int                   @default(7) // Minimum 7
+  affiliateEnabled       Boolean               @default(true)
+  affiliateCommissionPct Float                 @default(20.0) // e.g. 20%
+  affiliateApprovalMode  String                @default("AUTO") // AUTO | MANUAL
+  status                 String                @default("APPROVED") // DRAFT | PENDING_REVIEW | APPROVED | REJECTED | SUSPENDED
+  rejectionReason        String?
+  salesCount             Int                   @default(0)
+  ratingAvg              Float                 @default(5.0)
+  reviewsCount           Int                   @default(0)
+  isFeatured             Boolean               @default(false)
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  sellerId               String
+  seller                 User                  @relation("SellerProducts", fields: [sellerId], references: [id], onDelete: Cascade)
+  categoryId             String
+  category               Category              @relation(fields: [categoryId], references: [id])
+
+  files                  ProductFile[]
+  images                 ProductImage[]
+  affiliateProducts      AffiliateProduct[]
+  orderItems             OrderItem[]
+  reviews                Review[]
+  favorites              Favorite[]
+
+  @@index([slug])
+  @@index([sellerId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ProductFile {
+  id            String   @id @default(cuid())
+  productId     String
+  fileName      String
+  fileSizeBytes Int      @default(0)
+  fileType      String   @default("application/octet-stream")
+  storageKey    String
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  imageUrl  String
+  sortOrder Int      @default(0)
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model AffiliateProfile {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  affiliateCode     String             @unique // e.g. AFF-000001
+  bio               String?
+  isSuspended       Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateProducts AffiliateProduct[]
+
+  @@index([affiliateCode])
+  @@index([userId])
+}
+
+model AffiliateProduct {
+  id                 String                 @id @default(cuid())
+  affiliateProfileId String
+  productId          String
+  status             String                 @default("APPROVED") // PENDING | APPROVED | REJECTED
+  uniqueRefCode      String                 @unique // Specific tracking ref
+  clicksCount        Int                    @default(0)
+  conversionsCount   Int                    @default(0)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  affiliateProfile   AffiliateProfile       @relation(fields: [affiliateProfileId], references: [id], onDelete: Cascade)
+  product            Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  clicks             AffiliateClick[]
+  orders             Order[]
+
+  @@unique([affiliateProfileId, productId])
+  @@index([uniqueRefCode])
+  @@index([affiliateProfileId])
+  @@index([productId])
+}
+
+model AffiliateClick {
+  id                 String           @id @default(cuid())
+  affiliateProductId String
+  ipAddress          String?
+  userAgent          String?
+  referer            String?
+  createdAt          DateTime         @default(now())
+
+  affiliateProduct   AffiliateProduct @relation(fields: [affiliateProductId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateProductId])
+  @@index([createdAt])
+}
+
+model Order {
+  id                        String              @id @default(cuid())
+  orderNumber               String              @unique
+  buyerId                   String
+  affiliateProductId        String?
+  totalAmount               Float
+  currencyCode              String              @default("USD")
+  basePrice                 Float
+  exchangeRate              Float               @default(1.0)
+  platformFeeUyu            Float               @default(25.0)
+  platformFeeConverted      Float
+  affiliateCommissionAmount Float               @default(0.0)
+  sellerEarningAmount       Float
+  guaranteeDays             Int                 @default(7)
+  guaranteeReleaseDate      DateTime
+  status                    String              @default("CONFIRMED") // PENDING | CONFIRMED | REFUNDED | FAILED
+  paymentProvider           String              @default("MOCK")
+  paymentProviderId         String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  buyer                     User                @relation("BuyerOrders", fields: [buyerId], references: [id])
+  affiliateProduct          AffiliateProduct?   @relation(fields: [affiliateProductId], references: [id])
+  items                     OrderItem[]
+  payments                  Payment[]
+  guaranteeHolds            GuaranteeHold[]
+  walletTransactions        WalletTransaction[]
+  refunds                   Refund[]
+  reviews                   Review[]
+
+  @@index([orderNumber])
+  @@index([buyerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String
+  price        Float
+  currencyCode String
+
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  orderId         String
+  provider        String
+  transactionId   String
+  status          String
+  rawResponseJson String?
+  createdAt       DateTime @default(now())
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Wallet {
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  isPlatformOwner  Boolean             @default(false)
+  availableBalance Float               @default(0.0)
+  pendingBalance   Float               @default(0.0) // Held in guarantee
+  withdrawnBalance Float               @default(0.0)
+  totalBalance     Float               @default(0.0)
+  currencyCode     String              @default("USD")
+  updatedAt        DateTime            @updatedAt
+  createdAt        DateTime            @default(now())
+
+  user             User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     WalletTransaction[]
+  guaranteeHolds   GuaranteeHold[]
+  withdrawals      Withdrawal[]
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id           String          @id @default(cuid())
+  walletId     String
+  orderId      String?
+  type         String          // ORDER_CREATED | PAYMENT_CONFIRMED | PLATFORM_COMMISSION | AFFILIATE_COMMISSION | SELLER_EARNING | GUARANTEE_HOLD | GUARANTEE_RELEASE | REFUND | WITHDRAWAL_REQUESTED | WITHDRAWAL_PAID | WITHDRAWAL_REJECTED
+  amount       Float
+  balanceAfter Float
+  currencyCode String          @default("USD")
+  description  String
+  referenceId  String?
+  createdAt    DateTime        @default(now())
+
+  wallet       Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  order        Order?          @relation(fields: [orderId], references: [id])
+
+  @@index([walletId])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model GuaranteeHold {
+  id           String          @id @default(cuid())
+  orderId      String
+  walletId     String
+  amount       Float
+  currencyCode String          @default("USD")
+  status       String          @default("HELD") // HELD | RELEASED | REVERSED
+  releaseDate  DateTime
+  releasedAt   DateTime?
+  createdAt    DateTime        @default(now())
+
+  order        Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  wallet       Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([walletId])
+  @@index([status])
+  @@index([releaseDate])
+}
+
+model WithdrawalMethod {
+  id                 String       @id @default(cuid())
+  userId             String
+  countryCode        String
+  methodType         String // PIX, BROU_PREX, SPEI, BANK_TRANSFER, PAYPAL, ACH
+  accountDetailsJson String // encrypted / masked representation
+  isDefault          Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  withdrawals        Withdrawal[]
+
+  @@index([userId])
+}
+
+model Withdrawal {
+  id                 String           @id @default(cuid())
+  withdrawalNumber   String           @unique
+  userId             String
+  walletId           String
+  withdrawalMethodId String
+  amount             Float
+  currencyCode       String           @default("USD")
+  status             String           @default("PENDING") // PENDING | PROCESSING | PAID | REJECTED
+  adminNotes         String?
+  processedAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet             Wallet           @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  withdrawalMethod   WithdrawalMethod @relation(fields: [withdrawalMethodId], references: [id])
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Refund {
+  id          String       @id @default(cuid())
+  orderId     String       @unique
+  buyerId     String
+  amount      Float
+  currencyCode String      @default("USD")
+  reason      String
+  status      String       @default("REQUESTED") // REQUESTED | APPROVED | REJECTED
+  adminNotes  String?
+  processedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  buyer       User         @relation(fields: [buyerId], references: [id])
+
+  @@index([orderId])
+  @@index([buyerId])
+  @@index([status])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  productId   String
+  buyerId     String
+  orderId     String
+  rating      Int      @default(5) // 1-5
+  title       String
+  comment     String
+  sellerReply String?
+  isModerated Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyer       User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([buyerId, orderId, productId])
+  @@index([productId])
+  @@index([buyerId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String // PURCHASE, SALE, COMMISSION, AFFILIATE_APPROVED, etc.
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model RankingRecord {
+  id             String   @id @default(cuid())
+  userId         String
+  period         String   @default("ALL_TIME") // ALL_TIME | MONTH | WEEK
+  periodKey      String   @default("ALL") // e.g. "2026-09"
+  salesVolumeUsd Float    @default(0.0)
+  rankPosition   Int      @default(0)
+  currentTier    String   @default("NOVICE") // NOVICE, BRONZE, SILVER, GOLD, DIAMOND, APEX
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period, periodKey])
+  @@index([userId])
+  @@index([salesVolumeUsd])
+}
+
+model PlatformSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String
+  targetId   String?
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin      User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
