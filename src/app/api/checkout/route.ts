@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Debes iniciar sesión para completar la compra." }, { status: 401 });
     }
 
-    const { productSlug, refCode, targetCurrency = "USD" } = await req.json();
+    const { productSlug, refCode, targetCurrency = "USD", paymentMethod = "MERCADOPAGO" } = await req.json();
 
     // 1. Fetch live product from DB (Never trust client prices)
     const product = await prisma.product.findUnique({
@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
       hasAffiliate: !!affiliateProduct,
     });
 
-    // 5. Initialize payment provider (MOCK / LIVE)
-    const paymentProvider = getPaymentProvider();
+    // 5. Initialize payment provider (MERCADOPAGO / MOCK)
+    const paymentProvider = getPaymentProvider(paymentMethod);
     const orderNumber = `ORD-FLK-${Date.now().toString().slice(-6)}`;
 
     const paymentResult = await paymentProvider.createPayment({

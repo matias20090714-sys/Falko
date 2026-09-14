@@ -28,7 +28,7 @@ function CheckoutContent() {
   const [currency, setCurrency] = useState("USD");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState("MOCK_CARD");
+  const [selectedMethod, setSelectedMethod] = useState("MERCADOPAGO");
 
   useEffect(() => {
     const saved = localStorage.getItem("falko_currency");
@@ -78,12 +78,17 @@ function CheckoutContent() {
           productSlug,
           refCode,
           targetCurrency: currency,
+          paymentMethod: selectedMethod,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        router.push(data.redirectUrl);
+        if (data.redirectUrl.startsWith("http")) {
+          window.location.href = data.redirectUrl;
+        } else {
+          router.push(data.redirectUrl);
+        }
       } else {
         setError(data.error || "No se pudo completar la transacción.");
       }
@@ -168,13 +173,40 @@ function CheckoutContent() {
           <div className="glass-panel rounded-2xl p-6 border border-slate-800">
             <h3 className="text-base font-heading font-bold text-white mb-4 flex items-center justify-between">
               <span>2. Método de Pago</span>
-              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800 px-2 py-0.5 rounded font-mono">
-                Modo Sandbox / Pruebas Activo
+              <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded font-mono font-bold">
+                ✓ Mercado Pago Activo
               </span>
             </h3>
 
             <div className="space-y-3">
-              {/* Option 1: Mock/Dev Instant Payment */}
+              {/* Option 1: Mercado Pago Oficial */}
+              <label
+                onClick={() => setSelectedMethod("MERCADOPAGO")}
+                className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  selectedMethod === "MERCADOPAGO"
+                    ? "bg-cyan-950/40 border-cyan-500/60 shadow-glow"
+                    : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-950/80 border border-blue-500/30 flex items-center justify-center font-black text-blue-400 text-xs font-mono shadow-sm">
+                    MP
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-white block">
+                      Mercado Pago (Tarjetas de Crédito / Débito, Saldo MP y Cuotas)
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      Pasarela oficial con acreditación y garantía inmediata
+                    </span>
+                  </div>
+                </div>
+                <div className="w-4 h-4 rounded-full border-2 border-cyan-400 flex items-center justify-center p-0.5">
+                  {selectedMethod === "MERCADOPAGO" && <div className="w-2 h-2 rounded-full bg-cyan-400" />}
+                </div>
+              </label>
+
+              {/* Option 2: Mock/Dev Instant Payment */}
               <label
                 onClick={() => setSelectedMethod("MOCK_CARD")}
                 className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
@@ -187,10 +219,10 @@ function CheckoutContent() {
                   <CreditCard className="w-5 h-5 text-cyan-400" />
                   <div>
                     <span className="text-xs font-bold text-white block">
-                      Tarjeta de Crédito / Débito (Procesamiento Inmediato)
+                      Pago de Prueba / Modo Simulación Rápido
                     </span>
                     <span className="text-[11px] text-slate-400">
-                      Simulación de entrega instantánea sin costo real
+                      Entrega instantánea para testeo del marketplace
                     </span>
                   </div>
                 </div>
@@ -198,30 +230,6 @@ function CheckoutContent() {
                   {selectedMethod === "MOCK_CARD" && <div className="w-2 h-2 rounded-full bg-cyan-400" />}
                 </div>
               </label>
-
-              {/* Option 2: Stripe Connect (Architecture Ready) */}
-              <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30 opacity-60 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-slate-400 font-mono">STRIPE</span>
-                  <div>
-                    <span className="text-xs text-slate-400 block">Stripe Global Checkout</span>
-                    <span className="text-[10px] text-slate-500">Configurable mediante STRIPE_SECRET_KEY en .env</span>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-slate-900 text-slate-500 px-2 py-0.5 rounded">En espera de API Key</span>
-              </div>
-
-              {/* Option 3: Mercado Pago (Architecture Ready) */}
-              <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30 opacity-60 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-blue-400 font-mono">MERCADO PAGO</span>
-                  <div>
-                    <span className="text-xs text-slate-400 block">Mercado Pago Latinoamérica</span>
-                    <span className="text-[10px] text-slate-500">Configurable mediante MERCADOPAGO_ACCESS_TOKEN en .env</span>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-slate-900 text-slate-500 px-2 py-0.5 rounded">En espera de API Key</span>
-              </div>
             </div>
           </div>
         </div>
