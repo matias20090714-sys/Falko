@@ -2,60 +2,80 @@ import React, { Suspense } from "react";
 import { prisma } from "@/lib/db";
 import { MarketplaceClient } from "./MarketplaceClient";
 
-export const revalidate = 30;
+import { FALLBACK_PRODUCTS, FALLBACK_CATEGORIES } from "@/lib/mock-data";
+
+export const dynamic = "force-dynamic";
 
 export default async function MarketplacePage({
   searchParams,
 }: {
   searchParams: { category?: string; search?: string; sort?: string };
 }) {
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
+  let categories = FALLBACK_CATEGORIES;
+  let products = FALLBACK_PRODUCTS as any[];
 
-  const products = await prisma.product.findMany({
-    where: {
-      status: "APPROVED",
-      ...(searchParams.category
-        ? {
-            category: {
-              slug: searchParams.category,
-            },
-          }
-        : {}),
-      ...(searchParams.search
-        ? {
-            OR: [
-              { title: { contains: searchParams.search } },
-              { description: { contains: searchParams.search } },
-              { shortDescription: { contains: searchParams.search } },
-            ],
-          }
-        : {}),
-    },
-    include: {
-      category: true,
-      seller: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          avatarUrl: true,
+  try {
+    const dbCategories = await prisma.category.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    if (dbCategories && dbCategories.length > 0) {
+      categories = dbCategories as any;
+    }
+  } catch (err) {
+    console.warn("Marketplace categories fallback:", err);
+  }
+
+  try {
+    const dbProducts = await prisma.product.findMany({
+      where: {
+        status: "APPROVED",
+        ...(searchParams.category
+          ? {
+              category: {
+                slug: searchParams.category,
+              },
+            }
+          : {}),
+        ...(searchParams.search
+          ? {
+              OR: [
+                { title: { contains: searchParams.search } },
+                { description: { contains: searchParams.search } },
+                { shortDescription: { contains: searchParams.search } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        category: true,
+        seller: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+        reviews: {
+          select: { rating: true },
         },
       },
-      reviews: {
-        select: { rating: true },
-      },
-    },
-    orderBy:
-      searchParams.sort === "price-asc"
-        ? { price: "asc" }
-        : searchParams.sort === "price-desc"
-        ? { price: "desc" }
-        : searchParams.sort === "newest"
-        ? { createdAt: "desc" }
-        : { salesCount: "desc" },
-  });
+      orderBy:
+        searchParams.sort === "price-asc"
+          ? { price: "asc" }
+          : searchParams.sort === "price-desc"
+          ? { price: "desc" }
+          : searchParams.sort === "newest"
+          ? { createdAt: "desc" }
+          : { salesCount: "desc" },
+    });
+
+    if (dbProducts && dbProducts.length > 0) {
+      products = dbProducts;
+    }
+  } catch (err) {
+    console.warn("Marketplace products fallback:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

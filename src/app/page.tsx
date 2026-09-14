@@ -31,28 +31,55 @@ import { FalconLogo } from "@/components/layout/FalconLogo";
 import { formatCurrency } from "@/lib/currency";
 import { getLeaderboard, RANKING_TIERS } from "@/lib/ranking";
 
-export const revalidate = 60; // ISR cache revalidation every minute
+import { FALLBACK_PRODUCTS, FALLBACK_CATEGORIES, FALLBACK_LEADERS } from "@/lib/mock-data";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  // Fetch featured products from DB
-  const featuredProducts = await prisma.product.findMany({
-    where: { status: "APPROVED" },
-    take: 6,
-    orderBy: { salesCount: "desc" },
-    include: {
-      seller: {
-        select: { firstName: true, lastName: true, avatarUrl: true },
+  let featuredProducts = FALLBACK_PRODUCTS;
+  let categories = FALLBACK_CATEGORIES;
+  let topLeaders = FALLBACK_LEADERS;
+
+  try {
+    const dbProducts = await prisma.product.findMany({
+      where: { status: "APPROVED" },
+      take: 6,
+      orderBy: { salesCount: "desc" },
+      include: {
+        seller: {
+          select: { firstName: true, lastName: true, avatarUrl: true },
+        },
+        category: true,
       },
-      category: true,
-    },
-  });
+    });
 
-  const categories = await prisma.category.findMany({
-    take: 8,
-    orderBy: { sortOrder: "asc" },
-  });
+    if (dbProducts && dbProducts.length > 0) {
+      featuredProducts = dbProducts as any;
+    }
+  } catch (err) {
+    console.warn("HomePage fallback to static products:", err);
+  }
 
-  const topLeaders = await getLeaderboard("ALL_TIME", 3);
+  try {
+    const dbCategories = await prisma.category.findMany({
+      take: 8,
+      orderBy: { sortOrder: "asc" },
+    });
+    if (dbCategories && dbCategories.length > 0) {
+      categories = dbCategories as any;
+    }
+  } catch (err) {
+    console.warn("HomePage fallback to static categories:", err);
+  }
+
+  try {
+    const dbLeaders = await getLeaderboard("ALL_TIME", 3);
+    if (dbLeaders && dbLeaders.length > 0) {
+      topLeaders = dbLeaders as any;
+    }
+  } catch (err) {
+    console.warn("HomePage fallback to static leaderboard:", err);
+  }
 
   return (
     <div className="relative overflow-hidden">

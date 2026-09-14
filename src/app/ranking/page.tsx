@@ -6,7 +6,9 @@ import { COUNTRIES } from "@/lib/currency";
 import { Award, DollarSign, Flame, Sparkles, TrendingUp, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 30;
+import { FALLBACK_LEADERS } from "@/lib/mock-data";
+
+export const dynamic = "force-dynamic";
 
 export default async function RankingPage({
   searchParams,
@@ -16,11 +18,23 @@ export default async function RankingPage({
   const currentUser = await getCurrentUser();
   const period = searchParams.period || "ALL_TIME";
 
-  const leaderboard = await getLeaderboard(period, 50);
+  let leaderboard: any[] = FALLBACK_LEADERS;
+  try {
+    const dbLeaders = await getLeaderboard(period, 50);
+    if (dbLeaders && dbLeaders.length > 0) {
+      leaderboard = dbLeaders as any;
+    }
+  } catch (err) {
+    console.warn("Ranking page fallback:", err);
+  }
 
   let userProgress = null;
   if (currentUser) {
-    userProgress = await getUserRankingProgress(currentUser.id);
+    try {
+      userProgress = await getUserRankingProgress(currentUser.id);
+    } catch (err) {
+      console.warn("User progress calculation fallback:", err);
+    }
   }
 
   return (

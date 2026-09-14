@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { MilestoneTier, RANKING_TIERS } from "@/lib/ranking";
+import { MilestoneTier, RANKING_TIERS } from "@/lib/ranking-types";
 import { Award, ChevronRight, Info, ShieldCheck, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import Link from "next/link";
 
