@@ -93,4 +93,4 @@ npm run test:financial
 
 ---
 
-© 2026 FALKO Technologies Inc. Todos los derechos reservados.
+© 2026 FALKO Technologies Inc. Todos los derechos reservados..
