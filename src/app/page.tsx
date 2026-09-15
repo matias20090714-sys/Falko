@@ -1,17 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import {
-  ArrowRight,
-  CheckCircle2,
-  DollarSign,
-  Lock,
-  PlusCircle,
+  LogIn,
   Share2,
-  ShieldCheck,
   ShoppingBag,
   Sparkles,
   TrendingUp,
-  Trophy,
+  User,
 } from "lucide-react";
 import { FalconLogo } from "@/components/layout/FalconLogo";
 
@@ -23,11 +18,8 @@ export default function HomePage() {
       {/* Dynamic Ambient Lights */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[450px] bg-gradient-to-b from-cyan-500/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
-      {/* ======================================================== */}
-      {/* 1. HERO: SHORT & IMPACTFUL                               */}
-      {/* ======================================================== */}
+      {/* 1. HERO: REGISTRARSE & INICIAR SESIÓN */}
       <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
-        {/* Falcon Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-6 backdrop-blur-md">
           <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
           <span>Marketplace Internacional de Productos Digitales</span>
@@ -36,57 +28,29 @@ export default function HomePage() {
           </span>
         </div>
 
-        {/* Main Title */}
         <h1 className="text-4xl sm:text-6xl font-heading font-black tracking-tight text-white leading-[1.1]">
           Compra, vende y promociona <br className="hidden sm:inline" />
           <span className="gradient-text-falcon">productos digitales</span> en todo el mundo.
         </h1>
 
-        {/* Concise Description */}
         <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
           <strong>FALKO</strong> es la plataforma donde creadores publican recursos digitales, los afiliados generan ingresos escalables y los compradores adquieren con garantía protegida y descargas privadas.
         </p>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md sm:max-w-none mx-auto">
-          <Link href="/marketplace" className="btn-falcon-primary w-full sm:w-auto text-sm py-3 px-6 shadow-glow">
-            <ShoppingBag className="w-4 h-4" />
-            Explorar Marketplace
+        {/* Botones de Registro e Inicio de Sesión */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md sm:max-w-none mx-auto">
+          <Link href="/register" className="btn-falcon-primary w-full sm:w-auto text-sm py-3 px-8 shadow-glow flex items-center justify-center gap-2">
+            <User className="w-4 h-4" />
+            Registrarse
           </Link>
-          <Link href="/seller/products/new" className="btn-falcon-secondary w-full sm:w-auto text-sm py-3 px-6 hover:border-cyan-400">
-            <PlusCircle className="w-4 h-4 text-cyan-400" />
-            Publicar Producto
+          <Link href="/login" className="btn-falcon-secondary w-full sm:w-auto text-sm py-3 px-8 hover:border-cyan-400 flex items-center justify-center gap-2">
+            <LogIn className="w-4 h-4 text-cyan-400" />
+            Iniciar Sesión
           </Link>
-          <Link href="/affiliate" className="btn-falcon-secondary w-full sm:w-auto text-sm py-3 px-6 hover:border-purple-400">
-            <Share2 className="w-4 h-4 text-purple-400" />
-            Ser Afiliado
-          </Link>
-        </div>
-
-        {/* Quick Highlights */}
-        <div className="mt-12 pt-6 border-t border-slate-900 grid grid-cols-2 md:grid-cols-4 gap-3 text-slate-400 text-xs">
-          <div className="flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Garantía 7 a 30 Días</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5">
-            <Lock className="w-4 h-4 text-cyan-400" />
-            <span>Descargas Firmadas 15min</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5">
-            <DollarSign className="w-4 h-4 text-amber-400" />
-            <span>Tarifa Fija 25 UYU Base</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5">
-            <Trophy className="w-4 h-4 text-purple-400" />
-            <span>Ranking Global en USD</span>
-          </div>
         </div>
       </section>
 
-      {/* ======================================================== */}
-      {/* 2. CÓMO FUNCIONA: LOS 3 PILARES ESENCIALES                */}
-      {/* ======================================================== */}
+      {/* 2. CÓMO FUNCIONA */}
       <section id="como-funciona" className="py-16 bg-slate-950/60 border-t border-slate-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -99,7 +63,6 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Comprador */}
             <div className="glass-panel rounded-2xl p-6 border border-slate-800">
               <div className="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4">
                 <ShoppingBag className="w-5 h-5" />
@@ -108,11 +71,10 @@ export default function HomePage() {
                 1. Compra Segura
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Accede a software, plantillas, cursos y prompts. Tus fondos se retienen en garantía durante el plazo establecido (7, 14 o 30 días) para tu total tranquilidad.
+                Accede a software, plantillas, cursos y prompts con garantía de satisfacción.
               </p>
             </div>
 
-            {/* Vendedor */}
             <div className="glass-panel rounded-2xl p-6 border border-slate-800">
               <div className="w-10 h-10 rounded-xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-4">
                 <TrendingUp className="w-5 h-5" />
@@ -121,11 +83,10 @@ export default function HomePage() {
                 2. Vende sin Fricción
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Publica tu producto digital en minutos. Define tu precio, comisión para afiliados y recibe retiros directos en tu moneda local con la tarifa más baja del mercado.
+                Publica tu producto digital en minutos y recibe retiros directos en tu moneda local.
               </p>
             </div>
 
-            {/* Afiliado */}
             <div className="glass-panel rounded-2xl p-6 border border-slate-800">
               <div className="w-10 h-10 rounded-xl bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4">
                 <Share2 className="w-5 h-5" />
@@ -134,16 +95,14 @@ export default function HomePage() {
                 3. Gana como Afiliado
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Genera tu enlace único de rastreo y obtén comisiones por cada venta referida, subiendo de categoría en el Ranking Global en USD.
+                Genera tu enlace único de rastreo y obtén comisiones automáticas por venta.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ======================================================== */}
-      {/* 3. LLAMADO A LA ACCIÓN FINAL                             */}
-      {/* ======================================================== */}
+      {/* 3. LLAMADO A LA ACCIÓN FINAL */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto text-center">
         <div className="glass-panel rounded-2xl p-8 sm:p-12 border border-cyan-500/30 shadow-glow">
           <FalconLogo size="md" className="justify-center mb-4" />
@@ -151,15 +110,17 @@ export default function HomePage() {
             Comienza a operar en FALKO
           </h3>
           <p className="mt-2 text-slate-300 text-xs sm:text-sm max-w-lg mx-auto">
-            Crea tu cuenta gratuita en segundos y publica tu primer producto digital o explora las oportunidades del mercado.
+            Crea tu cuenta gratuita en segundos y accede a todas las funciones.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-            <Link href="/register" className="btn-falcon-primary text-xs py-2.5 px-6 shadow-glow">
-              Crear Cuenta Gratis
+            <Link href="/register" className="btn-falcon-primary text-xs py-2.5 px-6 shadow-glow flex items-center justify-center gap-2">
+              <User className="w-3.5 h-3.5" />
+              Registrarse
             </Link>
-            <Link href="/marketplace" className="btn-falcon-secondary text-xs py-2.5 px-6">
-              Ir al Marketplace
+            <Link href="/login" className="btn-falcon-secondary text-xs py-2.5 px-6 flex items-center justify-center gap-2">
+              <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+              Iniciar Sesión
             </Link>
           </div>
         </div>
