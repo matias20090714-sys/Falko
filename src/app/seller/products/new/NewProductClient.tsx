@@ -495,25 +495,25 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
             <button
               type="button"
               onClick={() => setCreationMode("express")}
-              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all ${
+              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                 creationMode === "express"
-                  ? "bg-cyan-500 text-slate-950 shadow-glow"
+                  ? "bg-cyan-950 text-cyan-300 border-2 border-cyan-400 shadow-glow font-black"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              <Zap className="w-3.5 h-3.5" />
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
               <span>Modo Fácil (3 Pasos)</span>
             </button>
             <button
               type="button"
               onClick={() => setCreationMode("pro")}
-              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all ${
+              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                 creationMode === "pro"
-                  ? "bg-cyan-500 text-slate-950 shadow-glow"
+                  ? "bg-cyan-950 text-cyan-300 border-2 border-cyan-400 shadow-glow font-black"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
               <span>Modo Avanzado (Pro)</span>
             </button>
           </div>

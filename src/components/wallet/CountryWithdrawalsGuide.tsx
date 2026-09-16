@@ -146,14 +146,16 @@ export default function CountryWithdrawalsGuide() {
                 <button
                   key={country.code}
                   onClick={() => setSelectedCountry(country.code)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
                     isSelected
-                      ? "bg-emerald-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20 scale-[1.02]"
-                      : "bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/40"
+                      ? "bg-emerald-950/90 text-emerald-300 border-2 border-emerald-400 shadow-lg shadow-emerald-500/20 scale-[1.03]"
+                      : "bg-slate-900/90 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/60"
                   }`}
                 >
                   <span className="text-base">{country.flag}</span>
-                  <span>{country.name}</span>
+                  <span className={isSelected ? "text-emerald-300 font-bold" : "text-slate-300"}>
+                    {country.name}
+                  </span>
                   {country.popular && !isSelected && (
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                   )}

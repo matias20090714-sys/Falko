@@ -511,10 +511,10 @@ function CheckoutContent() {
                     <button
                       type="button"
                       onClick={() => setCryptoNetwork("solana")}
-                      className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
                         cryptoNetwork === "solana"
-                          ? "bg-purple-500 text-white shadow-sm"
-                          : "bg-slate-900 text-slate-400"
+                          ? "bg-purple-950 text-purple-300 border-2 border-purple-400 shadow-glow"
+                          : "bg-slate-900 text-slate-400 border-white/10 hover:text-white"
                       }`}
                     >
                       Solana (USDC/USDT)
@@ -522,10 +522,10 @@ function CheckoutContent() {
                     <button
                       type="button"
                       onClick={() => setCryptoNetwork("polygon")}
-                      className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
                         cryptoNetwork === "polygon"
-                          ? "bg-purple-500 text-white shadow-sm"
-                          : "bg-slate-900 text-slate-400"
+                          ? "bg-purple-950 text-purple-300 border-2 border-purple-400 shadow-glow"
+                          : "bg-slate-900 text-slate-400 border-white/10 hover:text-white"
                       }`}
                     >
                       Polygon (USDT/USDC)

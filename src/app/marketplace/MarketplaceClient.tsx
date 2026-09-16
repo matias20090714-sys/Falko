@@ -165,12 +165,12 @@ export function MarketplaceClient({
           }}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
             !selectedCategory
-              ? "btn-falcon-primary shadow-glow text-slate-950"
-              : "bg-slate-900/80 text-slate-300 border border-white/10 hover:border-cyan-500/40 hover:text-white"
+              ? "bg-cyan-950/90 text-cyan-300 border-2 border-cyan-400 shadow-glow font-bold"
+              : "bg-slate-900/90 text-slate-300 border border-white/10 hover:border-cyan-500/40 hover:text-white"
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          Todos los Productos ({initialProducts.length})
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Todos los Productos ({initialProducts.length})</span>
         </button>
 
         {categories.map((cat) => {
@@ -184,11 +184,11 @@ export function MarketplaceClient({
               }}
               className={`px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 isSelected
-                  ? "btn-falcon-primary shadow-glow text-slate-950 font-bold"
-                  : "bg-slate-900/80 text-slate-300 border border-white/10 hover:border-cyan-500/40 hover:text-white"
+                  ? "bg-cyan-950/90 text-cyan-300 border-2 border-cyan-400 shadow-glow font-bold"
+                  : "bg-slate-900/90 text-slate-300 border border-white/10 hover:border-cyan-500/40 hover:text-white"
               }`}
             >
-              {cat.name}
+              <span>{cat.name}</span>
             </button>
           );
         })}
