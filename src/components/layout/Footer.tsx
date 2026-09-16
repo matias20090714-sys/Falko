@@ -96,11 +96,6 @@ export function Footer() {
                   Embudos & Marketing
                 </Link>
               </li>
-              <li>
-                <Link href="/ranking" className="hover:text-cyan-400 transition-colors">
-                  Ranking Global USD
-                </Link>
-              </li>
             </ul>
           </div>
 

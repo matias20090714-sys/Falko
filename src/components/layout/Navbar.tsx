@@ -64,7 +64,6 @@ export function Navbar({ initialUser }: NavbarProps) {
   const navLinks = [
     { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
     { label: "Cómo Funciona", href: "/#como-funciona", icon: null },
-    { label: "Ranking USD", href: "/ranking", icon: Trophy },
   ];
 
   return (
