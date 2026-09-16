@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
         seller: { select: { firstName: true, lastName: true, avatarUrl: true } },
         images: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { salesCount: "desc" },
     });
 
     return NextResponse.json({ products });

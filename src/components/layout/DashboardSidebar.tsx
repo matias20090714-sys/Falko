@@ -56,12 +56,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           icon: Store,
           color: "text-cyan-400",
         },
-        {
-          label: "Top Ranking Vendedores",
-          href: "/ranking",
-          icon: Trophy,
-          color: "text-amber-400",
-        },
       ],
     },
     {

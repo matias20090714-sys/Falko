@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { prisma } from "@/lib/db";
 import { MarketplaceClient } from "./MarketplaceClient";
 
-import { FALLBACK_PRODUCTS, FALLBACK_CATEGORIES } from "@/lib/mock-data";
+import { FALLBACK_CATEGORIES } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export default async function MarketplacePage({
   searchParams: { category?: string; search?: string; sort?: string };
 }) {
   let categories = FALLBACK_CATEGORIES;
-  let products = FALLBACK_PRODUCTS as any[];
+  let products: any[] = [];
 
   try {
     const dbCategories = await prisma.category.findMany({
@@ -22,7 +22,7 @@ export default async function MarketplacePage({
       categories = dbCategories as any;
     }
   } catch (err) {
-    console.warn("Marketplace categories fallback:", err);
+    console.warn("Marketplace categories query error:", err);
   }
 
   try {
@@ -67,14 +67,14 @@ export default async function MarketplacePage({
           ? { price: "desc" }
           : searchParams.sort === "newest"
           ? { createdAt: "desc" }
-          : { salesCount: "desc" },
+          : { salesCount: "desc" }, // Most sold products first by default
     });
 
-    if (dbProducts && dbProducts.length > 0) {
+    if (dbProducts) {
       products = dbProducts;
     }
   } catch (err) {
-    console.warn("Marketplace products fallback:", err);
+    console.warn("Marketplace products query error:", err);
   }
 
   return (
