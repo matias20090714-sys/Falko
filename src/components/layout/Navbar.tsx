@@ -251,6 +251,14 @@ export function Navbar({ initialUser }: NavbarProps) {
                           <Wallet className="w-4 h-4 text-amber-400" />
                           <span>Billetera & Retiros</span>
                         </Link>
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs text-cyan-300 font-semibold hover:bg-white/5 transition-colors"
+                        >
+                          <User className="w-4 h-4 text-cyan-400" />
+                          <span>Mi Perfil & Ajustes</span>
+                        </Link>
                         {userRoles.includes("ADMIN") && (
                           <Link
                             href="/admin"
@@ -363,6 +371,13 @@ export function Navbar({ initialUser }: NavbarProps) {
                 className="block py-1.5 text-sm text-slate-300"
               >
                 Billetera & Retiros
+              </Link>
+              <Link
+                href="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-1.5 text-sm text-cyan-300 font-semibold"
+              >
+                👤 Mi Perfil & Ajustes
               </Link>
               {userRoles.includes("ADMIN") && (
                 <Link

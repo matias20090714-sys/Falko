@@ -11,6 +11,9 @@ export interface SessionUser {
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl?: string | null;
+  phone?: string | null;
+  bio?: string | null;
   countryCode: string;
   preferredCurrency: string;
   roles: ("BUYER" | "SELLER" | "AFFILIATE" | "ADMIN")[];
@@ -33,6 +36,7 @@ export function signToken(user: SessionUser): string {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
       countryCode: user.countryCode,
       preferredCurrency: user.preferredCurrency,
       roles: user.roles,
@@ -76,6 +80,9 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
+      phone: user.phone,
+      bio: user.bio,
       countryCode: user.countryCode,
       preferredCurrency: user.preferredCurrency,
       roles: user.roles.map((r) => r.role as "BUYER" | "SELLER" | "AFFILIATE" | "ADMIN"),
