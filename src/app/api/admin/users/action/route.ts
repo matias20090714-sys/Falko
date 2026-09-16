@@ -28,6 +28,15 @@ export async function POST(req: NextRequest) {
         },
       });
     } else if (action === "ADD_ROLE" && newRole) {
+      if (newRole === "ADMIN") {
+        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+        if (targetUser?.email !== "matias20090714@gmail.com") {
+          return NextResponse.json(
+            { success: false, error: "El rol de ADMIN es exclusivo del dueño de la plataforma y no puede ser otorgado a otros usuarios." },
+            { status: 403 }
+          );
+        }
+      }
       await prisma.userRole.upsert({
         where: { userId_role: { userId, role: newRole } },
         create: { userId, role: newRole },
