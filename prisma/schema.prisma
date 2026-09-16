@@ -528,3 +528,22 @@ model ProductLesson {
   @@index([moduleId])
 }
 
+model AbandonedCart {
+  id           String    @id @default(cuid())
+  email        String
+  name         String?
+  productSlug  String
+  refCode      String?
+  currencyCode String    @default("USD")
+  amount       Float
+  recovered    Boolean   @default(false)
+  remindedAt   DateTime?
+  recoveryCode String    @default("RESCATE10")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+  @@index([recovered])
+  @@index([createdAt])
+}
+

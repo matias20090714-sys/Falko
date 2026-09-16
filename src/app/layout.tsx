@@ -32,6 +32,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { LiveSocialProof } from "@/components/social-proof/LiveSocialProof";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -46,9 +48,10 @@ export default async function RootLayout({
 
   return (
     <html lang="es" className="dark scroll-smooth">
-      <body className="bg-[#070b14] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+      <body className="bg-[#05070e] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
         <Navbar initialUser={currentUser} />
         <main className="flex-1 w-full">{children}</main>
+        <LiveSocialProof />
         <Footer />
       </body>
     </html>
