@@ -929,52 +929,93 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                     </div>
 
                     {/* ======================================================== */}
-                    {/* AFFILIATE PROGRAM CONFIGURATION CONTROLS                */}
+                    {/* AFFILIATE PROGRAM: CLEAR YES/NO & FULL SETTINGS         */}
                     {/* ======================================================== */}
-                    <div className="glass-panel p-5 rounded-2xl border border-purple-500/30 bg-purple-950/10 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-xl bg-purple-950 border border-purple-800/60 flex items-center justify-center text-purple-400">
-                            <Percent className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                              Programa de Afiliados
-                              <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-mono">
-                                {formData.affiliateEnabled ? `${formData.affiliateCommissionPct}% Comisión` : "Desactivado"}
-                              </span>
-                            </h4>
-                            <p className="text-[11px] text-slate-400">
-                              Permite que otros creadores y promotores vendan tu producto y ganen comisión.
-                            </p>
-                          </div>
+                    <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-950/20 via-slate-950 to-slate-950 space-y-5 shadow-xl">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Percent className="w-4 h-4 text-purple-400" />
+                          <span className="text-[10px] uppercase font-mono font-bold text-purple-400">
+                            Fuerza de Ventas Externa
+                          </span>
                         </div>
-
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            name="affiliateEnabled"
-                            checked={formData.affiliateEnabled}
-                            onChange={handleChange}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
+                        <h4 className="text-base font-bold text-white">
+                          ¿Deseas que otros afiliados vendan tu producto a cambio de una comisión?
+                        </h4>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Tú decides si habilitas el sistema de afiliados y cuánto porcentaje otorgas por cada venta generada.
+                        </p>
                       </div>
 
-                      {formData.affiliateEnabled && (
-                        <div className="space-y-4 pt-3 border-t border-purple-500/20 animate-in fade-in duration-150">
+                      {/* Visual 2-Card Choice: SÍ vs NO */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Option 1: SÍ ACTIVAR AFILIADOS */}
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, affiliateEnabled: true }))}
+                          className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                            formData.affiliateEnabled
+                              ? "bg-purple-950/70 border-purple-500 text-white shadow-glow ring-2 ring-purple-500/30"
+                              : "bg-slate-950/60 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold flex items-center gap-2 text-purple-300">
+                              <Sparkles className="w-4 h-4 text-amber-400" />
+                              SÍ, Activar Afiliados
+                            </span>
+                            {formData.affiliateEnabled && (
+                              <span className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center text-[10px] text-white">
+                                ✓
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Aparecerá en el catálogo de afiliados para que miles de promotores vendan por ti.
+                          </p>
+                        </button>
+
+                        {/* Option 2: NO ACTIVAR AFILIADOS */}
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, affiliateEnabled: false }))}
+                          className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                            !formData.affiliateEnabled
+                              ? "bg-slate-900 border-cyan-500 text-white shadow-glow ring-2 ring-cyan-500/30"
+                              : "bg-slate-950/60 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold flex items-center gap-2 text-slate-200">
+                              <Lock className="w-4 h-4 text-cyan-400" />
+                              NO, Solo Venta Directa
+                            </span>
+                            {!formData.affiliateEnabled && (
+                              <span className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center text-[10px] text-slate-950 font-bold">
+                                ✓
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Solo tú venderás el producto a través de tus enlaces propios y te quedas con el 90% neto.
+                          </p>
+                        </button>
+                      </div>
+
+                      {/* DETAILED AFFILIATE OPTIONS (When YES is selected) */}
+                      {formData.affiliateEnabled ? (
+                        <div className="space-y-4 pt-4 border-t border-purple-500/20 animate-in fade-in duration-150">
                           {/* Commission Percentage Slider & Quick Buttons */}
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
+                          <div className="bg-slate-950/80 p-4 rounded-2xl border border-white/5 space-y-2.5">
+                            <div className="flex items-center justify-between">
                               <label className="text-xs font-bold text-white flex items-center gap-1.5">
                                 <span>Porcentaje de Comisión para el Afiliado:</span>
                                 <span className="text-sm font-black font-mono text-purple-300">
                                   {formData.affiliateCommissionPct}%
                                 </span>
                               </label>
-                              <span className="text-[11px] text-emerald-400 font-mono font-bold">
-                                ${( (numPrice * formData.affiliateCommissionPct) / 100 ).toFixed(2)} USD por venta
+                              <span className="text-xs text-emerald-400 font-mono font-bold">
+                                +${((numPrice * formData.affiliateCommissionPct) / 100).toFixed(2)} USD / venta
                               </span>
                             </div>
 
@@ -991,7 +1032,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                             />
 
                             {/* Quick Select Buttons */}
-                            <div className="flex flex-wrap gap-1.5 mt-2">
+                            <div className="flex flex-wrap gap-1.5 pt-1">
                               {[15, 20, 30, 40, 50, 60, 70, 80].map((pct) => (
                                 <button
                                   key={pct}
@@ -1000,7 +1041,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                                   className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg border transition-all ${
                                     formData.affiliateCommissionPct === pct
                                       ? "bg-purple-600 text-white border-purple-400 shadow-glow"
-                                      : "bg-slate-900/80 text-slate-400 border-white/5 hover:text-white hover:border-purple-500/40"
+                                      : "bg-slate-900 text-slate-400 border-white/5 hover:text-white hover:border-purple-500/40"
                                   }`}
                                 >
                                   {pct}%
@@ -1010,8 +1051,8 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                           </div>
 
                           {/* Approval Mode */}
-                          <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-2">
+                          <div className="bg-slate-950/80 p-4 rounded-2xl border border-white/5 space-y-2">
+                            <label className="block text-xs font-semibold text-slate-300">
                               Modo de Aprobación de Afiliados
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1021,12 +1062,12 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                                 className={`p-3 rounded-xl border text-left transition-all ${
                                   formData.affiliateApprovalMode === "AUTO"
                                     ? "bg-purple-950/80 border-purple-500 text-white shadow-glow"
-                                    : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                                    : "bg-slate-900 border-white/5 text-slate-400 hover:text-white"
                                 }`}
                               >
                                 <div className="flex items-center gap-2 mb-1">
                                   <Zap className="w-3.5 h-3.5 text-amber-400" />
-                                  <span className="text-xs font-bold">Aprobación Instantánea (Auto)</span>
+                                  <span className="text-xs font-bold">⚡ Automática (Inmediata)</span>
                                 </div>
                                 <p className="text-[10px] text-slate-400 leading-tight">
                                   Cualquier afiliado puede obtener su enlace y empezar a vender de inmediato. (Recomendado)
@@ -1039,12 +1080,12 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                                 className={`p-3 rounded-xl border text-left transition-all ${
                                   formData.affiliateApprovalMode === "MANUAL"
                                     ? "bg-purple-950/80 border-purple-500 text-white shadow-glow"
-                                    : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                                    : "bg-slate-900 border-white/5 text-slate-400 hover:text-white"
                                 }`}
                               >
                                 <div className="flex items-center gap-2 mb-1">
                                   <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                                  <span className="text-xs font-bold">Aprobación Manual</span>
+                                  <span className="text-xs font-bold">🛡️ Aprobación Manual</span>
                                 </div>
                                 <p className="text-[10px] text-slate-400 leading-tight">
                                   Revisas las solicitudes de los promotores antes de darles acceso a los enlaces.
@@ -1054,22 +1095,29 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                           </div>
 
                           {/* Affiliate Swipe / Marketing Materials Link */}
-                          <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                              Materiales de Promoción para Afiliados (Swipe Files / Google Drive / Notion)
+                          <div className="bg-slate-950/80 p-4 rounded-2xl border border-white/5 space-y-1.5">
+                            <label className="block text-xs font-semibold text-slate-300">
+                              Recursos de Marketing para tus Afiliados (Google Drive, Dropbox, Notion)
                             </label>
                             <input
                               type="url"
                               name="affiliateSwipeUrl"
                               value={formData.affiliateSwipeUrl}
                               onChange={handleChange}
-                              placeholder="https://drive.google.com/drive/folders/ejemplo-recursos-afiliados"
+                              placeholder="https://drive.google.com/drive/folders/mis-creativos-y-anuncios"
                               className="input-falcon text-xs w-full py-2 font-mono"
                             />
-                            <span className="text-[10px] text-slate-500 block mt-1">
-                              Tus afiliados podrán descargar fotos, copys y banners para promocionar tu producto.
+                            <span className="text-[10px] text-slate-500 block">
+                              Opcional: Comparte fotos, copys y banners para que tus promotores vendan más.
                             </span>
                           </div>
+                        </div>
+                      ) : (
+                        <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-slate-300 flex items-center gap-2.5">
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0" />
+                          <span>
+                            Modo venta directa activo. Recibirás el <strong>90% neto</strong> de cada compra generada a través de tu link de producto.
+                          </span>
                         </div>
                       )}
                     </div>

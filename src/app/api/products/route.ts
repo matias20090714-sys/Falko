@@ -200,3 +200,65 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: "No autenticado." }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { productId, affiliateEnabled, affiliateCommissionPct, affiliateApprovalMode, price, status } = body;
+
+    if (!productId) {
+      return NextResponse.json({ success: false, error: "ID de producto requerido." }, { status: 400 });
+    }
+
+    // Verify ownership or ADMIN
+    const existing = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Producto no encontrado." }, { status: 404 });
+    }
+
+    const isAdmin = Array.isArray(user.roles) && user.roles.includes("ADMIN");
+    if (existing.sellerId !== user.id && !isAdmin) {
+      return NextResponse.json({ success: false, error: "No tienes permiso para editar este producto." }, { status: 403 });
+    }
+
+    const updateData: any = {};
+    if (typeof affiliateEnabled === "boolean") {
+      updateData.affiliateEnabled = affiliateEnabled;
+    }
+    if (affiliateCommissionPct !== undefined) {
+      updateData.affiliateCommissionPct = Math.min(90, Math.max(5, parseFloat(affiliateCommissionPct)));
+    }
+    if (affiliateApprovalMode && ["AUTO", "MANUAL"].includes(affiliateApprovalMode)) {
+      updateData.affiliateApprovalMode = affiliateApprovalMode;
+    }
+    if (price !== undefined && parseFloat(price) > 0) {
+      updateData.price = parseFloat(price);
+    }
+    if (status && ["APPROVED", "DRAFT", "ARCHIVED"].includes(status)) {
+      updateData.status = status;
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: updateData,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Producto actualizado correctamente.",
+      product: updatedProduct,
+    });
+  } catch (error: any) {
+    console.error("Product patch error:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+

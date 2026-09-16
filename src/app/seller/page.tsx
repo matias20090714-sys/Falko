@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/currency";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { SellerProductsList } from "./SellerProductsList";
 import {
   DollarSign,
   Lock,
@@ -190,53 +191,17 @@ export default async function SellerDashboardPage() {
         {/* Products List (2 Cols) */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <h3 className="font-bold text-white text-base">Mis Productos en Venta ({products.length})</h3>
-            <Link href="/seller/products/new" className="text-xs text-cyan-400 hover:underline">
-              + Agregar Producto
+            <div>
+              <h3 className="font-bold text-white text-base">Mis Productos en Venta ({products.length})</h3>
+              <p className="text-[11px] text-slate-400">Activa o desactiva la afiliación de tus productos con un solo clic.</p>
+            </div>
+            <Link href="/seller/products/new" className="btn-falcon-primary text-xs py-1.5 px-3 shadow-glow flex items-center gap-1">
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Nuevo Producto</span>
             </Link>
           </div>
 
-          {products.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-xs">
-              Aún no has publicado productos. ¡Crea tu primer producto digital para comenzar a facturar!
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-800">
-              {products.map((p) => (
-                <div key={p.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 overflow-hidden border border-slate-800 shrink-0">
-                      <img src={p.coverImageUrl} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-white line-clamp-1">{p.title}</h4>
-                      <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-0.5">
-                        <span className="text-cyan-400 font-mono font-bold">
-                          {formatCurrency(p.price, p.currencyCode)}
-                        </span>
-                        <span>•</span>
-                        <span>{p.salesCount} ventas</span>
-                        <span>•</span>
-                        <span>Afiliados: {p.affiliateEnabled ? `${p.affiliateCommissionPct}% (${p.affiliateApprovalMode})` : "Desactivado"}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-                      {p.status}
-                    </span>
-                    <Link
-                      href={`/product/${p.slug}`}
-                      className="btn-falcon-secondary text-xs py-1.5 px-3"
-                    >
-                      Ver en Tienda
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <SellerProductsList initialProducts={products as any} />
         </div>
 
         {/* Recent Sales Ledger Activity */}
