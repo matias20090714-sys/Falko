@@ -22,6 +22,10 @@ import {
   Zap,
   Menu,
   X,
+  Store,
+  Trophy,
+  TrendingUp,
+  ArrowUpRight,
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -43,6 +47,23 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   };
 
   const navGroups = [
+    {
+      title: "EXPLORAR & MERCADO",
+      items: [
+        {
+          label: "Marketplace",
+          href: "/marketplace",
+          icon: Store,
+          color: "text-cyan-400",
+        },
+        {
+          label: "Top Ranking Vendedores",
+          href: "/ranking",
+          icon: Trophy,
+          color: "text-amber-400",
+        },
+      ],
+    },
     {
       title: "PANEL PRINCIPAL",
       items: [
@@ -93,6 +114,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       title: "AFILIACIÓN & COMPRAS",
       items: [
         {
+          label: "Mercado de Afiliación",
+          href: "/affiliate/products",
+          icon: TrendingUp,
+          color: "text-purple-400",
+        },
+        {
           label: "Mis Afiliaciones & Links",
           href: "/affiliate",
           icon: Share2,
@@ -114,6 +141,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           href: "/wallet",
           icon: Wallet,
           color: "text-amber-400",
+        },
+        {
+          label: "Historial de Retiros",
+          href: "/withdrawals",
+          icon: ArrowUpRight,
+          color: "text-emerald-400",
         },
         {
           label: "Editar Mi Perfil",
