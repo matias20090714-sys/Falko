@@ -13,6 +13,11 @@ export async function GET(req: NextRequest) {
           seller: { select: { firstName: true, lastName: true, avatarUrl: true } },
           files: true,
           images: { orderBy: { sortOrder: "asc" } },
+          modules: {
+            include: { lessons: { orderBy: { sortOrder: "asc" } } },
+            orderBy: { sortOrder: "asc" },
+          },
+          coupons: { where: { isActive: true } },
         },
       });
       return NextResponse.json({ product });
@@ -57,8 +62,17 @@ export async function POST(req: NextRequest) {
       videoUrl,
       accessUrl,
       accessInstructions,
+      orderBumpTitle,
+      orderBumpPrice,
+      orderBumpDescription,
+      metaPixelId,
+      googleAnalyticsId,
+      tiktokPixelId,
+      affiliateSwipeUrl,
       files = [],
       images = [],
+      modules = [],
+      coupons = [],
     } = await req.json();
 
     if (!title || !description || !price || !categoryId) {
@@ -108,7 +122,14 @@ export async function POST(req: NextRequest) {
         videoUrl: videoUrl || null,
         accessUrl: accessUrl || null,
         accessInstructions: accessInstructions || null,
-        status: "APPROVED", // Auto-approved on creation per requirement 10, with ADMIN moderation available
+        orderBumpTitle: orderBumpTitle || null,
+        orderBumpPrice: orderBumpPrice ? parseFloat(orderBumpPrice) : null,
+        orderBumpDescription: orderBumpDescription || null,
+        metaPixelId: metaPixelId || null,
+        googleAnalyticsId: googleAnalyticsId || null,
+        tiktokPixelId: tiktokPixelId || null,
+        affiliateSwipeUrl: affiliateSwipeUrl || null,
+        status: "APPROVED",
         coverImageUrl:
           coverImageUrl ||
           "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
@@ -119,7 +140,7 @@ export async function POST(req: NextRequest) {
               ? files.map((f: any) => ({
                   fileName: f.fileName || "recurso_digital.zip",
                   fileSizeBytes: f.fileSizeBytes || 10485760,
-                  fileType: f.fileType || "application/octet-stream",
+                  fileType: f.fileType || "application/zip",
                   storageKey: f.storageKey || `vault/${Date.now()}_${f.fileName || "recurso.zip"}`,
                 }))
               : [
@@ -140,10 +161,36 @@ export async function POST(req: NextRequest) {
                 }))
               : [],
         },
+        modules: {
+          create: modules.map((m: any, mIdx: number) => ({
+            title: m.title || `Módulo ${mIdx + 1}`,
+            sortOrder: mIdx,
+            lessons: {
+              create: (m.lessons || []).map((l: any, lIdx: number) => ({
+                title: l.title || `Lección ${lIdx + 1}`,
+                description: l.description || null,
+                videoUrl: l.videoUrl || null,
+                fileUrl: l.fileUrl || null,
+                fileName: l.fileName || null,
+                durationMin: parseInt(l.durationMin) || 10,
+                sortOrder: lIdx,
+              })),
+            },
+          })),
+        },
+        coupons: {
+          create: coupons.map((c: any) => ({
+            code: (c.code || "PROMO").toUpperCase().trim(),
+            discountPct: parseFloat(c.discountPct) || 20,
+            maxUses: parseInt(c.maxUses) || 500,
+          })),
+        },
       },
       include: {
         files: true,
         images: true,
+        modules: { include: { lessons: true } },
+        coupons: true,
       },
     });
 

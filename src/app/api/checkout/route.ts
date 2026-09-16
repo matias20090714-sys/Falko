@@ -14,7 +14,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Debes iniciar sesión para completar la compra." }, { status: 401 });
     }
 
-    const { productSlug, refCode, targetCurrency = "USD", paymentMethod = "MERCADOPAGO" } = await req.json();
+    const {
+      productSlug,
+      refCode,
+      targetCurrency = "USD",
+      paymentMethod = "MERCADOPAGO",
+      includeOrderBump = false,
+      couponCode = "",
+    } = await req.json();
 
     // 1. Fetch live product from DB (Never trust client prices)
     const product = await prisma.product.findUnique({
@@ -28,7 +35,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "El producto no está disponible para la compra." }, { status: 404 });
     }
 
-    // 2. Check for affiliate referral link
+    // 2. Validate Coupon if provided
+    let discountPct = 0;
+    let validCouponCode = null;
+    if (couponCode) {
+      const cleanCoupon = couponCode.trim().toUpperCase();
+      const couponRecord = await prisma.coupon.findFirst({
+        where: {
+          code: cleanCoupon,
+          isActive: true,
+          OR: [{ productId: null }, { productId: product.id }],
+        },
+      });
+
+      if (couponRecord) {
+        discountPct = couponRecord.discountPct;
+        validCouponCode = couponRecord.code;
+        await prisma.coupon.update({
+          where: { id: couponRecord.id },
+          data: { usedCount: { increment: 1 } },
+        });
+      } else {
+        const GLOBAL_PROMOS: Record<string, number> = {
+          FALKO10: 10,
+          FALKO20: 20,
+          LANZAMIENTO50: 50,
+          VIPCREADOR: 25,
+          HALCON30: 30,
+        };
+        if (GLOBAL_PROMOS[cleanCoupon]) {
+          discountPct = GLOBAL_PROMOS[cleanCoupon];
+          validCouponCode = cleanCoupon;
+        }
+      }
+    }
+
+    // 3. Compute final base price factoring in Order Bump & Discounts
+    let basePrice = product.price;
+    let discountAmount = 0;
+
+    if (discountPct > 0) {
+      discountAmount = (basePrice * discountPct) / 100;
+      basePrice = Math.max(1, basePrice - discountAmount);
+    }
+
+    let orderBumpAmount = 0;
+    if (includeOrderBump && product.orderBumpPrice) {
+      orderBumpAmount = product.orderBumpPrice;
+      basePrice += orderBumpAmount;
+    }
+
+    // 4. Check for affiliate referral link
     let affiliateProduct = null;
     let affiliateUserId = null;
 
@@ -49,7 +106,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Server-side Anti-Fraud Check
+    // 5. Server-side Anti-Fraud Check
     const fraudCheck = await validateOrderFraud({
       buyerId: currentUser.id,
       buyerEmail: currentUser.email,
@@ -61,15 +118,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: fraudCheck.reason }, { status: 400 });
     }
 
-    // 4. Calculate exact server-side financial division
+    // 6. Calculate exact server-side financial division
     const split = computeFinancialSplit({
-      productPrice: product.price,
+      productPrice: basePrice,
       currencyCode: product.currencyCode,
       affiliateCommissionPct: product.affiliateCommissionPct,
       hasAffiliate: !!affiliateProduct,
     });
 
-    // 5. Initialize payment provider (MERCADOPAGO / MOCK)
+    // 7. Initialize payment provider (MERCADOPAGO / MOCK)
     const paymentProvider = getPaymentProvider(paymentMethod);
     const orderNumber = `ORD-FLK-${Date.now().toString().slice(-6)}`;
 
@@ -78,7 +135,7 @@ export async function POST(req: NextRequest) {
       orderNumber,
       amount: split.totalAmount,
       currency: split.currencyCode,
-      description: `Compra FALKO: ${product.title}`,
+      description: `Compra FALKO: ${product.title}${includeOrderBump ? " (+ Bump)" : ""}`,
       customerEmail: currentUser.email,
       customerName: `${currentUser.firstName} ${currentUser.lastName}`,
       returnUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/order/success`,
@@ -92,11 +149,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 6. Guarantee release date calculation
+    // 8. Guarantee release date calculation
     const guaranteeReleaseDate = new Date();
     guaranteeReleaseDate.setDate(guaranteeReleaseDate.getDate() + product.guaranteeDays);
 
-    // 7. Persist Order in database
+    // 9. Persist Order in database
     const order = await prisma.order.create({
       data: {
         orderNumber,
@@ -105,6 +162,10 @@ export async function POST(req: NextRequest) {
         totalAmount: split.totalAmount,
         currencyCode: split.currencyCode,
         basePrice: product.price,
+        couponCode: validCouponCode,
+        discountAmount,
+        hasOrderBump: includeOrderBump,
+        orderBumpAmount,
         exchangeRate: 1.0,
         platformFeeUyu: split.platformFeeUyu,
         platformFeeConverted: split.platformFeeConverted,
@@ -118,7 +179,7 @@ export async function POST(req: NextRequest) {
         items: {
           create: {
             productId: product.id,
-            price: product.price,
+            price: basePrice,
             currencyCode: product.currencyCode,
           },
         },
@@ -133,7 +194,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 8. Process Immutable Double-Entry Ledger & Guarantee Holds
+    // 10. Process Immutable Double-Entry Ledger & Guarantee Holds
     await processOrderLedger({
       orderId: order.id,
       sellerId: product.sellerId,
@@ -145,7 +206,7 @@ export async function POST(req: NextRequest) {
       guaranteeDays: product.guaranteeDays,
     });
 
-    // 9. Increment product sales count & affiliate conversion count
+    // 11. Increment product sales count & affiliate conversion count
     await prisma.product.update({
       where: { id: product.id },
       data: { salesCount: { increment: 1 } },
@@ -164,12 +225,12 @@ export async function POST(req: NextRequest) {
     // Add sales volume USD to Seller ranking
     await addSalesVolume(product.sellerId, split.salesVolumeUsd);
 
-    // 10. Create In-App Notification for Seller
+    // 12. Create In-App Notification for Seller
     await prisma.notification.create({
       data: {
         userId: product.sellerId,
         title: "¡Nueva venta confirmada! 🎉",
-        message: `Has vendido "${product.title}" por ${split.sellerEarningAmount} ${split.currencyCode} netos (retenidos por garantía ${product.guaranteeDays}d).`,
+        message: `Has vendido "${product.title}" por ${split.sellerEarningAmount.toFixed(2)} ${split.currencyCode} netos (retenidos por garantía ${product.guaranteeDays}d).`,
         type: "SALE",
         linkUrl: "/seller",
       },
@@ -180,7 +241,7 @@ export async function POST(req: NextRequest) {
         data: {
           userId: affiliateUserId,
           title: "¡Comisión de afiliado generada! 💰",
-          message: `Has generado una comisión de ${split.affiliateCommissionAmount} ${split.currencyCode} promocionando "${product.title}".`,
+          message: `Has generado una comisión de ${split.affiliateCommissionAmount.toFixed(2)} ${split.currencyCode} promocionando "${product.title}".`,
           type: "COMMISSION",
           linkUrl: "/affiliate",
         },
@@ -194,6 +255,7 @@ export async function POST(req: NextRequest) {
       redirectUrl: `/order/success?orderNumber=${order.orderNumber}`,
     });
   } catch (error: any) {
+    console.error("Checkout error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

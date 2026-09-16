@@ -5,13 +5,17 @@ import { useRouter } from "next/navigation";
 import { CURRENCY_RATES, computeFinancialSplit, formatCurrency } from "@/lib/currency";
 import { getVideoEmbedUrl } from "@/lib/media";
 import {
+  Activity,
+  Code,
   DollarSign,
   FileCode,
   FileText,
   Film,
+  FolderOpen,
   Globe,
   Image as ImageIcon,
   Info,
+  Layers,
   Link as LinkIcon,
   Lock,
   Percent,
@@ -19,6 +23,8 @@ import {
   Plus,
   ShieldCheck,
   Sparkles,
+  Tag,
+  Target,
   Trash2,
   Upload,
   Video,
@@ -33,6 +39,25 @@ interface UploadedFileItem {
   fileType: string;
   storageKey: string;
   url?: string;
+}
+
+interface CouponItem {
+  id: string;
+  code: string;
+  discountPct: number;
+}
+
+interface LessonItem {
+  id: string;
+  title: string;
+  videoUrl: string;
+  durationMin: number;
+}
+
+interface ModuleItem {
+  id: string;
+  title: string;
+  lessons: LessonItem[];
 }
 
 interface NewProductClientProps {
@@ -60,6 +85,16 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     videoUrl: "",
     accessUrl: "",
     accessInstructions: "",
+    // Order Bump
+    orderBumpTitle: "",
+    orderBumpPrice: "9.99",
+    orderBumpDescription: "",
+    // Tracking Pixels
+    metaPixelId: "",
+    googleAnalyticsId: "",
+    tiktokPixelId: "",
+    // Affiliate Swipe
+    affiliateSwipeUrl: "",
   });
 
   // Uploaded Files List
@@ -76,6 +111,16 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
   // Gallery Images List
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [customImageUrl, setCustomImageUrl] = useState("");
+
+  // Coupons List
+  const [coupons, setCoupons] = useState<CouponItem[]>([
+    { id: "c-1", code: "LANZAMIENTO20", discountPct: 20 },
+  ]);
+  const [newCouponCode, setNewCouponCode] = useState("");
+  const [newCouponPct, setNewCouponPct] = useState(15);
+
+  // Modules & Lessons List
+  const [modules, setModules] = useState<ModuleItem[]>([]);
 
   // Uploading state indicators
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -171,7 +216,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Digital deliverable file upload
+  // Deliverable files
   const handleDeliverableFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -204,7 +249,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     setDigitalFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // Direct Video file upload
+  // Video file upload
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -218,6 +263,60 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     } finally {
       setUploadingVideo(false);
     }
+  };
+
+  // Coupon management
+  const handleAddCoupon = () => {
+    if (!newCouponCode.trim()) return;
+    setCoupons((prev) => [
+      ...prev,
+      { id: `c-${Date.now()}`, code: newCouponCode.trim().toUpperCase(), discountPct: newCouponPct },
+    ]);
+    setNewCouponCode("");
+  };
+
+  const handleRemoveCoupon = (id: string) => {
+    setCoupons((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  // Modules & Lessons management
+  const handleAddModule = () => {
+    setModules((prev) => [
+      ...prev,
+      {
+        id: `mod-${Date.now()}`,
+        title: `Módulo ${prev.length + 1}: Nombre del Módulo`,
+        lessons: [
+          { id: `les-${Date.now()}`, title: "Lección 1: Introducción", videoUrl: "", durationMin: 10 },
+        ],
+      },
+    ]);
+  };
+
+  const handleAddLesson = (moduleId: string) => {
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.id === moduleId) {
+          return {
+            ...m,
+            lessons: [
+              ...m.lessons,
+              {
+                id: `les-${Date.now()}`,
+                title: `Lección ${m.lessons.length + 1}: Nueva Clase`,
+                videoUrl: "",
+                durationMin: 15,
+              },
+            ],
+          };
+        }
+        return m;
+      })
+    );
+  };
+
+  const handleRemoveModule = (moduleId: string) => {
+    setModules((prev) => prev.filter((m) => m.id !== moduleId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -234,8 +333,8 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
       return;
     }
 
-    if (digitalFiles.length === 0 && !formData.accessUrl.trim() && !formData.videoUrl.trim()) {
-      setError("Debes incluir al menos un archivo descargable, un video o un enlace de acceso para tus compradores.");
+    if (digitalFiles.length === 0 && !formData.accessUrl.trim() && !formData.videoUrl.trim() && modules.length === 0) {
+      setError("Debes incluir al menos un archivo descargable, un video, un enlace de acceso o un módulo de lecciones.");
       return;
     }
 
@@ -256,6 +355,20 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
           images: galleryImages.map((imgUrl, idx) => ({
             imageUrl: imgUrl,
             sortOrder: idx,
+          })),
+          modules: modules.map((m, idx) => ({
+            title: m.title,
+            sortOrder: idx,
+            lessons: m.lessons.map((l, lIdx) => ({
+              title: l.title,
+              videoUrl: l.videoUrl,
+              durationMin: l.durationMin,
+              sortOrder: lIdx,
+            })),
+          })),
+          coupons: coupons.map((c) => ({
+            code: c.code,
+            discountPct: c.discountPct,
           })),
         }),
       });
@@ -286,7 +399,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
       )}
 
       {/* 1. Basic Info */}
-      <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-4">
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-4 shadow-xl">
         <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center gap-2">
           <FileText className="w-4 h-4 text-cyan-400" />
           1. Información del Producto
@@ -324,7 +437,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-cyan-400"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-200 text-xs focus:outline-none focus:border-cyan-400"
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -362,14 +475,14 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
       </div>
 
       {/* 2. Multimedia: Portada, Galería y Video */}
-      <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6">
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
         <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center gap-2">
           <ImageIcon className="w-4 h-4 text-cyan-400" />
           2. Portada, Galería de Imágenes y Video del Producto
         </h3>
 
         {/* Portada Principal */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
+        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-200 block">
               Imagen de Portada Principal *
@@ -378,7 +491,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-            <div className="md:col-span-1 aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-800 relative group">
+            <div className="md:col-span-1 aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-white/10 relative group">
               {formData.coverImageUrl ? (
                 <img
                   src={formData.coverImageUrl}
@@ -425,22 +538,19 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   className="hidden"
                 />
               </div>
-              <p className="text-[11px] text-slate-400">
-                Puedes pegar una URL directa o subir cualquier imagen en formato JPG, PNG, WebP o GIF.
-              </p>
             </div>
           </div>
         </div>
 
         {/* Galería de Imágenes Adicionales */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3">
+        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <label className="text-xs font-semibold text-slate-200 block">
-                Galería de Imágenes y Mockups (Opcional)
+                Galería de Mockups y Capturas (Opcional)
               </label>
               <p className="text-[11px] text-slate-400">
-                Muestra capturas de pantalla, previews del material o resultados para aumentar las ventas.
+                Muestra resultados y capturas para aumentar la conversión.
               </p>
             </div>
             <button
@@ -479,12 +589,12 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
             </button>
           </div>
 
-          {galleryImages.length > 0 ? (
+          {galleryImages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
               {galleryImages.map((imgUrl, index) => (
                 <div
                   key={index}
-                  className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 border border-slate-800 group"
+                  className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 border border-white/10 group"
                 >
                   <img src={imgUrl} alt={`Galería ${index + 1}`} className="w-full h-full object-cover" />
                   <button
@@ -497,23 +607,19 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="border border-dashed border-slate-800 rounded-xl p-4 text-center text-slate-500 text-xs">
-              Sin imágenes adicionales añadidas. Puedes cargar varias imágenes a la vez.
-            </div>
           )}
         </div>
 
-        {/* Video / Clase / Demo */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-4">
+        {/* Video / Demo */}
+        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <label className="text-xs font-semibold text-slate-200 block flex items-center gap-1.5">
                 <Film className="w-4 h-4 text-purple-400" />
-                Video del Producto / Clase / Demo Audiovisual (Opcional)
+                Video Principal / Clase / Demo Audiovisual
               </label>
               <p className="text-[11px] text-slate-400">
-                Soporta enlaces de YouTube (público o no listado), Vimeo, Loom, Bunny Stream, o archivo MP4 subido.
+                YouTube (no listado), Vimeo, Loom, Bunny Stream o archivo MP4 subido.
               </p>
             </div>
             <button
@@ -523,7 +629,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
             >
               <Video className="w-3.5 h-3.5 text-cyan-400" />
-              {uploadingVideo ? "Subiendo..." : "Subir Archivo de Video"}
+              {uploadingVideo ? "Subiendo..." : "Subir MP4"}
             </button>
             <input
               type="file"
@@ -545,7 +651,6 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
             />
           </div>
 
-          {/* Video Preview Player */}
           {formData.videoUrl && (
             <div className="rounded-xl overflow-hidden border border-purple-900/50 bg-black aspect-video max-w-lg mx-auto shadow-lg">
               {parsedVideo.type === "youtube" || parsedVideo.type === "vimeo" || parsedVideo.type === "loom" ? (
@@ -555,35 +660,30 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-              ) : parsedVideo.type === "direct" ? (
-                <video src={parsedVideo.embedUrl} controls className="w-full h-full object-contain" />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                  <Play className="w-8 h-8 text-purple-400 mb-2" />
-                  <span className="text-xs text-slate-300 font-mono break-all">{formData.videoUrl}</span>
-                </div>
+                <video src={parsedVideo.embedUrl} controls className="w-full h-full object-contain" />
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* 3. Entrega Digital: Archivos Descargables y Link Externo */}
-      <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6">
+      {/* 3. Entrega Digital & Enlaces Externos */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
         <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center gap-2">
           <FileCode className="w-4 h-4 text-cyan-400" />
           3. Entrega Digital: Archivos Descargables y Enlace de Acceso
         </h3>
 
-        {/* 3.1 Archivos Descargables */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-4">
+        {/* Archivos Descargables */}
+        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <label className="text-xs font-semibold text-slate-200 block">
                 Archivos Digitales Descargables (Bóveda Segura FALKO)
               </label>
               <p className="text-[11px] text-slate-400">
-                Sube tus paquetes ZIP, PDFs, ebooks, código, audios, APKs o documentos.
+                Sube tus paquetes ZIP, PDFs, plantillas, ebooks o código.
               </p>
             </div>
             <button
@@ -593,7 +693,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               className="btn-falcon-primary text-xs py-2 px-4 flex items-center gap-1.5 shrink-0"
             >
               <Upload className="w-3.5 h-3.5" />
-              {uploadingFile ? "Cargando archivo..." : "Subir Archivo"}
+              {uploadingFile ? "Cargando..." : "Subir Archivo"}
             </button>
             <input
               type="file"
@@ -604,12 +704,11 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
             />
           </div>
 
-          {/* Files List */}
           <div className="space-y-2.5">
             {digitalFiles.map((file) => (
               <div
                 key={file.id}
-                className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between text-xs"
+                className="bg-slate-900/90 border border-white/10 rounded-xl p-3.5 flex items-center justify-between text-xs"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-800/60 flex items-center justify-center text-cyan-400 shrink-0">
@@ -623,48 +722,37 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded font-mono hidden sm:inline-block">
-                    Cifrado AES-256
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFile(file.id)}
-                    className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-950/30 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(file.id)}
+                  className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-950/30 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
-
-          <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-cyan-400" />
-            Los archivos solo son accesibles por compradores con token temporal de 15 minutos.
-          </p>
         </div>
 
-        {/* 3.2 Enlace de Acceso Externo / Plataforma */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-4">
+        {/* Enlace Externo */}
+        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-200 block flex items-center gap-1.5">
               <LinkIcon className="w-4 h-4 text-purple-400" />
               Enlace de Acceso Externo (Notion, Google Drive, Discord, Telegram, SaaS) (Opcional)
             </label>
             <p className="text-[11px] text-slate-400">
-              Si tu producto es una plantilla de Notion, carpeta en la nube, comunidad exclusiva o software web, pega el enlace aquí.
+              Pega el enlace privado de acceso a tu espacio de trabajo o comunidad.
             </p>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-slate-300 block mb-1">URL de Acceso Privado</label>
             <input
               type="url"
               name="accessUrl"
               value={formData.accessUrl}
               onChange={handleChange}
-              placeholder="Ej: https://notion.so/... o https://drive.google.com/... o https://discord.gg/..."
+              placeholder="https://notion.so/... o https://drive.google.com/..."
               className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs font-mono"
             />
           </div>
@@ -674,21 +762,329 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               Instrucciones de Acceso para el Comprador
             </label>
             <textarea
-              rows={3}
+              rows={2}
               name="accessInstructions"
               value={formData.accessInstructions}
               onChange={handleChange}
-              placeholder="Ej: Haz clic en el botón para duplicar la plantilla en tu espacio de trabajo de Notion. Si tienes dudas, contáctanos a..."
+              placeholder="Ej: Haz clic en el botón para duplicar la plantilla en tu Notion..."
               className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
             />
           </div>
         </div>
       </div>
 
-      {/* 4. Pricing & Financial Rules */}
-      <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6">
+      {/* 4. Módulos & Lecciones (Cursos / Formaciones) */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-heading font-bold text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-400" />
+              4. Módulos y Lecciones de Curso (Opcional)
+            </h3>
+            <p className="text-xs text-slate-400">
+              Estructura tu formación en capítulos con video y duración estimada.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddModule}
+            className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5 text-cyan-400" />
+            Añadir Módulo
+          </button>
+        </div>
+
+        {modules.length > 0 ? (
+          <div className="space-y-4">
+            {modules.map((mod, mIdx) => (
+              <div key={mod.id} className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <input
+                    type="text"
+                    value={mod.title}
+                    onChange={(e) =>
+                      setModules((prev) =>
+                        prev.map((m) => (m.id === mod.id ? { ...m, title: e.target.value } : m))
+                      )
+                    }
+                    className="font-bold text-sm text-cyan-300 bg-transparent border-b border-white/10 focus:border-cyan-400 outline-none pb-1 w-full max-w-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveModule(mod.id)}
+                    className="text-slate-400 hover:text-rose-400 p-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Lessons in module */}
+                <div className="space-y-2 pl-2 border-l-2 border-cyan-500/30">
+                  {mod.lessons.map((les, lIdx) => (
+                    <div key={les.id} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center bg-slate-900/60 p-2.5 rounded-xl border border-white/5 text-xs">
+                      <input
+                        type="text"
+                        value={les.title}
+                        onChange={(e) =>
+                          setModules((prev) =>
+                            prev.map((m) =>
+                              m.id === mod.id
+                                ? {
+                                    ...m,
+                                    lessons: m.lessons.map((l) =>
+                                      l.id === les.id ? { ...l, title: e.target.value } : l
+                                    ),
+                                  }
+                                : m
+                            )
+                          )
+                        }
+                        placeholder="Título de la clase"
+                        className="glass-input px-2.5 py-1.5 rounded-lg text-xs"
+                      />
+                      <input
+                        type="text"
+                        value={les.videoUrl}
+                        onChange={(e) =>
+                          setModules((prev) =>
+                            prev.map((m) =>
+                              m.id === mod.id
+                                ? {
+                                    ...m,
+                                    lessons: m.lessons.map((l) =>
+                                      l.id === les.id ? { ...l, videoUrl: e.target.value } : l
+                                    ),
+                                  }
+                                : m
+                            )
+                          )
+                        }
+                        placeholder="URL de Video (YouTube / Loom / MP4)"
+                        className="glass-input px-2.5 py-1.5 rounded-lg text-xs font-mono"
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          value={les.durationMin}
+                          onChange={(e) =>
+                            setModules((prev) =>
+                              prev.map((m) =>
+                                m.id === mod.id
+                                  ? {
+                                      ...m,
+                                      lessons: m.lessons.map((l) =>
+                                        l.id === les.id
+                                          ? { ...l, durationMin: parseInt(e.target.value) || 5 }
+                                          : l
+                                      ),
+                                    }
+                                  : m
+                              )
+                            )
+                          }
+                          className="glass-input w-20 px-2 py-1.5 rounded-lg text-xs font-mono"
+                        />
+                        <span className="text-[11px] text-slate-400">min</span>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => handleAddLesson(mod.id)}
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold pt-1"
+                  >
+                    <Plus className="w-3 h-3" /> Añadir Lección
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="border border-dashed border-white/10 rounded-2xl p-4 text-center text-slate-500 text-xs">
+            Sin módulos de curso configurados. Ideal si vendes cursos paso a paso.
+          </div>
+        )}
+      </div>
+
+      {/* 5. Order Bump (Venta Adicional en Checkout) & Píxeles de Tracking */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
+        <h3 className="text-base font-heading font-bold text-white flex items-center gap-2">
+          <Zap className="w-4 h-4 text-amber-400" />
+          5. Order Bump (Venta Adicional 1-Click) y Píxeles de Conversión
+        </h3>
+
+        {/* Order Bump Settings */}
+        <div className="bg-amber-950/20 border border-amber-500/30 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-amber-300 block flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              Configurar Oferta Order Bump en el Checkout
+            </label>
+            <span className="text-[10px] font-mono text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">
+              Aumenta tu ticket +30%
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <label className="text-[11px] text-slate-300 block mb-1">Título del Bump</label>
+              <input
+                type="text"
+                name="orderBumpTitle"
+                value={formData.orderBumpTitle}
+                onChange={handleChange}
+                placeholder="Ej: + Pack de 100 Prompts y Plantillas Editables"
+                className="w-full px-3 py-2 rounded-xl glass-input text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-slate-300 block mb-1">Precio Adicional (USD)</label>
+              <input
+                type="number"
+                step="0.01"
+                name="orderBumpPrice"
+                value={formData.orderBumpPrice}
+                onChange={handleChange}
+                placeholder="9.99"
+                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] text-slate-300 block mb-1">Descripción breve del beneficio</label>
+            <input
+              type="text"
+              name="orderBumpDescription"
+              value={formData.orderBumpDescription}
+              onChange={handleChange}
+              placeholder="Ej: Accede a todos los archivos fuente listos para usar con licencia comercial."
+              className="w-full px-3 py-2 rounded-xl glass-input text-xs"
+            />
+          </div>
+        </div>
+
+        {/* Píxeles de Tracking */}
+        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+            <Activity className="w-4 h-4 text-cyan-400" />
+            <span>Píxeles de Conversión y Anuncios (Tracking para Ads)</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label className="text-[11px] text-slate-400 block mb-1">Meta Pixel ID (Facebook/IG)</label>
+              <input
+                type="text"
+                name="metaPixelId"
+                value={formData.metaPixelId}
+                onChange={handleChange}
+                placeholder="Ej: 1234567890"
+                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-slate-400 block mb-1">Google Analytics / Ads ID</label>
+              <input
+                type="text"
+                name="googleAnalyticsId"
+                value={formData.googleAnalyticsId}
+                onChange={handleChange}
+                placeholder="Ej: G-XXXXXX o AW-XXXX"
+                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-slate-400 block mb-1">TikTok Pixel ID</label>
+              <input
+                type="text"
+                name="tiktokPixelId"
+                value={formData.tiktokPixelId}
+                onChange={handleChange}
+                placeholder="Ej: CXXXXXXX"
+                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Cupones de Descuento & Kit para Afiliados */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
+        <h3 className="text-base font-heading font-bold text-white flex items-center gap-2">
+          <Tag className="w-4 h-4 text-purple-400" />
+          6. Cupones de Descuento y Materiales para Afiliados
+        </h3>
+
+        {/* Cupones */}
+        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
+          <label className="text-xs font-bold text-slate-200 block">Cupones de Descuento Promocionales</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newCouponCode}
+              onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
+              placeholder="Código (ej: VIP50)"
+              className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
+            />
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="5"
+                max="90"
+                value={newCouponPct}
+                onChange={(e) => setNewCouponPct(parseInt(e.target.value) || 10)}
+                className="w-20 px-3 py-2 rounded-xl glass-input text-xs font-mono"
+              />
+              <span className="text-xs text-slate-400">%</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddCoupon}
+              className="btn-falcon-secondary text-xs px-3 py-2 shrink-0"
+            >
+              Crear Cupón
+            </button>
+          </div>
+
+          {coupons.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {coupons.map((c) => (
+                <div key={c.id} className="bg-purple-950/60 border border-purple-800/80 px-3 py-1 rounded-xl text-xs flex items-center gap-2 text-purple-300">
+                  <span className="font-mono font-bold">{c.code}</span>
+                  <span>(-{c.discountPct}%)</span>
+                  <button type="button" onClick={() => handleRemoveCoupon(c.id)} className="text-slate-400 hover:text-rose-400">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Swipe Kit */}
+        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-2">
+          <label className="text-xs font-bold text-slate-200 block">
+            Carpeta de Recursos & Swipe Files para tus Afiliados (Opcional)
+          </label>
+          <p className="text-[11px] text-slate-400">
+            Enlace a Google Drive o Notion con creativos, videos para TikTok/Reels y copys de ventas para tus afiliados.
+          </p>
+          <input
+            type="url"
+            name="affiliateSwipeUrl"
+            value={formData.affiliateSwipeUrl}
+            onChange={handleChange}
+            placeholder="https://drive.google.com/drive/folders/..."
+            className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs font-mono"
+          />
+        </div>
+      </div>
+
+      {/* 7. Pricing & Financial Rules */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
         <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center justify-between">
-          <span>4. Precio, Garantía y Reparto Contable</span>
+          <span>7. Precio, Garantía y Reparto Contable</span>
           <span className="text-xs font-mono text-cyan-400 font-bold bg-cyan-950 px-2.5 py-1 rounded border border-cyan-800">
             Regla FALKO 25 UYU Base
           </span>
@@ -715,7 +1111,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               name="currencyCode"
               value={formData.currencyCode}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-cyan-400 font-mono"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-200 text-xs focus:outline-none focus:border-cyan-400 font-mono"
             >
               {Object.keys(CURRENCY_RATES).map((code) => (
                 <option key={code} value={code}>
@@ -733,7 +1129,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               name="guaranteeDays"
               value={formData.guaranteeDays}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 text-xs focus:outline-none focus:border-cyan-400 font-bold"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-emerald-400 text-xs focus:outline-none focus:border-cyan-400 font-bold"
             >
               <option value="7">7 Días de Garantía (Estándar)</option>
               <option value="14">14 Días de Garantía (Recomendado)</option>
@@ -742,9 +1138,9 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
           </div>
         </div>
 
-        {/* Live Financial Breakdown Simulator Box */}
+        {/* Simulator Box */}
         <div className="bg-slate-950/80 rounded-2xl p-5 border border-cyan-500/30 shadow-glow space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold text-white border-b border-slate-800 pb-2">
+          <div className="flex items-center justify-between text-xs font-bold text-white border-b border-white/5 pb-2">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-cyan-400" />
               Simulación Contable por Venta Unitaria
@@ -774,19 +1170,15 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               </span>
             </div>
           </div>
-
-          <p className="text-[11px] text-slate-400 italic">
-            * Los ingresos permanecerán en tu saldo retenido durante los {formData.guaranteeDays} días de garantía y luego pasarán automáticamente a saldo disponible para retiro.
-          </p>
         </div>
       </div>
 
-      {/* 5. Affiliate Program Settings */}
-      <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6">
+      {/* 8. Affiliate Program Settings */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-heading font-bold text-white">
-              5. Programa de Afiliados para este Producto
+              8. Programa de Afiliados para este Producto
             </h3>
             <p className="text-xs text-slate-400">
               Permite que la red de promotores de FALKO venda tu producto a cambio de una comisión.
@@ -802,7 +1194,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
         </div>
 
         {formData.affiliateEnabled && (
-          <div className="space-y-4 pt-4 border-t border-slate-800">
+          <div className="space-y-4 pt-4 border-t border-white/10">
             <div>
               <div className="flex justify-between text-xs text-slate-300 mb-1">
                 <span>Porcentaje de Comisión para Afiliados:</span>
@@ -818,40 +1210,32 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                 onChange={handleChange}
                 className="w-full accent-purple-500 cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                <span>10% (Bajo)</span>
-                <span>30% - 50% (Recomendado)</span>
-                <span>80% (Ultra High-Ticket)</span>
-              </div>
             </div>
 
-            <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Modo de Aprobación de Afiliados *</label>
-              <div className="grid grid-cols-2 gap-3">
-                <label
-                  onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "AUTO" }))}
-                  className={`p-3 rounded-xl border text-xs cursor-pointer ${
-                    formData.affiliateApprovalMode === "AUTO"
-                      ? "bg-cyan-950/40 border-cyan-500 text-white font-bold"
-                      : "bg-slate-900 border-slate-800 text-slate-400"
-                  }`}
-                >
-                  <strong className="block text-cyan-400">Automática (AUTO)</strong>
-                  <span className="text-[11px] font-normal">Cualquier afiliado puede generar su enlace de inmediato.</span>
-                </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label
+                onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "AUTO" }))}
+                className={`p-3.5 rounded-xl border text-xs cursor-pointer ${
+                  formData.affiliateApprovalMode === "AUTO"
+                    ? "bg-cyan-950/40 border-cyan-500 text-white font-bold"
+                    : "bg-slate-900 border-white/10 text-slate-400"
+                }`}
+              >
+                <strong className="block text-cyan-400">Automática (AUTO)</strong>
+                <span className="text-[11px] font-normal">Cualquier afiliado puede generar su enlace de inmediato.</span>
+              </label>
 
-                <label
-                  onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "MANUAL" }))}
-                  className={`p-3 rounded-xl border text-xs cursor-pointer ${
-                    formData.affiliateApprovalMode === "MANUAL"
-                      ? "bg-purple-950/40 border-purple-500 text-white font-bold"
-                      : "bg-slate-900 border-slate-800 text-slate-400"
-                  }`}
-                >
-                  <strong className="block text-purple-400">Manual (MANUAL)</strong>
-                  <span className="text-[11px] font-normal">El afiliado debe solicitarte autorización previa.</span>
-                </label>
-              </div>
+              <label
+                onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "MANUAL" }))}
+                className={`p-3.5 rounded-xl border text-xs cursor-pointer ${
+                  formData.affiliateApprovalMode === "MANUAL"
+                    ? "bg-purple-950/40 border-purple-500 text-white font-bold"
+                    : "bg-slate-900 border-white/10 text-slate-400"
+                }`}
+              >
+                <strong className="block text-purple-400">Manual (MANUAL)</strong>
+                <span className="text-[11px] font-normal">El afiliado debe solicitarte autorización previa.</span>
+              </label>
             </div>
           </div>
         )}
@@ -869,7 +1253,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
         <button
           type="submit"
           disabled={loading || uploadingCover || uploadingGallery || uploadingFile || uploadingVideo}
-          className="btn-falcon-primary text-sm py-3 px-8 shadow-glow"
+          className="btn-falcon-primary text-sm py-3 px-8 shadow-glow cursor-pointer"
         >
           <Zap className="w-4 h-4" />
           {loading ? "Publicando en FALKO..." : "Publicar Producto Ahora"}
