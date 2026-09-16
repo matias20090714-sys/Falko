@@ -23,19 +23,21 @@ import { formatCurrency } from "@/lib/currency";
 export function MigrateClient() {
   const [monthlySales, setMonthlySales] = useState(3000);
 
-  // Fee Comparisons
-  const falkoFee = monthlySales * 0.10;
-  const hotmartFee = monthlySales * 0.16 + 50; // ~9.9% + $0.50 per sale + withdrawal fx fees (~15-18%)
-  const gumroadFee = monthlySales * 0.13 + 30; // 10% + stripe fees ~13-15%
+  // Fee Comparisons (Assuming average ticket of $30 USD -> 1 sale per $30 = monthlySales / 30 sales)
+  // FALKO fee is fixed 25 UYU per sale (~$0.625 USD)
+  const estimatedSalesCount = Math.max(1, Math.round(monthlySales / 30));
+  const falkoFee = estimatedSalesCount * 0.625; // 25 UYU fixed (~$0.625 USD per sale)
+  const hotmartFee = monthlySales * 0.16 + (estimatedSalesCount * 0.50); // ~9.9% + $0.50 per sale + FX conversion fees (~16%)
+  const gumroadFee = monthlySales * 0.13 + (estimatedSalesCount * 0.30); // 10% + 2.9% stripe + $0.30 per sale
   const monthlySavings = Math.max(0, hotmartFee - falkoFee);
 
   const comparisonFeatures = [
     {
-      feature: "Comisión Base Transparente",
-      falko: "10% Plano (Todo incluido)",
-      hotmart: "9.9% + $0.50 + comisiones ocultas FX (15-18%)",
-      gumroad: "10% + 2.9% de pasarela + $0.30 (13-15%)",
-      whop: "3% + comisiones bancarias externas",
+      feature: "Comisión de Plataforma",
+      falko: "25 UYU Fija (~$0.63 USD por venta)",
+      hotmart: "9.9% + $0.50 USD + FX (~16%)",
+      gumroad: "10% + 2.9% pasarela + $0.30 (13-15%)",
+      whop: "3% + costos de pasarela y banco",
     },
     {
       feature: "Retiros en Cripto Dólares (USDT / USDC)",

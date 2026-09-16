@@ -190,13 +190,13 @@ export default async function HomePage() {
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Conserva más dinero de cada venta. En FALKO pagas únicamente <strong>10% plano</strong> sin tarifas de mantenimiento mensual, con acreditación instantánea y retiros directos a tu banco local o en Cripto USDT.
+              Conserva el máximo de dinero de cada venta. En FALKO la única comisión de la plataforma es una <strong>tarifa fija de 25 UYU</strong> (pesos uruguayos) sin importar el precio de tu producto, sin mensualidades y con cobros en tu moneda local o Cripto USDT.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-left">
               <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
                 <span className="text-[10px] text-slate-400 font-mono block">Tarifa FALKO</span>
-                <span className="text-xs font-bold text-emerald-400">10% Neto</span>
+                <span className="text-xs font-bold text-emerald-400">25 UYU Fija</span>
               </div>
               <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
                 <span className="text-[10px] text-slate-400 font-mono block">Retiros Locales</span>

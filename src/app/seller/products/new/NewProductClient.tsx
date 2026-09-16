@@ -1209,8 +1209,17 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                         </span>
                       </div>
 
+                      {formData.affiliateEnabled && (
+                        <div className="flex justify-between text-purple-300">
+                          <span>Comisión Afiliado ({formData.affiliateCommissionPct}%):</span>
+                          <span className="font-mono text-purple-300 font-bold">
+                            - {formatCurrency(split.affiliateCommissionAmount, "USD")}
+                          </span>
+                        </div>
+                      )}
+
                       <div className="flex justify-between text-slate-400">
-                        <span>Tarifa FALKO (10%):</span>
+                        <span>Tarifa fija FALKO (25 UYU):</span>
                         <span className="font-mono text-slate-400">
                           - {formatCurrency(split.platformFeeConverted, "USD")}
                         </span>
