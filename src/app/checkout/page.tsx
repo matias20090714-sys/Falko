@@ -72,13 +72,21 @@ function CheckoutContent() {
     const saved = localStorage.getItem("falko_currency");
     if (saved) setCurrency(saved);
 
+    const handleCurrencyChange = (e: any) => {
+      if (e.detail) {
+        setCurrency(e.detail);
+      }
+    };
+
+    window.addEventListener("currencyChange", handleCurrencyChange);
+
     // Fetch user
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
         if (data.user) {
           setCurrentUser(data.user);
-          if (data.user.preferredCurrency) {
+          if (data.user.preferredCurrency && !localStorage.getItem("falko_currency")) {
             setCurrency(data.user.preferredCurrency);
           }
 
@@ -117,6 +125,8 @@ function CheckoutContent() {
     } else {
       setLoadingProduct(false);
     }
+
+    return () => window.removeEventListener("currencyChange", handleCurrencyChange);
   }, [productSlug, initialCoupon]);
 
   const validateCouponCode = async (code: string, pId?: string) => {

@@ -41,6 +41,22 @@ export function Navbar({ initialUser }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // Check saved currency in local storage
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("falko_currency");
+      if (saved) {
+        setSelectedCurrency(saved);
+      }
+    }
+
+    const handleCurrencyChange = (e: any) => {
+      if (e.detail) {
+        setSelectedCurrency(e.detail);
+      }
+    };
+
+    window.addEventListener("currencyChange", handleCurrencyChange);
+
     // Check session via API if not passed from SSR
     if (!initialUser) {
       fetch("/api/auth/me")
@@ -48,13 +64,16 @@ export function Navbar({ initialUser }: NavbarProps) {
         .then((data) => {
           if (data.user) {
             setUser(data.user);
-            if (data.user.preferredCurrency) {
+            if (data.user.preferredCurrency && !localStorage.getItem("falko_currency")) {
               setSelectedCurrency(data.user.preferredCurrency);
+              localStorage.setItem("falko_currency", data.user.preferredCurrency);
             }
           }
         })
         .catch(() => {});
     }
+
+    return () => window.removeEventListener("currencyChange", handleCurrencyChange);
   }, [initialUser]);
 
   const handleLogout = async () => {

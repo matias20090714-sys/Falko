@@ -154,7 +154,11 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
       const data = await res.json();
 
       if (data.success) {
-        setNotification({ type: "success", message: "¡Perfil y ajustes guardados exitosamente!" });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("falko_currency", preferredCurrency);
+          window.dispatchEvent(new CustomEvent("currencyChange", { detail: preferredCurrency }));
+        }
+        setNotification({ type: "success", message: "¡Perfil y moneda de cuenta guardados exitosamente!" });
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
