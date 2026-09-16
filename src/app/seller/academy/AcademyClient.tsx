@@ -249,10 +249,10 @@ export function AcademyClient() {
         </div>
 
         <Link
-          href="/migrate"
+          href="/seller/products/new"
           className="btn-falcon-primary text-xs py-3 px-6 shadow-glow shrink-0 font-bold flex items-center gap-2"
         >
-          <span>Ver Comparativa & Migrar</span>
+          <span>Publicar mi Producto Ahora</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

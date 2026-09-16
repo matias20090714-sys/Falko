@@ -100,12 +100,6 @@ export function MarketplaceClient({
             <Zap className="w-3.5 h-3.5" />
             <span>Vender mi Producto</span>
           </Link>
-          <Link
-            href="/migrate"
-            className="btn-falcon-secondary text-xs py-2.5 px-4 text-slate-300"
-          >
-            Pásate a FALKO
-          </Link>
         </div>
       </div>
 

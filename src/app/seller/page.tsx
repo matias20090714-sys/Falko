@@ -105,10 +105,6 @@ export default async function SellerDashboardPage() {
             <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
             <span>Academia de Ventas</span>
           </Link>
-          <Link href="/migrate" className="btn-falcon-secondary text-xs py-2 px-3.5 text-amber-300 hover:text-amber-200 bg-amber-950/30 border-amber-500/30">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Migrar Productos</span>
-          </Link>
           <Link href="/seller/webhooks" className="btn-falcon-secondary text-xs py-2 px-3.5">
             <Webhook className="w-3.5 h-3.5 text-cyan-400" />
             <span>Webhooks & CRM</span>

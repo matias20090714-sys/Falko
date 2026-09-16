@@ -148,12 +148,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           icon: User,
           color: "text-cyan-400",
         },
-        {
-          label: "Pásate a FALKO (Migrar)",
-          href: "/migrate",
-          icon: Sparkles,
-          color: "text-rose-400",
-        },
       ],
     },
   ];

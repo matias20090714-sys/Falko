@@ -173,7 +173,63 @@ export default async function HomePage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 3. LLAMADO A LA ACCIÓN FINAL                             */}
+      {/* 3. PÁSATE A FALKO: COMPARATIVA & MIGRACIÓN EXCLUSIVA     */}
+      {/* ======================================================== */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/20 via-slate-950 to-slate-950 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="space-y-4 max-w-2xl text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>¿VENDES EN HOTMART, GUMROAD O CLICKBANK?</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-heading font-black text-white">
+              Pásate a FALKO y Aumenta tu Margen de Ganancia
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Conserva más dinero de cada venta. En FALKO pagas únicamente <strong>10% plano</strong> sin tarifas de mantenimiento mensual, con acreditación instantánea y retiros directos a tu banco local o en Cripto USDT.
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-left">
+              <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-slate-400 font-mono block">Tarifa FALKO</span>
+                <span className="text-xs font-bold text-emerald-400">10% Neto</span>
+              </div>
+              <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-slate-400 font-mono block">Retiros Locales</span>
+                <span className="text-xs font-bold text-cyan-400">PIX, SPEI, PSE, MP</span>
+              </div>
+              <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5 col-span-2 sm:col-span-1">
+                <span className="text-[10px] text-slate-400 font-mono block">Velocidad</span>
+                <span className="text-xs font-bold text-purple-300">Pagos Inmediatos</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
+            <Link
+              href="/migrate"
+              className="btn-falcon-primary text-xs py-3.5 px-8 shadow-glow font-bold flex items-center justify-center gap-2 text-center"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Ver Calculadora de Migración</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/register"
+              className="btn-falcon-secondary text-xs py-3 px-6 text-center text-slate-300"
+            >
+              Crear Cuenta y Empezar
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 4. LLAMADO A LA ACCIÓN FINAL                             */}
       {/* ======================================================== */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto text-center">
         <div className="glass-panel-glow p-8 sm:p-14 border border-cyan-500/40 shadow-glow rounded-3xl relative overflow-hidden">
