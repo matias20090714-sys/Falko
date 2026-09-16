@@ -61,10 +61,12 @@ export function Navbar({ initialUser }: NavbarProps) {
     router.refresh();
   };
 
-  const navLinks = [
-    { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
-    { label: "Cómo Funciona", href: "/#como-funciona", icon: null },
-  ];
+  const navLinks = user
+    ? [
+        { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+        { label: "Panel de Ventas", href: "/seller", icon: null },
+      ]
+    : [{ label: "Cómo Funciona", href: "/#como-funciona", icon: null }];
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-[#070b14]/90 backdrop-blur-md border-b border-slate-800/80">

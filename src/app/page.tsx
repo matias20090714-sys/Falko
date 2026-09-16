@@ -1,5 +1,7 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import {
   LogIn,
   Share2,
@@ -12,14 +14,20 @@ import { FalconLogo } from "@/components/layout/FalconLogo";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage() {
+  // If user is already logged in, redirect directly to their Dashboard/Sales panel
+  const currentUser = await getCurrentUser();
+  if (currentUser) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="relative overflow-hidden">
       {/* Dynamic Ambient Lights */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[450px] bg-gradient-to-b from-cyan-500/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
       {/* ======================================================== */}
-      {/* 1. HERO: SHORT & IMPACTFUL                               */}
+      {/* 1. HERO: REGISTRARSE & INICIAR SESIÓN                     */}
       {/* ======================================================== */}
       <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
         {/* Falcon Badge */}
@@ -42,7 +50,7 @@ export default function HomePage() {
           <strong>FALKO</strong> es la plataforma donde creadores publican recursos digitales, los afiliados generan ingresos escalables y los compradores adquieren con garantía protegida y descargas privadas.
         </p>
 
-        {/* Action Buttons */}
+        {/* Action Buttons: Only Registrarse and Iniciar Sesión */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md sm:max-w-none mx-auto">
           <Link href="/register" className="btn-falcon-primary w-full sm:w-auto text-sm py-3 px-8 shadow-glow flex items-center justify-center gap-2">
             <User className="w-4 h-4" />
@@ -79,7 +87,7 @@ export default function HomePage() {
                 1. Compra Segura
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Accede a software, plantillas, cursos y prompts. Tus fondos se retienen en garantía durante el plazo establecido (7, 14 o 30 días) para tu total tranquilidad.
+                Accede a software, plantillas, cursos y prompts con garantía de satisfacción.
               </p>
             </div>
 
@@ -92,7 +100,7 @@ export default function HomePage() {
                 2. Vende sin Fricción
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Publica tu producto digital en minutos. Define tu precio, comisión para afiliados y recibe retiros directos en tu moneda local con la tarifa más baja del mercado.
+                Publica tu producto digital en minutos y recibe retiros directos en tu moneda local.
               </p>
             </div>
 
@@ -105,7 +113,7 @@ export default function HomePage() {
                 3. Gana como Afiliado
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed">
-                Genera tu enlace único de rastreo y obtén comisiones por cada venta referida, subiendo de categoría en el Ranking Global en USD.
+                Genera tu enlace único de rastreo y obtén comisiones automáticas por venta.
               </p>
             </div>
           </div>
@@ -122,7 +130,7 @@ export default function HomePage() {
             Comienza a operar en FALKO
           </h3>
           <p className="mt-2 text-slate-300 text-xs sm:text-sm max-w-lg mx-auto">
-            Crea tu cuenta gratuita en segundos y publica tu primer producto digital o explora las oportunidades del mercado.
+            Crea tu cuenta gratuita en segundos o inicia sesión para acceder a tu panel de ventas y operaciones.
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
