@@ -4,7 +4,7 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FalconLogo } from "@/components/layout/FalconLogo";
-import { Lock, Mail, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Lock, Mail, ArrowRight } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
@@ -40,11 +40,6 @@ function LoginForm() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickLogin = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("falko123");
   };
 
   return (
@@ -106,49 +101,6 @@ function LoginForm() {
           <ArrowRight className="w-4 h-4" />
         </button>
       </form>
-
-      {/* 1-Click Demo Accounts Quick Access */}
-      <div className="mt-8 pt-6 border-t border-slate-800">
-        <span className="text-[11px] font-bold text-slate-400 block mb-2 text-center uppercase tracking-wider">
-          ⚡ Acceso Rápido Demo (1-Click)
-        </span>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <button
-            onClick={() => handleQuickLogin("admin@falko.io")}
-            className="bg-slate-900 hover:bg-slate-800 text-rose-400 border border-slate-700/60 p-2 rounded-xl text-left"
-          >
-            <strong className="block text-[11px]">🛡️ Admin</strong>
-            <span className="text-[10px] text-slate-400 font-mono">admin@falko.io</span>
-          </button>
-
-          <button
-            onClick={() => handleQuickLogin("seller@falko.io")}
-            className="bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-700/60 p-2 rounded-xl text-left"
-          >
-            <strong className="block text-[11px]">💼 Vendedor Top</strong>
-            <span className="text-[10px] text-slate-400 font-mono">seller@falko.io</span>
-          </button>
-
-          <button
-            onClick={() => handleQuickLogin("affiliate@falko.io")}
-            className="bg-slate-900 hover:bg-slate-800 text-purple-400 border border-slate-700/60 p-2 rounded-xl text-left"
-          >
-            <strong className="block text-[11px]">💰 Afiliado Top</strong>
-            <span className="text-[10px] text-slate-400 font-mono">affiliate@falko.io</span>
-          </button>
-
-          <button
-            onClick={() => handleQuickLogin("buyer@falko.io")}
-            className="bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-slate-700/60 p-2 rounded-xl text-left"
-          >
-            <strong className="block text-[11px]">📦 Comprador</strong>
-            <span className="text-[10px] text-slate-400 font-mono">buyer@falko.io</span>
-          </button>
-        </div>
-        <p className="text-[10px] text-slate-500 text-center mt-2 font-mono">
-          Contraseña demo: falko123
-        </p>
-      </div>
 
       <p className="text-center text-xs text-slate-400 mt-6">
         ¿No tienes una cuenta?{" "}

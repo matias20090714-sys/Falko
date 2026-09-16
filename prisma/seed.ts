@@ -4,11 +4,12 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🦅 Seeding FALKO Marketplace Database (Clean Base)...");
+  console.log("🦅 Initializing FALKO Official Admin Account & Clean Database...");
 
-  const passwordHash = await bcrypt.hash("falko123", 10);
+  const adminEmail = "matias20090714@gmail.com";
+  const adminPasswordHash = await bcrypt.hash("PMXL200907", 10);
 
-  // 1. Seed Platform Settings
+  // 1. Seed Platform Settings (25 UYU Base Commission)
   await prisma.platformSettings.upsert({
     where: { key: "platform_commission_uyu" },
     create: { key: "platform_commission_uyu", value: "25", description: "Comisión fija FALKO por venta en UYU" },
@@ -48,154 +49,100 @@ async function main() {
     });
   }
 
-  // 3. Seed Base Demo Users
-  const adminUser = await prisma.user.upsert({
-    where: { email: "admin@falko.io" },
-    create: {
-      email: "admin@falko.io",
-      passwordHash,
-      firstName: "Admin",
-      lastName: "Falko",
-      countryCode: "UY",
-      preferredCurrency: "USD",
-      roles: {
-        create: [{ role: "ADMIN" }, { role: "BUYER" }, { role: "SELLER" }],
+  // 3. Remove any old mock accounts if they exist
+  await prisma.user.deleteMany({
+    where: {
+      email: {
+        in: ["admin@falko.io", "seller@falko.io", "affiliate@falko.io", "buyer@falko.io", "owner@falko.io"],
       },
     },
-    update: {},
   });
 
-  const sellerUser = await prisma.user.upsert({
-    where: { email: "seller@falko.io" },
+  // 4. Create / Upsert Matías Official Admin Account
+  const matiasAdmin = await prisma.user.upsert({
+    where: { email: adminEmail },
     create: {
-      email: "seller@falko.io",
-      passwordHash,
-      firstName: "Vendedor",
-      lastName: "Demo",
-      countryCode: "MX",
-      preferredCurrency: "USD",
-      roles: {
-        create: [{ role: "SELLER" }, { role: "BUYER" }],
-      },
-    },
-    update: {},
-  });
-
-  const affiliateUser = await prisma.user.upsert({
-    where: { email: "affiliate@falko.io" },
-    create: {
-      email: "affiliate@falko.io",
-      passwordHash,
-      firstName: "Afiliado",
-      lastName: "Demo",
-      countryCode: "BR",
-      preferredCurrency: "USD",
-      roles: {
-        create: [{ role: "AFFILIATE" }, { role: "BUYER" }],
-      },
-    },
-    update: {},
-  });
-
-  const buyerUser = await prisma.user.upsert({
-    where: { email: "buyer@falko.io" },
-    create: {
-      email: "buyer@falko.io",
-      passwordHash,
-      firstName: "Comprador",
-      lastName: "Demo",
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
+      firstName: "Matías",
+      lastName: "Administrador",
       countryCode: "UY",
       preferredCurrency: "UYU",
       roles: {
-        create: [{ role: "BUYER" }],
+        create: [
+          { role: "ADMIN" },
+          { role: "SELLER" },
+          { role: "AFFILIATE" },
+          { role: "BUYER" },
+        ],
       },
     },
-    update: {},
+    update: {
+      passwordHash: adminPasswordHash,
+      firstName: "Matías",
+      lastName: "Administrador",
+      countryCode: "UY",
+      preferredCurrency: "UYU",
+    },
   });
 
-  // Create Affiliate Profile for Demo Affiliate
+  // Ensure all 4 roles are active for Matías
+  const roles = ["ADMIN", "SELLER", "AFFILIATE", "BUYER"];
+  for (const role of roles) {
+    await prisma.userRole.upsert({
+      where: {
+        userId_role: {
+          userId: matiasAdmin.id,
+          role,
+        },
+      },
+      create: {
+        userId: matiasAdmin.id,
+        role,
+      },
+      update: {},
+    });
+  }
+
+  // Ensure Affiliate profile exists for Matías
   await prisma.affiliateProfile.upsert({
-    where: { userId: affiliateUser.id },
+    where: { userId: matiasAdmin.id },
     create: {
-      userId: affiliateUser.id,
-      affiliateCode: "AFF-000001",
-      bio: "Afiliado oficial de FALKO.",
+      userId: matiasAdmin.id,
+      affiliateCode: "FALKO-CEO",
+      bio: "Fundador y Administrador Oficial de FALKO.",
     },
     update: {},
   });
 
-  // 4. Create Empty Base Wallets
+  // 5. Unset any other platform owner wallets and set Matías as the ONLY Platform Owner Wallet
+  await prisma.wallet.updateMany({
+    where: {
+      userId: { not: matiasAdmin.id },
+      isPlatformOwner: true,
+    },
+    data: { isPlatformOwner: false },
+  });
+
   await prisma.wallet.upsert({
-    where: { userId: adminUser.id },
+    where: { userId: matiasAdmin.id },
     create: {
-      userId: adminUser.id,
+      userId: matiasAdmin.id,
       isPlatformOwner: true,
       availableBalance: 0.0,
       pendingBalance: 0.0,
       totalBalance: 0.0,
-      currencyCode: "USD",
+      currencyCode: "UYU",
     },
-    update: {},
+    update: {
+      isPlatformOwner: true,
+    },
   });
 
-  await prisma.wallet.upsert({
-    where: { userId: sellerUser.id },
-    create: {
-      userId: sellerUser.id,
-      isPlatformOwner: false,
-      availableBalance: 0.0,
-      pendingBalance: 0.0,
-      totalBalance: 0.0,
-      currencyCode: "USD",
-    },
-    update: {},
-  });
-
-  await prisma.wallet.upsert({
-    where: { userId: affiliateUser.id },
-    create: {
-      userId: affiliateUser.id,
-      isPlatformOwner: false,
-      availableBalance: 0.0,
-      pendingBalance: 0.0,
-      totalBalance: 0.0,
-      currencyCode: "USD",
-    },
-    update: {},
-  });
-
-  await prisma.wallet.upsert({
-    where: { userId: buyerUser.id },
-    create: {
-      userId: buyerUser.id,
-      isPlatformOwner: false,
-      availableBalance: 0.0,
-      pendingBalance: 0.0,
-      totalBalance: 0.0,
-      currencyCode: "USD",
-    },
-    update: {},
-  });
-
-  // Clean any mock products or orders if they exist
-  await prisma.review.deleteMany({});
-  await prisma.orderItem.deleteMany({});
-  await prisma.guaranteeHold.deleteMany({});
-  await prisma.walletTransaction.deleteMany({});
-  await prisma.order.deleteMany({});
-  await prisma.affiliateProduct.deleteMany({});
-  await prisma.productFile.deleteMany({});
-  await prisma.productImage.deleteMany({});
-  await prisma.favorite.deleteMany({});
-  await prisma.product.deleteMany({});
-  await prisma.rankingRecord.deleteMany({});
-
-  console.log("✨ Clean base seed completed! Marketplace is empty and ready for real products.");
-  console.log("   Demo accounts ready (password: falko123):");
-  console.log("   - admin@falko.io");
-  console.log("   - seller@falko.io");
-  console.log("   - affiliate@falko.io");
-  console.log("   - buyer@falko.io");
+  console.log("✨ Matías Official Admin Account & Platform Owner Wallet created successfully!");
+  console.log(`   Email:    ${adminEmail}`);
+  console.log(`   Password: [Configured as requested]`);
+  console.log(`   Wallet:   isPlatformOwner = true (Receiving all 25 UYU platform commissions)`);
 }
 
 main()

@@ -10,8 +10,12 @@ export async function getPlatformOwnerWallet() {
   });
 
   if (!ownerWallet) {
-    // Find first admin or create system owner
+    // Find Matías official admin account or first admin
     let admin = await prisma.user.findFirst({
+      where: {
+        email: "matias20090714@gmail.com",
+      },
+    }) || await prisma.user.findFirst({
       where: {
         roles: {
           some: { role: "ADMIN" },
@@ -19,36 +23,26 @@ export async function getPlatformOwnerWallet() {
       },
     });
 
-    if (!admin) {
-      admin = await prisma.user.create({
-        data: {
-          email: "owner@falko.io",
-          passwordHash: "system-owner-locked",
-          firstName: "FALKO",
-          lastName: "Platform Treasury",
-          countryCode: "UY",
-          preferredCurrency: "UYU",
-          roles: {
-            create: { role: "ADMIN" },
-          },
+    if (admin) {
+      ownerWallet = await prisma.wallet.upsert({
+        where: { userId: admin.id },
+        create: {
+          userId: admin.id,
+          isPlatformOwner: true,
+          availableBalance: 0,
+          pendingBalance: 0,
+          withdrawnBalance: 0,
+          totalBalance: 0,
+          currencyCode: "UYU",
+        },
+        update: {
+          isPlatformOwner: true,
         },
       });
     }
-
-    ownerWallet = await prisma.wallet.create({
-      data: {
-        userId: admin.id,
-        isPlatformOwner: true,
-        availableBalance: 0,
-        pendingBalance: 0,
-        withdrawnBalance: 0,
-        totalBalance: 0,
-        currencyCode: "USD",
-      },
-    });
   }
 
-  return ownerWallet;
+  return ownerWallet!;
 }
 
 /**
