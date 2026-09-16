@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { LibraryClient } from "./LibraryClient";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const revalidate = 0; // Dynamic server-rendered
 
@@ -37,17 +38,19 @@ export default async function LibraryPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
-          Mi Biblioteca Digital
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Accede a todos tus productos digitales adquiridos, genera descargas privadas firmadas y gestiona tus garantías.
-        </p>
-      </div>
+    <DashboardShell initialUser={user}>
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+            Mi Biblioteca Digital
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Accede a todos tus productos digitales adquiridos, genera descargas privadas firmadas y gestiona tus garantías.
+          </p>
+        </div>
 
-      <LibraryClient orders={orders} currentUser={user} />
-    </div>
+        <LibraryClient orders={orders} currentUser={user} />
+      </div>
+    </DashboardShell>
   );
 }

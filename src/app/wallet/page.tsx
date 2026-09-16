@@ -18,6 +18,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { WalletClient } from "./WalletClient";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const revalidate = 0;
 
@@ -43,32 +44,34 @@ export default async function WalletPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase font-bold text-cyan-400">
-              Gestión Financiera
-            </span>
-            <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded-full font-mono">
-              LEDGER INMUTABLE
-            </span>
+    <DashboardShell initialUser={user}>
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs uppercase font-bold text-cyan-400">
+                Gestión Financiera
+              </span>
+              <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded-full font-mono">
+                LEDGER INMUTABLE
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+              Billetera & Balance Contable
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
-            Billetera & Balance Contable
-          </h1>
+
+          <div className="flex gap-2">
+            <Link href="/withdrawals" className="btn-falcon-primary text-xs py-2 px-4 shadow-glow">
+              <DollarSign className="w-3.5 h-3.5" />
+              Solicitar Retiro de Fondos
+            </Link>
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <Link href="/withdrawals" className="btn-falcon-primary text-xs py-2 px-4 shadow-glow">
-            <DollarSign className="w-3.5 h-3.5" />
-            Solicitar Retiro de Fondos
-          </Link>
-        </div>
+        <WalletClient wallet={wallet} currentUser={user} />
       </div>
-
-      <WalletClient wallet={wallet} currentUser={user} />
-    </div>
+    </DashboardShell>
   );
 }

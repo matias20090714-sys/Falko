@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { RoleToggleButtons } from "./RoleToggleButtons";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const revalidate = 0;
 
@@ -60,7 +61,8 @@ export default async function DashboardPage() {
   const userProgress = await getUserRankingProgress(user.id);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <DashboardShell initialUser={user}>
+      <div className="max-w-7xl mx-auto space-y-8">
       {/* Welcome Banner */}
       <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-glow relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1.5">
@@ -243,6 +245,7 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }

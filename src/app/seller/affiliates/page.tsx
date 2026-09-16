@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { SellerAffiliatesClient } from "./SellerAffiliatesClient";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const revalidate = 0;
 
@@ -30,17 +31,19 @@ export default async function SellerAffiliatesPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
-          Gestión de Solicitudes de Afiliados
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Modera las solicitudes de promotores para productos configurados con aprobación manual.
-        </p>
-      </div>
+    <DashboardShell initialUser={user}>
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+            Gestión de Solicitudes de Afiliados
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Modera las solicitudes de promotores para productos configurados con aprobación manual.
+          </p>
+        </div>
 
-      <SellerAffiliatesClient initialRequests={requests} />
-    </div>
+        <SellerAffiliatesClient initialRequests={requests} />
+      </div>
+    </DashboardShell>
   );
 }

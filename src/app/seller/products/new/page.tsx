@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NewProductClient } from "./NewProductClient";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export default async function NewProductPage() {
   const user = await getCurrentUser();
@@ -15,17 +16,10 @@ export default async function NewProductPage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
-          Publicar Nuevo Producto Digital
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Configura el precio, período de garantía (mínimo 7 días) y programa de afiliados.
-        </p>
+    <DashboardShell initialUser={user}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <NewProductClient categories={categories} currentUser={user} />
       </div>
-
-      <NewProductClient categories={categories} currentUser={user} />
-    </div>
+    </DashboardShell>
   );
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { WebhooksClient } from "./WebhooksClient";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const revalidate = 0;
 
@@ -50,5 +51,9 @@ export default async function SellerWebhooksPage() {
     })),
   }));
 
-  return <WebhooksClient initialWebhooks={serializedWebhooks as any} products={products} />;
+  return (
+    <DashboardShell initialUser={user}>
+      <WebhooksClient initialWebhooks={serializedWebhooks as any} products={products} />
+    </DashboardShell>
+  );
 }

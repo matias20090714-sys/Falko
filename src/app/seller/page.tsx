@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/currency";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 import {
   DollarSign,
   Lock,
@@ -80,7 +81,8 @@ export default async function SellerDashboardPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <DashboardShell initialUser={user}>
+      <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -272,6 +274,7 @@ export default async function SellerDashboardPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }

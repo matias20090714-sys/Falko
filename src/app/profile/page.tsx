@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ProfileClient } from "./ProfileClient";
 
+import { DashboardShell } from "@/components/layout/DashboardShell";
+
 export const revalidate = 0;
 
 export default async function ProfilePage() {
@@ -39,5 +41,9 @@ export default async function ProfilePage() {
     createdAt: dbUser.createdAt.toISOString(),
   };
 
-  return <ProfileClient initialUser={initialUser} />;
+  return (
+    <DashboardShell initialUser={user}>
+      <ProfileClient initialUser={initialUser} />
+    </DashboardShell>
+  );
 }

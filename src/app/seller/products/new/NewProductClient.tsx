@@ -927,6 +927,152 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                         className="input-falcon text-xs w-full py-2 font-mono"
                       />
                     </div>
+
+                    {/* ======================================================== */}
+                    {/* AFFILIATE PROGRAM CONFIGURATION CONTROLS                */}
+                    {/* ======================================================== */}
+                    <div className="glass-panel p-5 rounded-2xl border border-purple-500/30 bg-purple-950/10 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-purple-950 border border-purple-800/60 flex items-center justify-center text-purple-400">
+                            <Percent className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                              Programa de Afiliados
+                              <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-mono">
+                                {formData.affiliateEnabled ? `${formData.affiliateCommissionPct}% Comisión` : "Desactivado"}
+                              </span>
+                            </h4>
+                            <p className="text-[11px] text-slate-400">
+                              Permite que otros creadores y promotores vendan tu producto y ganen comisión.
+                            </p>
+                          </div>
+                        </div>
+
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="affiliateEnabled"
+                            checked={formData.affiliateEnabled}
+                            onChange={handleChange}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                      </div>
+
+                      {formData.affiliateEnabled && (
+                        <div className="space-y-4 pt-3 border-t border-purple-500/20 animate-in fade-in duration-150">
+                          {/* Commission Percentage Slider & Quick Buttons */}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                                <span>Porcentaje de Comisión para el Afiliado:</span>
+                                <span className="text-sm font-black font-mono text-purple-300">
+                                  {formData.affiliateCommissionPct}%
+                                </span>
+                              </label>
+                              <span className="text-[11px] text-emerald-400 font-mono font-bold">
+                                ${( (numPrice * formData.affiliateCommissionPct) / 100 ).toFixed(2)} USD por venta
+                              </span>
+                            </div>
+
+                            {/* Range Slider */}
+                            <input
+                              type="range"
+                              min="5"
+                              max="80"
+                              step="5"
+                              name="affiliateCommissionPct"
+                              value={formData.affiliateCommissionPct}
+                              onChange={handleChange}
+                              className="w-full accent-purple-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                            />
+
+                            {/* Quick Select Buttons */}
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {[15, 20, 30, 40, 50, 60, 70, 80].map((pct) => (
+                                <button
+                                  key={pct}
+                                  type="button"
+                                  onClick={() => setFormData((prev) => ({ ...prev, affiliateCommissionPct: pct }))}
+                                  className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                                    formData.affiliateCommissionPct === pct
+                                      ? "bg-purple-600 text-white border-purple-400 shadow-glow"
+                                      : "bg-slate-900/80 text-slate-400 border-white/5 hover:text-white hover:border-purple-500/40"
+                                  }`}
+                                >
+                                  {pct}%
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Approval Mode */}
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-300 mb-2">
+                              Modo de Aprobación de Afiliados
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <button
+                                type="button"
+                                onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "AUTO" }))}
+                                className={`p-3 rounded-xl border text-left transition-all ${
+                                  formData.affiliateApprovalMode === "AUTO"
+                                    ? "bg-purple-950/80 border-purple-500 text-white shadow-glow"
+                                    : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                                  <span className="text-xs font-bold">Aprobación Instantánea (Auto)</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 leading-tight">
+                                  Cualquier afiliado puede obtener su enlace y empezar a vender de inmediato. (Recomendado)
+                                </p>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "MANUAL" }))}
+                                className={`p-3 rounded-xl border text-left transition-all ${
+                                  formData.affiliateApprovalMode === "MANUAL"
+                                    ? "bg-purple-950/80 border-purple-500 text-white shadow-glow"
+                                    : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                                  <span className="text-xs font-bold">Aprobación Manual</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 leading-tight">
+                                  Revisas las solicitudes de los promotores antes de darles acceso a los enlaces.
+                                </p>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Affiliate Swipe / Marketing Materials Link */}
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                              Materiales de Promoción para Afiliados (Swipe Files / Google Drive / Notion)
+                            </label>
+                            <input
+                              type="url"
+                              name="affiliateSwipeUrl"
+                              value={formData.affiliateSwipeUrl}
+                              onChange={handleChange}
+                              placeholder="https://drive.google.com/drive/folders/ejemplo-recursos-afiliados"
+                              className="input-falcon text-xs w-full py-2 font-mono"
+                            />
+                            <span className="text-[10px] text-slate-500 block mt-1">
+                              Tus afiliados podrán descargar fotos, copys y banners para promocionar tu producto.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1101,11 +1247,126 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
             </div>
           </div>
 
+          {/* Affiliate Program Configuration (Pro Mode) */}
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-purple-500/30 bg-purple-950/10 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-purple-500/20">
+              <div className="flex items-center gap-2">
+                <Percent className="w-5 h-5 text-purple-400" />
+                <div>
+                  <h2 className="text-base font-bold text-white">3. Programa de Afiliados & Comisiones</h2>
+                  <p className="text-xs text-slate-400">Recluta un ejército de afiliados que vendan tu producto a cambio de una comisión.</p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="affiliateEnabled"
+                  checked={formData.affiliateEnabled}
+                  onChange={handleChange}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
+            </div>
+
+            {formData.affiliateEnabled && (
+              <div className="space-y-6 animate-in fade-in duration-150">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-white">
+                        Porcentaje de Comisión: <span className="text-purple-300 font-mono text-sm">{formData.affiliateCommissionPct}%</span>
+                      </label>
+                      <span className="text-xs text-emerald-400 font-mono font-bold">
+                        ${( (numPrice * formData.affiliateCommissionPct) / 100 ).toFixed(2)} USD / venta
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="5"
+                      max="80"
+                      step="5"
+                      name="affiliateCommissionPct"
+                      value={formData.affiliateCommissionPct}
+                      onChange={handleChange}
+                      className="w-full accent-purple-500 h-2 bg-slate-800 rounded-lg cursor-pointer mb-3"
+                    />
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {[15, 20, 30, 40, 50, 60, 70, 80].map((pct) => (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, affiliateCommissionPct: pct }))}
+                          className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                            formData.affiliateCommissionPct === pct
+                              ? "bg-purple-600 text-white border-purple-400 shadow-glow"
+                              : "bg-slate-900/80 text-slate-400 border-white/5 hover:text-white"
+                          }`}
+                        >
+                          {pct}%
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">
+                      Modo de Aprobación
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "AUTO" }))}
+                        className={`p-3 rounded-xl border text-left text-xs transition-all ${
+                          formData.affiliateApprovalMode === "AUTO"
+                            ? "bg-purple-950/80 border-purple-500 text-white font-bold"
+                            : "bg-slate-900/60 border-white/5 text-slate-400"
+                        }`}
+                      >
+                        <Zap className="w-3.5 h-3.5 text-amber-400 mb-1" />
+                        <span>⚡ Automática</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "MANUAL" }))}
+                        className={`p-3 rounded-xl border text-left text-xs transition-all ${
+                          formData.affiliateApprovalMode === "MANUAL"
+                            ? "bg-purple-950/80 border-purple-500 text-white font-bold"
+                            : "bg-slate-900/60 border-white/5 text-slate-400"
+                        }`}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 mb-1" />
+                        <span>🛡️ Manual</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Carpeta de Recursos para Afiliados (Swipe Files URL)
+                  </label>
+                  <input
+                    type="url"
+                    name="affiliateSwipeUrl"
+                    value={formData.affiliateSwipeUrl}
+                    onChange={handleChange}
+                    placeholder="https://drive.google.com/drive/folders/mis-recursos-de-marketing"
+                    className="input-falcon text-xs w-full py-2.5 font-mono"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Pixels & Tracking */}
           <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
             <div className="flex items-center gap-2 pb-4 border-b border-white/5">
               <Target className="w-5 h-5 text-purple-400" />
-              <h2 className="text-base font-bold text-white">3. Píxeles de Conversión & Tráfico</h2>
+              <h2 className="text-base font-bold text-white">4. Píxeles de Conversión & Tráfico</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
