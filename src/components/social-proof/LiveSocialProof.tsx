@@ -106,7 +106,7 @@ export function LiveSocialProof() {
 
   return (
     <div
-      className={`fixed bottom-5 left-5 z-40 max-w-xs sm:max-w-sm transition-all duration-500 transform ${
+      className={`fixed bottom-20 sm:bottom-5 left-4 right-4 sm:right-auto sm:left-5 z-40 max-w-sm transition-all duration-500 transform ${
         isVisible
           ? "translate-y-0 opacity-100 scale-100 pointer-events-auto"
           : "translate-y-8 opacity-0 scale-95 pointer-events-none"

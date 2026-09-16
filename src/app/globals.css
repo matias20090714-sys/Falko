@@ -289,3 +289,29 @@ body {
   background: rgba(0, 242, 254, 0.28);
   color: #ffffff;
 }
+
+/* Mobile & Touch Optimizations */
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .touch-momentum {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Disable blue tap highlight on mobile browsers */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Responsive Touch Target sizing for mobile buttons & inputs */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+  }
+}
+

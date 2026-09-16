@@ -1,8 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { LiveSocialProof } from "@/components/social-proof/LiveSocialProof";
 import { getCurrentUser } from "@/lib/auth";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#05070e",
+};
 
 export const metadata: Metadata = {
   title: "FALKO — Marketplace Internacional de Productos Digitales",
@@ -32,8 +41,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { LiveSocialProof } from "@/components/social-proof/LiveSocialProof";
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -50,8 +57,9 @@ export default async function RootLayout({
     <html lang="es" className="dark scroll-smooth">
       <body className="bg-[#05070e] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
         <Navbar initialUser={currentUser} />
-        <main className="flex-1 w-full">{children}</main>
+        <main className="flex-1 w-full pb-20 md:pb-0">{children}</main>
         <LiveSocialProof />
+        <MobileBottomNav initialUser={currentUser} />
         <Footer />
       </body>
     </html>

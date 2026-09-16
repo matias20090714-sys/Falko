@@ -676,6 +676,26 @@ function CheckoutContent() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom CTA */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-t border-cyan-500/30 p-3.5 shadow-2xl safe-bottom">
+        <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
+          <div>
+            <span className="text-[10px] text-slate-400 block">Total a pagar</span>
+            <span className="text-base font-black font-mono text-cyan-400">
+              {formatCurrency(finalTotal, currency)}
+            </span>
+          </div>
+          <button
+            onClick={handleCompleteOrder}
+            disabled={processing || !currentUser}
+            className="btn-falcon-primary py-2.5 px-5 text-xs font-bold shadow-glow disabled:opacity-50 flex items-center gap-1.5"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>{processing ? "Procesando..." : "Completar Pago"}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
