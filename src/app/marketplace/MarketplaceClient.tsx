@@ -73,6 +73,42 @@ export function MarketplaceClient({
 
   return (
     <div className="space-y-8">
+      {/* Marketplace Welcome & Creator Banner */}
+      <div className="glass-panel p-6 sm:p-7 rounded-3xl border border-white/10 bg-gradient-to-r from-slate-950 via-cyan-950/20 to-slate-950 flex flex-col md:flex-row items-center justify-between gap-5 shadow-2xl">
+        <div className="space-y-1 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-2">
+            <span className="text-[10px] font-mono uppercase font-bold text-cyan-400 bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/60">
+              🛡️ GARANTÍA PROTEGIDA FALKO
+            </span>
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/40 hidden sm:inline-block">
+              ⚡ Entrega Digital Inmediata
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+            Explora los Mejores Productos Digitales
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+            Cursos, software, prompts de IA y plantillas creadas por los mejores productores de la comunidad.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2.5 justify-center shrink-0">
+          <Link
+            href="/seller/products/new"
+            className="btn-falcon-primary text-xs py-2.5 px-5 shadow-glow flex items-center gap-1.5 font-bold"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>Vender mi Producto</span>
+          </Link>
+          <Link
+            href="/migrate"
+            className="btn-falcon-secondary text-xs py-2.5 px-4 text-slate-300"
+          >
+            Pásate a FALKO
+          </Link>
+        </div>
+      </div>
+
       {/* Search & Sort Toolbar */}
       <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row gap-4 justify-between items-center shadow-xl">
         {/* Search Input */}

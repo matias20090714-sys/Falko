@@ -16,6 +16,12 @@ import {
   Star,
   Clock,
   Webhook,
+  GraduationCap,
+  Rocket,
+  Sparkles,
+  BookOpen,
+  ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 
 export const revalidate = 0;
@@ -92,13 +98,21 @@ export default async function SellerDashboardPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <Link href="/seller/academy" className="btn-falcon-secondary text-xs py-2 px-3.5 text-cyan-300 hover:text-cyan-200 bg-cyan-950/40 border-cyan-500/30">
+            <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Academia de Ventas</span>
+          </Link>
+          <Link href="/migrate" className="btn-falcon-secondary text-xs py-2 px-3.5 text-amber-300 hover:text-amber-200 bg-amber-950/30 border-amber-500/30">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Migrar Productos</span>
+          </Link>
           <Link href="/seller/webhooks" className="btn-falcon-secondary text-xs py-2 px-3.5">
             <Webhook className="w-3.5 h-3.5 text-cyan-400" />
             <span>Webhooks & CRM</span>
           </Link>
           <Link href="/seller/products/new" className="btn-falcon-primary text-xs py-2 px-4 shadow-glow">
             <PlusCircle className="w-3.5 h-3.5" />
-            Crear Nuevo Producto
+            Crear Producto
           </Link>
           <Link href="/wallet" className="btn-falcon-secondary text-xs py-2 px-3.5">
             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
@@ -106,6 +120,33 @@ export default async function SellerDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Beginner Welcome & Quick Roadmap Banner */}
+      {products.length === 0 && (
+        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/30 via-slate-950 to-slate-950 shadow-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase font-mono font-bold text-cyan-400">
+                ¡Bienvenido al Panel de Creador!
+              </span>
+              <h2 className="text-xl font-bold text-white">Tu Ruta para Realizar tu Primera Venta</h2>
+              <p className="text-xs text-slate-300 max-w-xl">
+                Hemos preparado un asistente rápido en 3 pasos para que puedas publicar tu primer producto en menos de 60 segundos.
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Link href="/seller/products/new" className="btn-falcon-primary text-xs py-2.5 px-5 shadow-glow flex items-center gap-1.5 font-bold">
+                <Rocket className="w-3.5 h-3.5" />
+                <span>Subir mi Producto Ahora</span>
+              </Link>
+              <Link href="/seller/academy" className="btn-falcon-secondary text-xs py-2.5 px-4 text-slate-300">
+                Ver Guía de Inicio
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
