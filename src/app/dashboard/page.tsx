@@ -25,6 +25,9 @@ import {
 } from "lucide-react";
 import { RoleToggleButtons } from "./RoleToggleButtons";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { WelcomeOnboardingModal } from "@/components/onboarding/WelcomeOnboardingModal";
+import { QuickStartChecklist } from "@/components/dashboard/QuickStartChecklist";
+import FalkoQuickFaq from "@/components/help/FalkoQuickFaq";
 
 export const revalidate = 0;
 
@@ -63,6 +66,9 @@ export default async function DashboardPage() {
   return (
     <DashboardShell initialUser={user}>
       <div className="max-w-7xl mx-auto space-y-8">
+      {/* 60-Second Guided Welcome Onboarding */}
+      <WelcomeOnboardingModal user={user} />
+
       {/* Welcome Banner */}
       <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-glow relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1.5">
@@ -94,6 +100,13 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Quick Start Gamified Checklist for Beginners */}
+      <QuickStartChecklist 
+        user={user} 
+        hasProducts={productsCount > 0} 
+        hasWalletSetup={!!wallet} 
+      />
 
       {/* ======================================================== */}
       {/* PERSONALIZED RANKING PROGRESS BAR                        */}
@@ -245,6 +258,10 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Quick FAQ and Educational Knowledge Base for Beginners */}
+      <FalkoQuickFaq />
+
       </div>
     </DashboardShell>
   );

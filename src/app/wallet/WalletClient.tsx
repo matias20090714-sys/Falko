@@ -16,6 +16,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
+import CountryWithdrawalsGuide from "@/components/wallet/CountryWithdrawalsGuide";
 
 export function WalletClient({ wallet, currentUser }: { wallet: any; currentUser: any }) {
   const router = useRouter();
@@ -123,6 +124,9 @@ export function WalletClient({ wallet, currentUser }: { wallet: any; currentUser
           <span className="text-[10px] text-slate-500 block mt-2">Disponible + Pendiente</span>
         </div>
       </div>
+
+      {/* Visual Country-by-Country Local Withdrawal Guide */}
+      <CountryWithdrawalsGuide />
 
       {/* Guarantee Release Simulation Tool */}
       <div className="glass-panel rounded-2xl p-5 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950/60">

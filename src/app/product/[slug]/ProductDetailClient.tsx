@@ -29,6 +29,8 @@ import {
   User,
   Zap,
 } from "lucide-react";
+import { WhatsAppChatButton } from "@/components/shared/WhatsAppChatButton";
+import { QrCodeModal } from "@/components/shared/QrCodeModal";
 
 interface ProductDetailClientProps {
   product: any;
@@ -124,20 +126,29 @@ export function ProductDetailClient({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-400 mb-6">
-        <Link href="/marketplace" className="hover:text-cyan-400">
-          Marketplace
-        </Link>
-        <span>/</span>
-        <Link
-          href={`/marketplace?category=${product.category?.slug || ""}`}
-          className="hover:text-cyan-400"
-        >
-          {product.category?.name || "Digital"}
-        </Link>
-        <span>/</span>
-        <span className="text-slate-200 truncate max-w-[200px]">{product.title}</span>
+      {/* Breadcrumb & Social QR Share Action */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <Link href="/marketplace" className="hover:text-cyan-400">
+            Marketplace
+          </Link>
+          <span>/</span>
+          <Link
+            href={`/marketplace?category=${product.category?.slug || ""}`}
+            className="hover:text-cyan-400"
+          >
+            {product.category?.name || "Digital"}
+          </Link>
+          <span>/</span>
+          <span className="text-slate-200 truncate max-w-[200px]">{product.title}</span>
+        </div>
+
+        {/* QR Code & Share Action */}
+        <QrCodeModal 
+          productTitle={product.title} 
+          productSlug={product.slug} 
+          refCode={refCodeParam || affiliateRecord?.uniqueRefCode} 
+        />
       </div>
 
       {/* Main Grid: 2 Columns */}
@@ -522,6 +533,14 @@ export function ProductDetailClient({
             </div>
           </div>
 
+          {/* Direct WhatsApp Pre-sale Questions Card */}
+          <WhatsAppChatButton
+            sellerPhone={product.seller?.phone}
+            sellerName={product.seller?.firstName || "el Vendedor"}
+            productTitle={product.title}
+            variant="card"
+          />
+
           {/* ======================================================== */}
           {/* AFFILIATE PROGRAM SECTION FOR THIS PRODUCT               */}
           {/* ======================================================== */}
@@ -591,6 +610,14 @@ export function ProductDetailClient({
           )}
         </div>
       </div>
+
+      {/* Floating WhatsApp Pre-sale Button for Instant Mobile/Desktop Reach */}
+      <WhatsAppChatButton
+        sellerPhone={product.seller?.phone}
+        sellerName={product.seller?.firstName || "el Vendedor"}
+        productTitle={product.title}
+        variant="floating"
+      />
 
       {/* Mobile Sticky Bottom CTA */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-t border-cyan-500/30 p-3.5 shadow-2xl safe-bottom">

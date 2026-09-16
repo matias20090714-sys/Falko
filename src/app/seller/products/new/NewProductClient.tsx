@@ -662,11 +662,19 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
+                {/* AI Title Suggestions Bar */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Título Atractivo del Producto *
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-300">
+                      Título Atractivo del Producto *
+                    </label>
+                    <span className="text-[11px] text-cyan-400 font-mono flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 animate-pulse" />
+                      Fórmulas de Alta Conversión
+                    </span>
+                  </div>
+
                   <input
                     type="text"
                     name="title"
@@ -676,6 +684,25 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                     className="input-falcon text-sm w-full py-2.5"
                     required
                   />
+
+                  {/* 1-Click Fast Suggestions */}
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {[
+                      "Mega Pack: Prompts & Plantillas de...",
+                      "Guía Definitiva: De Cero a Experto en...",
+                      "Masterclass Pro: Sistema Paso a Paso de...",
+                      "Plantilla Automatizada de Alto Rendimiento para...",
+                    ].map((sugg, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, title: sugg }))}
+                        className="text-[10px] bg-slate-900/90 text-slate-400 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 px-2 py-1 rounded-md transition-all truncate max-w-xs text-left"
+                      >
+                        ⚡ {sugg}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
@@ -729,61 +756,103 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   </div>
                 </div>
 
-                {/* Cover Image Selector */}
-                <div className="pt-2 space-y-3">
-                  <label className="block text-xs font-semibold text-slate-300">
-                    Portada del Producto (Imagen Principal)
-                  </label>
+                {/* Cover Image Selector & Live Card Simulator */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+                  <div className="lg:col-span-2 space-y-3">
+                    <label className="block text-xs font-semibold text-slate-300">
+                      Portada del Producto (Imagen Principal)
+                    </label>
 
-                  <div className="flex flex-col sm:flex-row items-center gap-5 bg-slate-950/60 p-4 rounded-2xl border border-white/5">
-                    {/* Live Thumbnail */}
-                    <div className="w-36 h-24 rounded-xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 relative group">
-                      <img
-                        src={formData.coverImageUrl}
-                        alt="Portada"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    <div className="flex-1 space-y-2 w-full">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => coverInputRef.current?.click()}
-                          disabled={uploadingCover}
-                          className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-                        >
-                          <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>{uploadingCover ? "Subiendo..." : "Subir mi propia imagen"}</span>
-                        </button>
-                        <input
-                          ref={coverInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleCoverUpload}
-                          className="hidden"
+                    <div className="flex flex-col sm:flex-row items-center gap-5 bg-slate-950/60 p-4 rounded-2xl border border-white/5">
+                      {/* Live Thumbnail */}
+                      <div className="w-36 h-24 rounded-xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 relative group">
+                        <img
+                          src={formData.coverImageUrl}
+                          alt="Portada"
+                          className="w-full h-full object-cover"
                         />
                       </div>
 
-                      <span className="text-[11px] text-slate-400 block">
-                        O elige una de nuestras portadas prediseñadas en alta resolución:
-                      </span>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                        {COVER_PRESETS.map((preset, idx) => (
+                      <div className="flex-1 space-y-2 w-full">
+                        <div className="flex flex-wrap gap-2">
                           <button
-                            key={idx}
                             type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, coverImageUrl: preset.url }))}
-                            className={`h-12 rounded-lg overflow-hidden border transition-all ${
-                              formData.coverImageUrl === preset.url
-                                ? "border-cyan-400 ring-2 ring-cyan-500/50 scale-105"
-                                : "border-white/10 opacity-70 hover:opacity-100"
-                            }`}
-                            title={preset.title}
+                            onClick={() => coverInputRef.current?.click()}
+                            disabled={uploadingCover}
+                            className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
                           >
-                            <img src={preset.url} alt={preset.title} className="w-full h-full object-cover" />
+                            <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>{uploadingCover ? "Subiendo..." : "Subir mi propia imagen"}</span>
                           </button>
-                        ))}
+                          <input
+                            ref={coverInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCoverUpload}
+                            className="hidden"
+                          />
+                        </div>
+
+                        <span className="text-[11px] text-slate-400 block">
+                          O elige una de nuestras portadas prediseñadas en alta resolución:
+                        </span>
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                          {COVER_PRESETS.map((preset, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setFormData((prev) => ({ ...prev, coverImageUrl: preset.url }))}
+                              className={`h-12 rounded-lg overflow-hidden border transition-all ${
+                                formData.coverImageUrl === preset.url
+                                  ? "border-cyan-400 ring-2 ring-cyan-500/50 scale-105"
+                                  : "border-white/10 opacity-70 hover:opacity-100"
+                              }`}
+                              title={preset.title}
+                            >
+                              <img src={preset.url} alt={preset.title} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Marketplace Card Simulator */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider block">
+                      👁️ Vista Previa en Marketplace:
+                    </span>
+                    <div className="glass-panel p-3.5 rounded-2xl border border-cyan-500/30 bg-[#05070e] space-y-2.5 shadow-lg max-w-[280px] mx-auto">
+                      <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 border border-white/10">
+                        <img
+                          src={formData.coverImageUrl}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-2 left-2 text-[9px] font-bold bg-slate-950/80 text-cyan-300 px-2 py-0.5 rounded border border-white/10">
+                          {categories.find((c) => c.id === formData.categoryId)?.name || "Digital"}
+                        </span>
+                        {formData.affiliateEnabled && (
+                          <span className="absolute top-2 right-2 text-[9px] font-bold bg-purple-950/90 text-purple-300 px-1.5 py-0.5 rounded border border-purple-800">
+                            {formData.affiliateCommissionPct}% Afiliados
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="text-xs font-bold text-white line-clamp-1">
+                        {formData.title || "Título del Producto"}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 line-clamp-2 leading-snug">
+                        {formData.shortDescription || "Descripción breve del producto digital..."}
+                      </p>
+
+                      <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                        <span className="text-xs font-black font-mono text-cyan-400">
+                          ${parseFloat(formData.price || "0").toFixed(2)} USD
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-0.5">
+                          🛡️ {formData.guaranteeDays}d garantía
+                        </span>
                       </div>
                     </div>
                   </div>
