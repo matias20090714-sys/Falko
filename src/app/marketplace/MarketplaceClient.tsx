@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatCurrency, convertCurrency } from "@/lib/currency";
 import {
+  ArrowRight,
   Filter,
   Percent,
   Search,
@@ -15,6 +16,7 @@ import {
   Tag,
   TrendingUp,
   X,
+  Zap,
 } from "lucide-react";
 
 interface MarketplaceClientProps {
@@ -70,17 +72,17 @@ export function MarketplaceClient({
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* Search & Sort Toolbar */}
-      <div className="glass-panel rounded-2xl p-4 mb-8 border border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row gap-4 justify-between items-center shadow-xl">
         {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <form onSubmit={handleSearchSubmit} className="relative w-full md:max-w-lg">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por título, temas, autor..."
+            placeholder="Buscar por software, plantillas, prompts, creador..."
             className="w-full pl-10 pr-10 py-2.5 rounded-xl glass-input text-xs"
           />
           {search && (
@@ -101,14 +103,14 @@ export function MarketplaceClient({
 
         {/* Sort selector */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          <label className="text-xs text-slate-400 whitespace-nowrap">Ordenar por:</label>
+          <span className="text-xs text-slate-400 whitespace-nowrap font-mono">Ordenar por:</span>
           <select
             value={selectedSort}
             onChange={(e) => {
               setSelectedSort(e.target.value);
               handleApplyFilter(selectedCategory, e.target.value);
             }}
-            className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-400"
+            className="bg-slate-900 border border-white/10 text-slate-200 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-cyan-400 font-semibold"
           >
             <option value="popular">Más Populares / Ventas</option>
             <option value="newest">Más Recientes</option>
@@ -119,16 +121,16 @@ export function MarketplaceClient({
       </div>
 
       {/* Category Pills Slider */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
         <button
           onClick={() => {
             setSelectedCategory("");
             handleApplyFilter("", selectedSort);
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
             !selectedCategory
-              ? "bg-cyan-500 text-slate-950 shadow-glow font-bold"
-              : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
+              ? "btn-falcon-primary shadow-glow text-slate-950"
+              : "bg-slate-900/80 text-slate-300 border border-white/10 hover:border-cyan-500/40 hover:text-white"
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
@@ -144,10 +146,10 @@ export function MarketplaceClient({
                 setSelectedCategory(cat.slug);
                 handleApplyFilter(cat.slug, selectedSort);
               }}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 isSelected
-                  ? "bg-cyan-500 text-slate-950 shadow-glow font-bold"
-                  : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
+                  ? "btn-falcon-primary shadow-glow text-slate-950 font-bold"
+                  : "bg-slate-900/80 text-slate-300 border border-white/10 hover:border-cyan-500/40 hover:text-white"
               }`}
             >
               {cat.name}
@@ -158,15 +160,15 @@ export function MarketplaceClient({
 
       {/* Products Grid */}
       {initialProducts.length === 0 ? (
-        <div className="glass-panel rounded-2xl p-12 text-center border border-slate-800 my-8 max-w-2xl mx-auto">
+        <div className="glass-panel rounded-3xl p-12 text-center border border-white/10 my-8 max-w-2xl mx-auto shadow-2xl">
           <div className="w-16 h-16 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto mb-4 shadow-glow">
             <ShoppingBag className="w-8 h-8" />
           </div>
           <h3 className="text-xl font-heading font-black text-white mb-2">
-            El mercado está listo para despegar
+            El mercado está listo para nuevos productos
           </h3>
           <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
-            Aún no se han publicado productos en esta sección. ¿Eres creador o desarrollador? ¡Sé el primer vendedor en publicar tu recurso digital en FALKO!
+            Aún no se han publicado recursos en esta categoría. ¿Eres creador o desarrollador? ¡Publica tu producto digital ahora!
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -192,51 +194,50 @@ export function MarketplaceClient({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialProducts.map((p) => {
-            // Price conversion if active user selected different currency
             const convertedPrice = convertCurrency(p.price, p.currencyCode, currency);
 
             return (
               <Link
                 key={p.id}
                 href={`/product/${p.slug}`}
-                className="group glass-panel rounded-2xl overflow-hidden border border-slate-800/80 hover:border-cyan-500/50 transition-all flex flex-col hover:-translate-y-1 shadow-md hover:shadow-glow"
+                className="group glass-panel rounded-2xl overflow-hidden border border-white/10 hover:border-cyan-500/50 transition-all duration-300 flex flex-col hover:-translate-y-1.5 shadow-xl hover:shadow-glow"
               >
                 {/* Product Cover */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-950">
                   <img
                     src={p.coverImageUrl}
                     alt={p.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded border border-slate-800">
+                  <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-lg border border-white/10 shadow-sm">
                     {p.category.name}
                   </div>
                   {p.affiliateEnabled && (
-                    <div className="absolute top-3 right-3 bg-purple-950/90 backdrop-blur-md text-[10px] font-bold text-purple-300 px-2 py-0.5 rounded border border-purple-800/70 flex items-center gap-1">
+                    <div className="absolute top-3 right-3 bg-purple-950/90 backdrop-blur-md text-[10px] font-bold text-purple-300 px-2.5 py-1 rounded-lg border border-purple-800/70 flex items-center gap-1 shadow-sm">
                       <Percent className="w-3 h-3" />
                       {p.affiliateCommissionPct}% Afiliado
                     </div>
                   )}
-                  <div className="absolute bottom-3 right-3 bg-slate-950/90 text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded border border-emerald-900/60 flex items-center gap-1">
+                  <div className="absolute bottom-3 right-3 bg-slate-950/90 text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-md border border-emerald-900/60 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
                     Garantía {p.guaranteeDays}d
                   </div>
                 </div>
 
                 {/* Body Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div>
-                    <h3 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 mb-2">
+                    <h3 className="text-base font-heading font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 mb-1.5">
                       {p.title}
                     </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 mb-4">
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                       {p.shortDescription || p.description}
                     </p>
                   </div>
 
                   <div>
                     {/* Rating & Sales */}
-                    <div className="flex items-center justify-between text-xs text-slate-400 pb-3 mb-3 border-b border-slate-800/70">
+                    <div className="flex items-center justify-between text-xs text-slate-400 pb-3 mb-3 border-b border-white/5">
                       <div className="flex items-center gap-1 text-amber-400 font-bold">
                         <Star className="w-3.5 h-3.5 fill-amber-400" />
                         <span>{p.ratingAvg.toFixed(1)}</span>
@@ -250,7 +251,7 @@ export function MarketplaceClient({
                     {/* Footer: Seller & Price */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="w-6 h-6 rounded-full bg-slate-800 overflow-hidden border border-white/10">
                           {p.seller.avatarUrl ? (
                             <img src={p.seller.avatarUrl} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -259,8 +260,8 @@ export function MarketplaceClient({
                             </div>
                           )}
                         </div>
-                        <span className="text-xs text-slate-300 truncate max-w-[90px]">
-                          {p.seller.firstName}
+                        <span className="text-xs text-slate-300 truncate max-w-[100px] font-semibold">
+                          {p.seller.firstName} {p.seller.lastName?.[0]}.
                         </span>
                       </div>
 
