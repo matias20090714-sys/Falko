@@ -63,6 +63,7 @@ export default async function ProductDetailPage({
       include: {
         category: true,
         files: true,
+        images: { orderBy: { sortOrder: "asc" } },
         seller: {
           select: {
             id: true,

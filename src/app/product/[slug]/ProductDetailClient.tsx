@@ -4,18 +4,24 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCurrency, convertCurrency, COUNTRIES } from "@/lib/currency";
+import { getVideoEmbedUrl } from "@/lib/media";
 import {
   AlertTriangle,
   Check,
   CheckCircle2,
   Copy,
   Download,
+  ExternalLink,
+  Eye,
   FileCode,
   FileText,
+  Film,
   Globe,
+  Image as ImageIcon,
   Lock,
   MessageSquare,
   Percent,
+  Play,
   Share2,
   ShieldCheck,
   Sparkles,
@@ -43,8 +49,20 @@ export function ProductDetailClient({
   const [currency, setCurrency] = useState("USD");
   const [affiliateRecord, setAffiliateRecord] = useState<any>(initialAffiliateRecord);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [isRequestingApproval, setIsRequestingApproval] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+
+  // Gallery and Media view state
+  const allImages = [
+    product.coverImageUrl,
+    ...(product.images ? product.images.map((i: any) => i.imageUrl || i) : []),
+  ].filter(Boolean);
+
+  const [selectedImage, setSelectedImage] = useState<string>(allImages[0] || product.coverImageUrl);
+  const [activeMediaTab, setActiveMediaTab] = useState<"image" | "video">(
+    product.videoUrl ? "image" : "image"
+  );
+
+  const parsedVideo = product.videoUrl ? getVideoEmbedUrl(product.videoUrl) : null;
 
   useEffect(() => {
     const saved = localStorage.getItem("falko_currency");
@@ -113,10 +131,10 @@ export function ProductDetailClient({
         </Link>
         <span>/</span>
         <Link
-          href={`/marketplace?category=${product.category.slug}`}
+          href={`/marketplace?category=${product.category?.slug || ""}`}
           className="hover:text-cyan-400"
         >
-          {product.category.name}
+          {product.category?.name || "Digital"}
         </Link>
         <span>/</span>
         <span className="text-slate-200 truncate max-w-[200px]">{product.title}</span>
@@ -124,22 +142,93 @@ export function ProductDetailClient({
 
       {/* Main Grid: 2 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Left Column: Media, Details, Description, Files, Reviews */}
+        {/* Left Column: Media Gallery, Video, Details, Description, Files, Reviews */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Main Cover Image */}
-          <div className="glass-panel rounded-2xl overflow-hidden border border-slate-800 relative aspect-[16/9] shadow-2xl">
-            <img
-              src={product.coverImageUrl}
-              alt={product.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-md text-xs font-bold text-cyan-300 px-3 py-1 rounded-lg border border-slate-800">
-              {product.category.name}
-            </div>
-            {product.affiliateEnabled && (
-              <div className="absolute top-4 right-4 bg-purple-950/90 backdrop-blur-md text-xs font-bold text-purple-300 px-3 py-1 rounded-lg border border-purple-800/70 flex items-center gap-1.5 shadow-md">
-                <Percent className="w-3.5 h-3.5" />
-                {product.affiliateCommissionPct}% Comisión Afiliado
+          {/* Main Media Player / Gallery Container */}
+          <div className="glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl space-y-3 p-4">
+            {/* Media Tabs if Video exists */}
+            {product.videoUrl && (
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveMediaTab("image")}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
+                    activeMediaTab === "image"
+                      ? "bg-cyan-950 text-cyan-300 border border-cyan-800"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  Galería de Fotos ({allImages.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveMediaTab("video")}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
+                    activeMediaTab === "video"
+                      ? "bg-purple-950 text-purple-300 border border-purple-800"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  Video / Demo Audiovisual
+                </button>
+              </div>
+            )}
+
+            {/* Display active media */}
+            {activeMediaTab === "video" && parsedVideo ? (
+              <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-black border border-purple-900/40">
+                {parsedVideo.type === "youtube" || parsedVideo.type === "vimeo" || parsedVideo.type === "loom" ? (
+                  <iframe
+                    src={parsedVideo.embedUrl}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video src={parsedVideo.embedUrl} controls className="w-full h-full object-contain" />
+                )}
+              </div>
+            ) : (
+              <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-800">
+                <img
+                  src={selectedImage}
+                  alt={product.title}
+                  className="w-full h-full object-cover transition-all duration-300"
+                />
+                <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-md text-xs font-bold text-cyan-300 px-3 py-1 rounded-lg border border-slate-800">
+                  {product.category?.name || "Recurso"}
+                </div>
+                {product.affiliateEnabled && (
+                  <div className="absolute top-4 right-4 bg-purple-950/90 backdrop-blur-md text-xs font-bold text-purple-300 px-3 py-1 rounded-lg border border-purple-800/70 flex items-center gap-1.5 shadow-md">
+                    <Percent className="w-3.5 h-3.5" />
+                    {product.affiliateCommissionPct}% Comisión Afiliado
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Thumbnail Strip (if more than 1 image) */}
+            {allImages.length > 1 && (
+              <div className="flex gap-2.5 overflow-x-auto pb-1 pt-1">
+                {allImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setSelectedImage(imgUrl);
+                      setActiveMediaTab("image");
+                    }}
+                    className={`relative w-20 aspect-video rounded-lg overflow-hidden shrink-0 border transition-all ${
+                      selectedImage === imgUrl && activeMediaTab === "image"
+                        ? "border-cyan-400 ring-2 ring-cyan-500/30 scale-105"
+                        : "border-slate-800 opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={imgUrl} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -152,13 +241,13 @@ export function ProductDetailClient({
             <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-400">
               <div className="flex items-center gap-1 text-amber-400 font-bold">
                 <Star className="w-4 h-4 fill-amber-400" />
-                <span>{product.ratingAvg.toFixed(1)}</span>
+                <span>{product.ratingAvg ? product.ratingAvg.toFixed(1) : "5.0"}</span>
                 <span className="text-slate-400 font-normal">
-                  ({product.reviewsCount} opiniones)
+                  ({product.reviewsCount || 0} opiniones)
                 </span>
               </div>
               <span>•</span>
-              <span className="font-mono text-slate-300">{product.salesCount} ventas confirmadas</span>
+              <span className="font-mono text-slate-300">{product.salesCount || 0} ventas confirmadas</span>
               <span>•</span>
               <div className="flex items-center gap-1 text-emerald-400 font-semibold">
                 <ShieldCheck className="w-4 h-4" />
@@ -166,6 +255,47 @@ export function ProductDetailClient({
               </div>
             </div>
           </div>
+
+          {/* Special Post-Purchase Access Banner (if user already owns it) */}
+          {hasPurchased && (product.accessUrl || product.files?.length > 0) && (
+            <div className="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-6 shadow-glow space-y-4">
+              <div className="flex items-center gap-2 text-emerald-300 font-bold text-base">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <span>¡Producto Comprado! Accede a tu contenido aquí</span>
+              </div>
+
+              {product.accessUrl && (
+                <div className="bg-slate-900/90 p-4 rounded-xl border border-emerald-800/60 space-y-2">
+                  <span className="text-xs font-bold text-white block">🔗 Enlace de Acceso Privado:</span>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={product.accessUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-falcon-primary text-xs py-2 px-4 flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Abrir Plataforma / Recurso Externo
+                    </a>
+                  </div>
+                  {product.accessInstructions && (
+                    <p className="text-xs text-slate-300 pt-1 leading-relaxed whitespace-pre-line bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                      <strong>Instrucciones:</strong> {product.accessInstructions}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs text-slate-300">
+                  También puedes gestionar todas tus descargas y compras en tu biblioteca personal.
+                </span>
+                <Link href="/library" className="btn-falcon-secondary text-xs py-1.5 px-3">
+                  Ir a mi Biblioteca
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Description Section */}
           <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
@@ -177,53 +307,59 @@ export function ProductDetailClient({
             </div>
           </div>
 
-          {/* Included Digital Files Vault */}
+          {/* Included Digital Deliverables Vault */}
           <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-heading font-bold text-white flex items-center gap-2">
                 <FileCode className="w-5 h-5 text-cyan-400" />
-                Archivos Digitales Incluidos ({product.files.length})
+                Archivos Digitales Incluidos ({product.files?.length || 0})
               </h3>
               <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                Descarga Privada
+                Bóveda Segura FALKO
               </span>
             </div>
 
-            <div className="space-y-3">
-              {product.files.map((file: any) => (
-                <div
-                  key={file.id}
-                  className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400">
-                      <FileText className="w-4 h-4" />
+            {product.files && product.files.length > 0 ? (
+              <div className="space-y-3">
+                {product.files.map((file: any) => (
+                  <div
+                    key={file.id}
+                    className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-white block">{file.fileName}</span>
+                        <span className="text-[11px] text-slate-500 font-mono">
+                          {(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB • {file.fileType}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-bold text-white block">{file.fileName}</span>
-                      <span className="text-[11px] text-slate-500 font-mono">
-                        {(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB • {file.fileType}
-                      </span>
-                    </div>
-                  </div>
 
-                  {hasPurchased ? (
-                    <Link
-                      href="/library"
-                      className="btn-falcon-primary text-[11px] py-1.5 px-3"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Descargar
-                    </Link>
-                  ) : (
-                    <span className="text-slate-500 font-mono text-[11px] bg-slate-900 px-2 py-1 rounded">
-                      Disponible tras compra
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {hasPurchased ? (
+                      <Link
+                        href="/library"
+                        className="btn-falcon-primary text-[11px] py-1.5 px-3"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Descargar
+                      </Link>
+                    ) : (
+                      <span className="text-slate-500 font-mono text-[11px] bg-slate-900 px-2 py-1 rounded">
+                        Disponible tras compra
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 italic">
+                {product.accessUrl ? "Acceso directo mediante enlace y plataforma privada." : "Entrega digital inmediata tras confirmación."}
+              </p>
+            )}
           </div>
 
           {/* Verified Customer Reviews Section */}
@@ -240,13 +376,13 @@ export function ProductDetailClient({
               <div className="text-right">
                 <div className="text-2xl font-black font-mono text-amber-400 flex items-center gap-1 justify-end">
                   <Star className="w-6 h-6 fill-amber-400" />
-                  {product.ratingAvg.toFixed(1)}
+                  {product.ratingAvg ? product.ratingAvg.toFixed(1) : "5.0"}
                 </div>
-                <span className="text-[11px] text-slate-500">{product.reviewsCount} opiniones</span>
+                <span className="text-[11px] text-slate-500">{product.reviewsCount || 0} opiniones</span>
               </div>
             </div>
 
-            {product.reviews.length === 0 ? (
+            {!product.reviews || product.reviews.length === 0 ? (
               <p className="text-xs text-slate-500 italic text-center py-6">
                 Este producto aún no cuenta con opiniones públicas. Sé el primero en adquirirlo y dejar tu reseña.
               </p>
@@ -359,7 +495,7 @@ export function ProductDetailClient({
             <div className="mt-6 pt-5 border-t border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-slate-800 overflow-hidden border border-slate-700">
-                  {product.seller.avatarUrl ? (
+                  {product.seller?.avatarUrl ? (
                     <img
                       src={product.seller.avatarUrl}
                       alt={product.seller.firstName}
@@ -367,7 +503,7 @@ export function ProductDetailClient({
                     />
                   ) : (
                     <div className="w-full h-full bg-cyan-800 flex items-center justify-center text-xs font-bold text-white">
-                      {product.seller.firstName[0]}
+                      {product.seller?.firstName?.[0] || "V"}
                     </div>
                   )}
                 </div>
@@ -376,12 +512,12 @@ export function ProductDetailClient({
                     Creado por
                   </span>
                   <span className="text-xs font-bold text-white">
-                    {product.seller.firstName} {product.seller.lastName}
+                    {product.seller?.firstName} {product.seller?.lastName}
                   </span>
                 </div>
               </div>
               <span className="text-lg">
-                {COUNTRIES[product.seller.countryCode]?.flag || "🌐"}
+                {COUNTRIES[product.seller?.countryCode]?.flag || "🌐"}
               </span>
             </div>
           </div>

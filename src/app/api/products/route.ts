@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
           category: true,
           seller: { select: { firstName: true, lastName: true, avatarUrl: true } },
           files: true,
+          images: { orderBy: { sortOrder: "asc" } },
         },
       });
       return NextResponse.json({ product });
@@ -22,7 +23,9 @@ export async function GET(req: NextRequest) {
       include: {
         category: true,
         seller: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        images: true,
       },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({ products });
@@ -50,7 +53,12 @@ export async function POST(req: NextRequest) {
       affiliateCommissionPct = 20,
       affiliateApprovalMode = "AUTO",
       coverImageUrl,
+      demoUrl,
+      videoUrl,
+      accessUrl,
+      accessInstructions,
       files = [],
+      images = [],
     } = await req.json();
 
     if (!title || !description || !price || !categoryId) {
@@ -96,6 +104,10 @@ export async function POST(req: NextRequest) {
         affiliateEnabled: Boolean(affiliateEnabled),
         affiliateCommissionPct: validatedComm,
         affiliateApprovalMode,
+        demoUrl: demoUrl || null,
+        videoUrl: videoUrl || null,
+        accessUrl: accessUrl || null,
+        accessInstructions: accessInstructions || null,
         status: "APPROVED", // Auto-approved on creation per requirement 10, with ADMIN moderation available
         coverImageUrl:
           coverImageUrl ||
@@ -107,8 +119,8 @@ export async function POST(req: NextRequest) {
               ? files.map((f: any) => ({
                   fileName: f.fileName || "recurso_digital.zip",
                   fileSizeBytes: f.fileSizeBytes || 10485760,
-                  fileType: f.fileType || "application/zip",
-                  storageKey: `vault/${Date.now()}_${f.fileName || "recurso.zip"}`,
+                  fileType: f.fileType || "application/octet-stream",
+                  storageKey: f.storageKey || `vault/${Date.now()}_${f.fileName || "recurso.zip"}`,
                 }))
               : [
                   {
@@ -119,14 +131,25 @@ export async function POST(req: NextRequest) {
                   },
                 ],
         },
+        images: {
+          create:
+            images.length > 0
+              ? images.map((img: any, idx: number) => ({
+                  imageUrl: typeof img === "string" ? img : img.imageUrl,
+                  sortOrder: idx,
+                }))
+              : [],
+        },
       },
       include: {
         files: true,
+        images: true,
       },
     });
 
     return NextResponse.json({ success: true, product });
   } catch (error: any) {
+    console.error("Product creation error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -3,14 +3,18 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/currency";
+import { getVideoEmbedUrl } from "@/lib/media";
 import {
   AlertTriangle,
   CheckCircle2,
   Download,
+  ExternalLink,
   FileCode,
+  Film,
   Lock,
   MessageSquare,
   Package,
+  Play,
   RefreshCw,
   ShieldAlert,
   ShieldCheck,
@@ -27,6 +31,7 @@ export function LibraryClient({ orders: initialOrders, currentUser }: LibraryCli
   const [orders, setOrders] = useState(initialOrders);
   const [selectedOrderForReview, setSelectedOrderForReview] = useState<any>(null);
   const [selectedOrderForRefund, setSelectedOrderForRefund] = useState<any>(null);
+  const [activeVideoOrderId, setActiveVideoOrderId] = useState<string | null>(null);
 
   // Review Form state
   const [rating, setRating] = useState(5);
@@ -163,6 +168,9 @@ export function LibraryClient({ orders: initialOrders, currentUser }: LibraryCli
           const hasReviewed = order.reviews?.length > 0;
           const hasRefundRequested = order.refunds?.length > 0;
 
+          const parsedVideo = product.videoUrl ? getVideoEmbedUrl(product.videoUrl) : null;
+          const isVideoOpen = activeVideoOrderId === order.id;
+
           return (
             <div
               key={order.id}
@@ -205,7 +213,7 @@ export function LibraryClient({ orders: initialOrders, currentUser }: LibraryCli
                   <p className="text-xs text-slate-400 line-clamp-2">{product.shortDescription || product.description}</p>
                   <div className="text-xs text-slate-400 flex items-center gap-4 pt-1">
                     <span>
-                      Vendedor: <strong>{product.seller.firstName} {product.seller.lastName}</strong>
+                      Vendedor: <strong>{product.seller?.firstName} {product.seller?.lastName}</strong>
                     </span>
                     <span>•</span>
                     <span className="font-mono text-cyan-400 font-bold">
@@ -243,43 +251,103 @@ export function LibraryClient({ orders: initialOrders, currentUser }: LibraryCli
                 </div>
               </div>
 
-              {/* Digital Files Vault for this Order */}
-              <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800/80 space-y-3">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span className="flex items-center gap-1.5">
-                    <FileCode className="w-4 h-4 text-cyan-400" />
-                    Archivos Digitales Disponibles
-                  </span>
-                  <span className="text-[10px] text-slate-500 flex items-center gap-1 font-mono">
-                    <Lock className="w-3 h-3 text-cyan-400" />
-                    URL temporal firmada (15 min)
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {product.files.map((file: any) => (
-                    <div
-                      key={file.id}
-                      className="bg-slate-900/80 border border-slate-800 rounded-lg p-3 flex items-center justify-between text-xs"
+              {/* External Access Link Box (if product has accessUrl) */}
+              {product.accessUrl && (
+                <div className="bg-purple-950/30 border border-purple-900/60 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                      <ExternalLink className="w-4 h-4 text-purple-400" />
+                      Acceso a Plataforma / Contenido Privado
+                    </span>
+                    <a
+                      href={product.accessUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-falcon-primary text-xs py-1.5 px-4"
                     >
-                      <div className="min-w-0 mr-3">
-                        <span className="font-bold text-white block truncate">{file.fileName}</span>
-                        <span className="text-[10px] text-slate-500 font-mono">
-                          {(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleDownload(file.id, order.id)}
-                        disabled={downloadingFileId === file.id}
-                        className="btn-falcon-primary text-xs py-1.5 px-3 shrink-0"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        {downloadingFileId === file.id ? "Generando..." : "Descargar"}
-                      </button>
-                    </div>
-                  ))}
+                      Abrir Recurso
+                    </a>
+                  </div>
+                  {product.accessInstructions && (
+                    <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">
+                      <strong>Instrucciones:</strong> {product.accessInstructions}
+                    </p>
+                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Video Player / Course Stream (if product has videoUrl) */}
+              {product.videoUrl && parsedVideo && (
+                <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <Film className="w-4 h-4 text-cyan-400" />
+                      Clase en Video / Contenido Audiovisual
+                    </span>
+                    <button
+                      onClick={() => setActiveVideoOrderId(isVideoOpen ? null : order.id)}
+                      className="btn-falcon-secondary text-xs py-1 px-3"
+                    >
+                      {isVideoOpen ? "Ocultar Reproductor" : "Reproducir Video"}
+                    </button>
+                  </div>
+
+                  {isVideoOpen && (
+                    <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-slate-800 max-w-2xl mx-auto shadow-xl">
+                      {parsedVideo.type === "youtube" || parsedVideo.type === "vimeo" || parsedVideo.type === "loom" ? (
+                        <iframe
+                          src={parsedVideo.embedUrl}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video src={parsedVideo.embedUrl} controls className="w-full h-full object-contain" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Digital Files Vault for this Order */}
+              {product.files && product.files.length > 0 && (
+                <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800/80 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                    <span className="flex items-center gap-1.5">
+                      <FileCode className="w-4 h-4 text-cyan-400" />
+                      Archivos Digitales Descargables
+                    </span>
+                    <span className="text-[10px] text-slate-500 flex items-center gap-1 font-mono">
+                      <Lock className="w-3 h-3 text-cyan-400" />
+                      URL temporal firmada (15 min)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {product.files.map((file: any) => (
+                      <div
+                        key={file.id}
+                        className="bg-slate-900/80 border border-slate-800 rounded-lg p-3 flex items-center justify-between text-xs"
+                      >
+                        <div className="min-w-0 mr-3">
+                          <span className="font-bold text-white block truncate">{file.fileName}</span>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleDownload(file.id, order.id)}
+                          disabled={downloadingFileId === file.id}
+                          className="btn-falcon-primary text-xs py-1.5 px-3 shrink-0"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          {downloadingFileId === file.id ? "Generando..." : "Descargar"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

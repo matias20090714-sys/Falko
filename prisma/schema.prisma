@@ -71,6 +71,9 @@ model Product {
   shortDescription       String?
   coverImageUrl          String
   demoUrl                String?
+  videoUrl               String?
+  accessUrl              String?
+  accessInstructions     String?
   price                  Float
   currencyCode           String                @default("USD")
   guaranteeDays          Int                   @default(7) // Minimum 7
