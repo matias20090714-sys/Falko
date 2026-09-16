@@ -35,6 +35,7 @@ model User {
   refunds           Refund[]
   rankingRecords    RankingRecord[]
   adminLogs         AdminLog[]
+  webhooks          WebhookEndpoint[]
 
   @@index([email])
   @@index([countryCode])
@@ -546,4 +547,44 @@ model AbandonedCart {
   @@index([recovered])
   @@index([createdAt])
 }
+
+model WebhookEndpoint {
+  id          String            @id @default(cuid())
+  userId      String
+  productId   String?           // Optional: target specific product or all products
+  name        String            @default("Mi Webhook")
+  url         String
+  secretKey   String            // HMAC-SHA256 signature key
+  events      String            @default("order.completed,order.refunded,cart.abandoned")
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries  WebhookDelivery[]
+
+  @@index([userId])
+  @@index([productId])
+  @@index([isActive])
+}
+
+model WebhookDelivery {
+  id             String          @id @default(cuid())
+  webhookId      String
+  event          String          // order.completed | order.refunded | cart.abandoned
+  statusCode     Int?
+  requestPayload String          // JSON string
+  responseBody   String?
+  durationMs     Int             @default(0)
+  status         String          @default("SUCCESS") // SUCCESS | FAILED
+  error          String?
+  createdAt      DateTime        @default(now())
+
+  webhook        WebhookEndpoint @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
+}
+
 

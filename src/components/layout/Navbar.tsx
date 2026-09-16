@@ -23,6 +23,7 @@ import {
   Menu,
   X,
   Zap,
+  Webhook,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -227,6 +228,14 @@ export function Navbar({ initialUser }: NavbarProps) {
                           <span>Panel de Vendedor</span>
                         </Link>
                         <Link
+                          href="/seller/webhooks"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs text-cyan-300 hover:text-cyan-200 hover:bg-cyan-950/30 transition-colors"
+                        >
+                          <Webhook className="w-4 h-4 text-cyan-400" />
+                          <span>Webhooks & Automatización</span>
+                        </Link>
+                        <Link
                           href="/affiliate"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
@@ -333,6 +342,13 @@ export function Navbar({ initialUser }: NavbarProps) {
                 className="block py-1.5 text-sm text-slate-300"
               >
                 Panel Vendedor
+              </Link>
+              <Link
+                href="/seller/webhooks"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-1.5 text-sm text-cyan-300 font-semibold"
+              >
+                ⚡ Webhooks & CRMs
               </Link>
               <Link
                 href="/affiliate"

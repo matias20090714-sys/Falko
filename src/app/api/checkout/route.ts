@@ -6,6 +6,7 @@ import { validateOrderFraud } from "@/lib/fraud";
 import { processOrderLedger } from "@/lib/ledger";
 import { addSalesVolume } from "@/lib/ranking";
 import { getPaymentProvider } from "@/lib/payments";
+import { triggerWebhooksForSeller } from "@/lib/webhooks";
 
 export async function POST(req: NextRequest) {
   try {
@@ -247,6 +248,56 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    // 13. Dispatch Real-time Webhooks to Seller's Integrations (Zapier, Make, CRM, ActiveCampaign)
+    triggerWebhooksForSeller({
+      sellerId: product.sellerId,
+      productId: product.id,
+      event: "order.completed",
+      payload: {
+        event: "order.completed",
+        timestamp: new Date().toISOString(),
+        data: {
+          order_id: order.id,
+          order_number: order.orderNumber,
+          product: {
+            id: product.id,
+            title: product.title,
+            slug: product.slug,
+            price: product.price,
+          },
+          buyer: {
+            id: currentUser.id,
+            name: `${currentUser.firstName} ${currentUser.lastName}`,
+            email: currentUser.email,
+            country: currentUser.countryCode,
+          },
+          amounts: {
+            total: split.totalAmount,
+            base_price: product.price,
+            discount: discountAmount,
+            order_bump: orderBumpAmount,
+            seller_earning: split.sellerEarningAmount,
+            affiliate_commission: split.affiliateCommissionAmount,
+            currency: split.currencyCode,
+          },
+          coupon_applied: validCouponCode,
+          payment: {
+            provider: paymentProvider.name,
+            transaction_id: paymentResult.transactionId,
+            method: paymentMethod,
+            status: "CONFIRMED",
+          },
+          affiliate: affiliateProduct
+            ? {
+                code: affiliateProduct.uniqueRefCode,
+                commission: split.affiliateCommissionAmount,
+              }
+            : null,
+          created_at: order.createdAt.toISOString(),
+        },
+      },
+    }).catch((whErr) => console.error("Webhook dispatch async error:", whErr));
 
     return NextResponse.json({
       success: true,

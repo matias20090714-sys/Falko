@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Star,
   Clock,
+  Webhook,
 } from "lucide-react";
 
 export const revalidate = 0;
@@ -90,7 +91,11 @@ export default async function SellerDashboardPage() {
           </h1>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/seller/webhooks" className="btn-falcon-secondary text-xs py-2 px-3.5">
+            <Webhook className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Webhooks & CRM</span>
+          </Link>
           <Link href="/seller/products/new" className="btn-falcon-primary text-xs py-2 px-4 shadow-glow">
             <PlusCircle className="w-3.5 h-3.5" />
             Crear Nuevo Producto
