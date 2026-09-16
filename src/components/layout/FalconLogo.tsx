@@ -110,7 +110,7 @@ export function FalconLogo({
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
           </div>
           <span className="text-[9px] uppercase tracking-[0.25em] text-slate-400 font-semibold">
-            Marketplace SaaS
+            Marketplace
           </span>
         </div>
       )}
