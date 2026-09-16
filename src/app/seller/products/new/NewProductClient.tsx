@@ -6,6 +6,10 @@ import { CURRENCY_RATES, computeFinancialSplit, formatCurrency } from "@/lib/cur
 import { getVideoEmbedUrl } from "@/lib/media";
 import {
   Activity,
+  ArrowRight,
+  BookOpen,
+  Check,
+  CheckCircle2,
   Code,
   DollarSign,
   FileCode,
@@ -13,14 +17,18 @@ import {
   Film,
   FolderOpen,
   Globe,
+  GraduationCap,
+  HelpCircle,
   Image as ImageIcon,
   Info,
   Layers,
   Link as LinkIcon,
   Lock,
+  MessageSquare,
   Percent,
   Play,
   Plus,
+  Rocket,
   ShieldCheck,
   Sparkles,
   Tag,
@@ -28,6 +36,7 @@ import {
   Trash2,
   Upload,
   Video,
+  Wand2,
   X,
   Zap,
 } from "lucide-react";
@@ -65,22 +74,145 @@ interface NewProductClientProps {
   currentUser: any;
 }
 
+// Preset Quick Cover Gallery
+const COVER_PRESETS = [
+  {
+    category: "IA & Tecnología",
+    title: "Cyber Neon IA",
+    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+  },
+  {
+    category: "Negocios & Finanzas",
+    title: "Growth & Capital",
+    url: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
+  },
+  {
+    category: "Educación & Cursos",
+    title: "Masterclass Pro",
+    url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80",
+  },
+  {
+    category: "Programación & SaaS",
+    title: "Clean Code Matrix",
+    url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80",
+  },
+  {
+    category: "Marketing & Ventas",
+    title: "High-Ticket Funnel",
+    url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80",
+  },
+  {
+    category: "Diseño & Creativos",
+    title: "Creative Studio",
+    url: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80",
+  },
+];
+
+// Quick Templates for 1-Click Setup
+const PRODUCT_TEMPLATES = [
+  {
+    id: "ebook",
+    icon: BookOpen,
+    title: "Ebook / Guía PDF",
+    badge: "Ideal Principiantes",
+    desc: "Guías prácticas, plantillas de lectura, manuales y recetarios.",
+    preset: {
+      title: "Guía Definitiva de Productividad y Hábitos de Alto Rendimiento",
+      shortDescription: "El manual paso a paso con plantillas accionables para duplicar tus resultados.",
+      price: "19.00",
+      categorySlug: "negocios-finanzas",
+      coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80",
+      description: "### ¿Qué aprenderás con esta guía?\n\n- Estrategias comprobadas de gestión del tiempo.\n- Hojas de cálculo y plantillas listas para usar.\n- Plan de acción de 30 días garantizado.",
+    },
+  },
+  {
+    id: "course",
+    icon: GraduationCap,
+    title: "Curso Online en Video",
+    badge: "Más Vendido",
+    desc: "Clases grabadas, módulos estructurados y material descargable.",
+    preset: {
+      title: "Masterclass de Automatización con IA para Negocios Digitales",
+      shortDescription: "Domina las herramientas líderes de inteligencia artificial para escalar tus ingresos.",
+      price: "67.00",
+      categorySlug: "inteligencia-artificial",
+      coverUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80",
+      description: "### Programa Completo del Curso\n\n- **Módulo 1:** Fundamentos y configuración de agentes IA.\n- **Módulo 2:** Automatizaciones avanzadas con Zapier y Make.\n- **Módulo 3:** Casos de estudio y monetización directa.",
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+  },
+  {
+    id: "prompts",
+    icon: Sparkles,
+    title: "Pack de Prompts & IA",
+    badge: "Alta Conversión",
+    desc: "Comandos para ChatGPT, Claude, Midjourney y plantillas Notion.",
+    preset: {
+      title: "Mega Pack de 1,500+ Prompts Profesionales para Copywriting y Ventas",
+      shortDescription: "La colección definitiva de prompts probados para crear anuncios y cartas de venta que convierten.",
+      price: "27.00",
+      categorySlug: "inteligencia-artificial",
+      coverUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      description: "### Incluye:\n\n- 500+ Prompts para creación de contenido en redes sociales.\n- 400+ Fórmulas de copywriting persuasivo.\n- Tablero en Notion con actualizaciones mensuales de por vida.",
+    },
+  },
+  {
+    id: "software",
+    icon: Code,
+    title: "Software / Código / SaaS",
+    badge: "Productor Tech",
+    desc: "Boilerplates, código fuente, scripts, plugins o aplicaciones.",
+    preset: {
+      title: "Next.js & Supabase SaaS Boilerplate con Pagos y Autenticación",
+      shortDescription: "Lanza tu aplicación web en horas con arquitectura lista para producción.",
+      price: "97.00",
+      categorySlug: "desarrollo-software",
+      coverUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80",
+      description: "### Stack Tecnológico:\n\n- Next.js 14 App Router con TypeScript y Tailwind CSS.\n- Base de datos PostgreSQL con Prisma ORM.\n- Pasarela de pagos integrada y webhooks automáticos.",
+      demoUrl: "https://falko-ruby.vercel.app",
+    },
+  },
+  {
+    id: "community",
+    icon: MessageSquare,
+    title: "Comunidad / Mentoría",
+    badge: "Exclusivo",
+    desc: "Acceso a grupo privado de Telegram/Discord o llamadas mensuales.",
+    preset: {
+      title: "Pase VIP a Comunidad Privada de Creadores & Mentorías Semanales",
+      shortDescription: "Acceso exclusivo a nuestro círculo interno con sesiones en vivo y networking de alto nivel.",
+      price: "49.00",
+      categorySlug: "negocios-finanzas",
+      coverUrl: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
+      description: "### ¿Qué obtienes como miembro VIP?\n\n- Canal privado de Telegram para resolución de dudas 24/7.\n- 2 Sesiones grupales en vivo por Zoom cada mes.\n- Biblioteca con grabaciones de todas las mentorías anteriores.",
+      accessUrl: "https://t.me/+falko_vip_private_access",
+      accessInstructions: "Al confirmar tu compra, haz clic en el botón de acceso para unirte al canal privado.",
+    },
+  },
+];
+
 export function NewProductClient({ categories, currentUser }: NewProductClientProps) {
   const router = useRouter();
 
-  // Basic Form
+  // Mode: "express" (3-step beginner friendly) | "pro" (full advanced studio)
+  const [creationMode, setCreationMode] = useState<"express" | "pro">("express");
+
+  // Express Wizard Step: 1 = Template/Tipo, 2 = Info Básica & Portada, 3 = Entrega & Precio
+  const [wizardStep, setWizardStep] = useState(1);
+
+  // Form Data
   const [formData, setFormData] = useState({
     title: "",
     shortDescription: "",
     description: "",
-    price: "49.00",
+    price: "37.00",
     currencyCode: "USD",
     categoryId: categories[0]?.id || "",
-    guaranteeDays: 7, // Minimum 7
+    guaranteeDays: 7,
     affiliateEnabled: true,
     affiliateCommissionPct: 30,
-    affiliateApprovalMode: "AUTO", // AUTO | MANUAL
-    coverImageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+    affiliateApprovalMode: "AUTO",
+    coverImageUrl: COVER_PRESETS[0].url,
     demoUrl: "",
     videoUrl: "",
     accessUrl: "",
@@ -97,32 +229,32 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     affiliateSwipeUrl: "",
   });
 
-  // Uploaded Files List
+  // Digital Files
   const [digitalFiles, setDigitalFiles] = useState<UploadedFileItem[]>([
     {
       id: "initial-1",
-      fileName: "paquete_recursos_digitales.zip",
-      fileSizeBytes: 26214400, // 25 MB
+      fileName: "recursos_digitales_falko.zip",
+      fileSizeBytes: 18450000,
       fileType: "application/zip",
-      storageKey: "vault/paquete_recursos_digitales.zip",
+      storageKey: "vault/recursos_digitales_falko.zip",
     },
   ]);
 
-  // Gallery Images List
+  // Gallery
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [customImageUrl, setCustomImageUrl] = useState("");
 
-  // Coupons List
+  // Coupons
   const [coupons, setCoupons] = useState<CouponItem[]>([
     { id: "c-1", code: "LANZAMIENTO20", discountPct: 20 },
   ]);
   const [newCouponCode, setNewCouponCode] = useState("");
   const [newCouponPct, setNewCouponPct] = useState(15);
 
-  // Modules & Lessons List
+  // Modules & Lessons
   const [modules, setModules] = useState<ModuleItem[]>([]);
 
-  // Uploading state indicators
+  // Upload States
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -131,7 +263,6 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // File input refs
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -154,7 +285,38 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     }
   };
 
-  // Helper for uploading files via /api/upload
+  const applyTemplate = (template: (typeof PRODUCT_TEMPLATES)[0]) => {
+    const matchedCategory = categories.find((c) => c.slug === template.preset.categorySlug) || categories[0];
+    setFormData((prev) => ({
+      ...prev,
+      title: template.preset.title,
+      shortDescription: template.preset.shortDescription,
+      description: template.preset.description,
+      price: template.preset.price,
+      categoryId: matchedCategory?.id || prev.categoryId,
+      coverImageUrl: template.preset.coverUrl || prev.coverImageUrl,
+      demoUrl: (template.preset as any).demoUrl || prev.demoUrl,
+      videoUrl: (template.preset as any).videoUrl || prev.videoUrl,
+      accessUrl: (template.preset as any).accessUrl || prev.accessUrl,
+      accessInstructions: (template.preset as any).accessInstructions || prev.accessInstructions,
+    }));
+
+    if (template.id === "course" && modules.length === 0) {
+      setModules([
+        {
+          id: "mod-1",
+          title: "Módulo 1: Fundamentos y Bienvenida",
+          lessons: [
+            { id: "les-1", title: "1. Introducción al Programa", videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", durationMin: 8 },
+            { id: "les-2", title: "2. Preparación y Recursos Clave", videoUrl: "", durationMin: 12 },
+          ],
+        },
+      ]);
+    }
+
+    setWizardStep(2);
+  };
+
   const uploadFileToServer = async (file: File, category: "image" | "video" | "file") => {
     const form = new FormData();
     form.append("file", file);
@@ -172,7 +334,6 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     return data.file;
   };
 
-  // Cover image upload
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -182,41 +343,17 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
       const uploaded = await uploadFileToServer(file, "image");
       setFormData((prev) => ({ ...prev, coverImageUrl: uploaded.url }));
     } catch (err: any) {
-      alert(err.message || "Error al subir la imagen");
+      // Fallback base64
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFormData((prev) => ({ ...prev, coverImageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     } finally {
       setUploadingCover(false);
     }
   };
 
-  // Gallery image upload
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setUploadingGallery(true);
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const uploaded = await uploadFileToServer(files[i], "image");
-        setGalleryImages((prev) => [...prev, uploaded.url]);
-      }
-    } catch (err: any) {
-      alert(err.message || "Error al subir imagen de galería");
-    } finally {
-      setUploadingGallery(false);
-    }
-  };
-
-  const handleAddGalleryUrl = () => {
-    if (!customImageUrl.trim()) return;
-    setGalleryImages((prev) => [...prev, customImageUrl.trim()]);
-    setCustomImageUrl("");
-  };
-
-  const handleRemoveGalleryImage = (index: number) => {
-    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Deliverable files
   const handleDeliverableFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -225,21 +362,32 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const uploaded = await uploadFileToServer(file, "file");
-        setDigitalFiles((prev) => [
-          ...prev,
-          {
-            id: `file-${Date.now()}-${Math.random()}`,
-            fileName: uploaded.fileName,
-            fileSizeBytes: uploaded.fileSizeBytes,
-            fileType: uploaded.fileType,
-            storageKey: uploaded.storageKey,
-            url: uploaded.url,
-          },
-        ]);
+        try {
+          const uploaded = await uploadFileToServer(file, "file");
+          setDigitalFiles((prev) => [
+            ...prev,
+            {
+              id: `file-${Date.now()}-${i}`,
+              fileName: uploaded.fileName || file.name,
+              fileSizeBytes: uploaded.fileSizeBytes || file.size,
+              fileType: uploaded.fileType || file.type,
+              storageKey: uploaded.storageKey || `vault/${file.name}`,
+              url: uploaded.url,
+            },
+          ]);
+        } catch {
+          setDigitalFiles((prev) => [
+            ...prev,
+            {
+              id: `file-${Date.now()}-${i}`,
+              fileName: file.name,
+              fileSizeBytes: file.size,
+              fileType: file.type || "application/octet-stream",
+              storageKey: `vault/${file.name}`,
+            },
+          ]);
+        }
       }
-    } catch (err: any) {
-      alert(err.message || "Error al subir archivo");
     } finally {
       setUploadingFile(false);
     }
@@ -249,1016 +397,775 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     setDigitalFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // Video file upload
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingVideo(true);
-    try {
-      const uploaded = await uploadFileToServer(file, "video");
-      setFormData((prev) => ({ ...prev, videoUrl: uploaded.url }));
-    } catch (err: any) {
-      alert(err.message || "Error al subir video");
-    } finally {
-      setUploadingVideo(false);
-    }
-  };
-
-  // Coupon management
-  const handleAddCoupon = () => {
-    if (!newCouponCode.trim()) return;
-    setCoupons((prev) => [
-      ...prev,
-      { id: `c-${Date.now()}`, code: newCouponCode.trim().toUpperCase(), discountPct: newCouponPct },
-    ]);
-    setNewCouponCode("");
-  };
-
-  const handleRemoveCoupon = (id: string) => {
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  // Modules & Lessons management
-  const handleAddModule = () => {
-    setModules((prev) => [
-      ...prev,
-      {
-        id: `mod-${Date.now()}`,
-        title: `Módulo ${prev.length + 1}: Nombre del Módulo`,
-        lessons: [
-          { id: `les-${Date.now()}`, title: "Lección 1: Introducción", videoUrl: "", durationMin: 10 },
-        ],
-      },
-    ]);
-  };
-
-  const handleAddLesson = (moduleId: string) => {
-    setModules((prev) =>
-      prev.map((m) => {
-        if (m.id === moduleId) {
-          return {
-            ...m,
-            lessons: [
-              ...m.lessons,
-              {
-                id: `les-${Date.now()}`,
-                title: `Lección ${m.lessons.length + 1}: Nueva Clase`,
-                videoUrl: "",
-                durationMin: 15,
-              },
-            ],
-          };
-        }
-        return m;
-      })
-    );
-  };
-
-  const handleRemoveModule = (moduleId: string) => {
-    setModules((prev) => prev.filter((m) => m.id !== moduleId));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!formData.title.trim()) {
+      setError("Por favor ingresa un título para el producto.");
+      return;
+    }
 
     if (numPrice <= 0) {
       setError("El precio debe ser mayor a 0.");
       return;
     }
 
-    if (formData.guaranteeDays < 7) {
-      setError("La garantía no puede ser inferior a 7 días según las normas de FALKO.");
-      return;
-    }
-
-    if (digitalFiles.length === 0 && !formData.accessUrl.trim() && !formData.videoUrl.trim() && modules.length === 0) {
-      setError("Debes incluir al menos un archivo descargable, un video, un enlace de acceso o un módulo de lecciones.");
-      return;
-    }
-
     setLoading(true);
 
     try {
+      const payload = {
+        title: formData.title,
+        shortDescription: formData.shortDescription,
+        description: formData.description || formData.shortDescription,
+        price: numPrice,
+        currencyCode: formData.currencyCode,
+        categoryId: formData.categoryId,
+        guaranteeDays: parseInt(formData.guaranteeDays.toString()) || 7,
+        affiliateEnabled: formData.affiliateEnabled,
+        affiliateCommissionPct: parseFloat(formData.affiliateCommissionPct.toString()) || 20,
+        affiliateApprovalMode: formData.affiliateApprovalMode,
+        coverImageUrl: formData.coverImageUrl,
+        demoUrl: formData.demoUrl || null,
+        videoUrl: formData.videoUrl || null,
+        accessUrl: formData.accessUrl || null,
+        accessInstructions: formData.accessInstructions || null,
+        orderBumpTitle: formData.orderBumpTitle || null,
+        orderBumpPrice: formData.orderBumpTitle ? parseFloat(formData.orderBumpPrice) || 9.99 : null,
+        orderBumpDescription: formData.orderBumpDescription || null,
+        metaPixelId: formData.metaPixelId || null,
+        googleAnalyticsId: formData.googleAnalyticsId || null,
+        tiktokPixelId: formData.tiktokPixelId || null,
+        affiliateSwipeUrl: formData.affiliateSwipeUrl || null,
+        digitalFiles: digitalFiles.map((f) => ({
+          fileName: f.fileName,
+          fileSizeBytes: f.fileSizeBytes,
+          fileType: f.fileType,
+          storageKey: f.storageKey,
+        })),
+        galleryImages,
+        coupons,
+        modules,
+      };
+
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          files: digitalFiles.map((f) => ({
-            fileName: f.fileName,
-            fileSizeBytes: f.fileSizeBytes,
-            fileType: f.fileType,
-            storageKey: f.storageKey,
-          })),
-          images: galleryImages.map((imgUrl, idx) => ({
-            imageUrl: imgUrl,
-            sortOrder: idx,
-          })),
-          modules: modules.map((m, idx) => ({
-            title: m.title,
-            sortOrder: idx,
-            lessons: m.lessons.map((l, lIdx) => ({
-              title: l.title,
-              videoUrl: l.videoUrl,
-              durationMin: l.durationMin,
-              sortOrder: lIdx,
-            })),
-          })),
-          coupons: coupons.map((c) => ({
-            code: c.code,
-            discountPct: c.discountPct,
-          })),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      if (data.success) {
+
+      if (data.success && data.product) {
         router.push(`/product/${data.product.slug}`);
-        router.refresh();
       } else {
-        setError(data.error || "Error al crear el producto.");
+        setError(data.error || "Error al publicar el producto.");
       }
-    } catch {
-      setError("Error al conectar con el servidor.");
+    } catch (err: any) {
+      setError(err.message || "Error de red al crear el producto.");
     } finally {
       setLoading(false);
     }
   };
 
-  const parsedVideo = getVideoEmbedUrl(formData.videoUrl);
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Header & Mode Switcher */}
+      <div className="glass-panel p-6 rounded-3xl border border-white/10 bg-gradient-to-r from-slate-950 via-cyan-950/20 to-slate-950">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">
+                Publicador de Productos FALKO
+              </span>
+              <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded-full font-mono">
+                {creationMode === "express" ? "⚡ MODO ASISTENTE RÁPIDO" : "💎 MODO PRO STUDIO"}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+              Sube y Vende tu Producto Digital
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              Crea tu página de venta con pasarela internacional, pagos cripto y cobro automático en minutos.
+            </p>
+          </div>
+
+          {/* Mode Switch Tabs */}
+          <div className="flex items-center bg-slate-900/90 p-1.5 rounded-2xl border border-white/10 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setCreationMode("express")}
+              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all ${
+                creationMode === "express"
+                  ? "bg-cyan-500 text-slate-950 shadow-glow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Modo Fácil (3 Pasos)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreationMode("pro")}
+              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all ${
+                creationMode === "pro"
+                  ? "bg-cyan-500 text-slate-950 shadow-glow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Modo Avanzado (Pro)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {error && (
-        <div className="bg-rose-950/60 border border-rose-800 text-rose-300 text-xs p-4 rounded-xl flex items-center gap-2">
-          <X className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs p-4 rounded-2xl flex items-center gap-2">
+          <Info className="w-4 h-4 text-rose-400 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* 1. Basic Info */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-4 shadow-xl">
-        <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-cyan-400" />
-          1. Información del Producto
-        </h3>
-
-        <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1">Título del Producto *</label>
-          <input
-            type="text"
-            required
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="Ej: Master Prompts para Creadores de Contenido en IA"
-            className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1">Subtítulo o Resumen Corto</label>
-          <input
-            type="text"
-            name="shortDescription"
-            value={formData.shortDescription}
-            onChange={handleChange}
-            placeholder="50+ workflows y guías para generar $3,000/mes con automatizaciones."
-            className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Categoría *</label>
-            <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-200 text-xs focus:outline-none focus:border-cyan-400"
+      {/* ========================================================================= */}
+      {/* 🚀 MODO 1: ASISTENTE RÁPIDO EN 3 PASOS PARA PRINCIPIANTES */}
+      {/* ========================================================================= */}
+      {creationMode === "express" && (
+        <div className="space-y-6">
+          {/* Wizard Step Progress Indicator */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <button
+              type="button"
+              onClick={() => setWizardStep(1)}
+              className={`p-3 sm:p-4 rounded-2xl border text-left transition-all ${
+                wizardStep === 1
+                  ? "bg-cyan-950/60 border-cyan-500 text-cyan-300 shadow-glow"
+                  : wizardStep > 1
+                  ? "bg-slate-900/60 border-emerald-500/40 text-emerald-300"
+                  : "bg-slate-950/40 border-white/5 text-slate-500"
+              }`}
             >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] uppercase font-mono font-bold">Paso 1</span>
+                {wizardStep > 1 && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+              </div>
+              <span className="text-xs sm:text-sm font-bold block truncate">Tipo de Producto</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWizardStep(2)}
+              className={`p-3 sm:p-4 rounded-2xl border text-left transition-all ${
+                wizardStep === 2
+                  ? "bg-cyan-950/60 border-cyan-500 text-cyan-300 shadow-glow"
+                  : wizardStep > 2
+                  ? "bg-slate-900/60 border-emerald-500/40 text-emerald-300"
+                  : "bg-slate-950/40 border-white/5 text-slate-500"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] uppercase font-mono font-bold">Paso 2</span>
+                {wizardStep > 2 && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+              </div>
+              <span className="text-xs sm:text-sm font-bold block truncate">Título & Portada</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWizardStep(3)}
+              className={`p-3 sm:p-4 rounded-2xl border text-left transition-all ${
+                wizardStep === 3
+                  ? "bg-cyan-950/60 border-cyan-500 text-cyan-300 shadow-glow"
+                  : "bg-slate-950/40 border-white/5 text-slate-500"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] uppercase font-mono font-bold">Paso 3</span>
+              </div>
+              <span className="text-xs sm:text-sm font-bold block truncate">Precio & Entrega</span>
+            </button>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Enlace de Demostración Pública (Opcional)</label>
-            <input
-              type="url"
-              name="demoUrl"
-              value={formData.demoUrl}
-              onChange={handleChange}
-              placeholder="https://preview.misitio.com"
-              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
-            />
-          </div>
-        </div>
+          {/* STEP 1: SELECT PRODUCT TEMPLATE */}
+          {wizardStep === 1 && (
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6 animate-in fade-in duration-200">
+              <div className="text-center max-w-xl mx-auto space-y-1">
+                <span className="text-xs uppercase font-bold text-cyan-400 font-mono">Paso 1 de 3</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">¿Qué tipo de producto deseas vender?</h2>
+                <p className="text-xs text-slate-400">
+                  Selecciona una plantilla para rellenar automáticamente la estructura y optimizar tu página de venta.
+                </p>
+              </div>
 
-        <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1">Descripción Completa del Contenido *</label>
-          <textarea
-            required
-            rows={5}
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Detalla lo que incluye el producto, a quién va dirigido y cómo utilizarlo..."
-            className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
-          />
-        </div>
-      </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {PRODUCT_TEMPLATES.map((tmpl) => {
+                  const Icon = tmpl.icon;
+                  return (
+                    <button
+                      key={tmpl.id}
+                      type="button"
+                      onClick={() => applyTemplate(tmpl)}
+                      className="glass-panel p-5 rounded-2xl border border-white/5 hover:border-cyan-500/50 bg-slate-900/40 hover:bg-slate-900/80 text-left transition-all group flex flex-col justify-between hover:scale-[1.02] shadow-sm hover:shadow-cyan-500/10"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-slate-950 transition-colors">
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800/40 px-2 py-0.5 rounded-md">
+                            {tmpl.badge}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                          {tmpl.title}
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          {tmpl.desc}
+                        </p>
+                      </div>
 
-      {/* 2. Multimedia: Portada, Galería y Video */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-cyan-400" />
-          2. Portada, Galería de Imágenes y Video del Producto
-        </h3>
+                      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-cyan-400 font-semibold">
+                        <span>Elegir Plantilla</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-        {/* Portada Principal */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-slate-200 block">
-              Imagen de Portada Principal *
-            </label>
-            <span className="text-[11px] text-slate-400">Recomendado: 1280x720 (16:9)</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-            <div className="md:col-span-1 aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-white/10 relative group">
-              {formData.coverImageUrl ? (
-                <img
-                  src={formData.coverImageUrl}
-                  alt="Portada"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
-                  <ImageIcon className="w-8 h-8 mb-1" />
-                  <span className="text-[10px]">Sin portada</span>
-                </div>
-              )}
-              {uploadingCover && (
-                <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-xs text-cyan-400 font-bold">
-                  Subiendo...
-                </div>
-              )}
-            </div>
-
-            <div className="md:col-span-2 space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  name="coverImageUrl"
-                  value={formData.coverImageUrl}
-                  onChange={handleChange}
-                  placeholder="https://images.unsplash.com/... o sube una imagen"
-                  className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
-                />
+              <div className="text-center pt-2">
                 <button
                   type="button"
-                  onClick={() => coverInputRef.current?.click()}
-                  disabled={uploadingCover}
-                  className="btn-falcon-secondary text-xs px-4 shrink-0 flex items-center gap-1.5"
+                  onClick={() => setWizardStep(2)}
+                  className="text-xs text-slate-400 hover:text-white underline"
                 >
-                  <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                  {uploadingCover ? "Subiendo..." : "Subir Imagen"}
+                  O empezar desde cero sin plantilla &rarr;
                 </button>
-                <input
-                  type="file"
-                  ref={coverInputRef}
-                  onChange={handleCoverUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
               </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Galería de Imágenes Adicionales */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-xs font-semibold text-slate-200 block">
-                Galería de Mockups y Capturas (Opcional)
-              </label>
-              <p className="text-[11px] text-slate-400">
-                Muestra resultados y capturas para aumentar la conversión.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => galleryInputRef.current?.click()}
-              disabled={uploadingGallery}
-              className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5 text-purple-400" />
-              {uploadingGallery ? "Subiendo..." : "Añadir Fotos"}
-            </button>
-            <input
-              type="file"
-              ref={galleryInputRef}
-              onChange={handleGalleryUpload}
-              accept="image/*"
-              multiple
-              className="hidden"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={customImageUrl}
-              onChange={(e) => setCustomImageUrl(e.target.value)}
-              placeholder="O pega una URL de imagen para agregar a la galería..."
-              className="w-full px-3 py-2 rounded-xl glass-input text-xs"
-            />
-            <button
-              type="button"
-              onClick={handleAddGalleryUrl}
-              className="btn-falcon-secondary text-xs px-3 shrink-0"
-            >
-              Agregar URL
-            </button>
-          </div>
-
-          {galleryImages.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              {galleryImages.map((imgUrl, index) => (
-                <div
-                  key={index}
-                  className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 border border-white/10 group"
-                >
-                  <img src={imgUrl} alt={`Galería ${index + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveGalleryImage(index)}
-                    className="absolute top-1 right-1 bg-black/80 hover:bg-rose-600 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+          {/* STEP 2: TITLE, DESCRIPTION & COVER IMAGE */}
+          {wizardStep === 2 && (
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                <div>
+                  <span className="text-xs uppercase font-bold text-cyan-400 font-mono">Paso 2 de 3</span>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Título, Descripción y Portada Visual</h2>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <button
+                  type="button"
+                  onClick={() => setWizardStep(1)}
+                  className="text-xs text-slate-400 hover:text-white"
+                >
+                  &larr; Cambiar tipo
+                </button>
+              </div>
 
-        {/* Video / Demo */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-xs font-semibold text-slate-200 block flex items-center gap-1.5">
-                <Film className="w-4 h-4 text-purple-400" />
-                Video Principal / Clase / Demo Audiovisual
-              </label>
-              <p className="text-[11px] text-slate-400">
-                YouTube (no listado), Vimeo, Loom, Bunny Stream o archivo MP4 subido.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => videoInputRef.current?.click()}
-              disabled={uploadingVideo}
-              className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-            >
-              <Video className="w-3.5 h-3.5 text-cyan-400" />
-              {uploadingVideo ? "Subiendo..." : "Subir MP4"}
-            </button>
-            <input
-              type="file"
-              ref={videoInputRef}
-              onChange={handleVideoUpload}
-              accept="video/*"
-              className="hidden"
-            />
-          </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Título Atractivo del Producto *
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="ej: Master Prompts para Creadores con Inteligencia Artificial"
+                    className="input-falcon text-sm w-full py-2.5"
+                    required
+                  />
+                </div>
 
-          <div>
-            <input
-              type="text"
-              name="videoUrl"
-              value={formData.videoUrl}
-              onChange={handleChange}
-              placeholder="https://www.youtube.com/watch?v=... o https://www.loom.com/share/..."
-              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs font-mono"
-            />
-          </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Subtítulo / Beneficio Principal *
+                  </label>
+                  <input
+                    type="text"
+                    name="shortDescription"
+                    value={formData.shortDescription}
+                    onChange={handleChange}
+                    placeholder="ej: El sistema probado para crear contenido viral y automatizar ventas en 10 minutos al día."
+                    className="input-falcon text-xs w-full py-2.5"
+                    required
+                  />
+                </div>
 
-          {formData.videoUrl && (
-            <div className="rounded-xl overflow-hidden border border-purple-900/50 bg-black aspect-video max-w-lg mx-auto shadow-lg">
-              {parsedVideo.type === "youtube" || parsedVideo.type === "vimeo" || parsedVideo.type === "loom" ? (
-                <iframe
-                  src={parsedVideo.embedUrl}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <video src={parsedVideo.embedUrl} controls className="w-full h-full object-contain" />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 3. Entrega Digital & Enlaces Externos */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center gap-2">
-          <FileCode className="w-4 h-4 text-cyan-400" />
-          3. Entrega Digital: Archivos Descargables y Enlace de Acceso
-        </h3>
-
-        {/* Archivos Descargables */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <label className="text-xs font-semibold text-slate-200 block">
-                Archivos Digitales Descargables (Bóveda Segura FALKO)
-              </label>
-              <p className="text-[11px] text-slate-400">
-                Sube tus paquetes ZIP, PDFs, plantillas, ebooks o código.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingFile}
-              className="btn-falcon-primary text-xs py-2 px-4 flex items-center gap-1.5 shrink-0"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              {uploadingFile ? "Cargando..." : "Subir Archivo"}
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleDeliverableFileUpload}
-              multiple
-              className="hidden"
-            />
-          </div>
-
-          <div className="space-y-2.5">
-            {digitalFiles.map((file) => (
-              <div
-                key={file.id}
-                className="bg-slate-900/90 border border-white/10 rounded-xl p-3.5 flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-800/60 flex items-center justify-center text-cyan-400 shrink-0">
-                    <FileCode className="w-4 h-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Categoría en Marketplace
+                    </label>
+                    <select
+                      name="categoryId"
+                      value={formData.categoryId}
+                      onChange={handleChange}
+                      className="input-falcon text-xs w-full py-2.5"
+                    >
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="min-w-0">
-                    <span className="font-bold text-white block truncate">{file.fileName}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {(file.fileSizeBytes / (1024 * 1024)).toFixed(2)} MB • {file.fileType}
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Garantía Protegida FALKO
+                    </label>
+                    <select
+                      name="guaranteeDays"
+                      value={formData.guaranteeDays}
+                      onChange={handleChange}
+                      className="input-falcon text-xs w-full py-2.5"
+                    >
+                      <option value={7}>7 días de garantía incondicional</option>
+                      <option value={14}>14 días de garantía</option>
+                      <option value={30}>30 días de garantía (Recomendada para mayor conversión)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Cover Image Selector */}
+                <div className="pt-2 space-y-3">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    Portada del Producto (Imagen Principal)
+                  </label>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-5 bg-slate-950/60 p-4 rounded-2xl border border-white/5">
+                    {/* Live Thumbnail */}
+                    <div className="w-36 h-24 rounded-xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 relative group">
+                      <img
+                        src={formData.coverImageUrl}
+                        alt="Portada"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-2 w-full">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => coverInputRef.current?.click()}
+                          disabled={uploadingCover}
+                          className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+                        >
+                          <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>{uploadingCover ? "Subiendo..." : "Subir mi propia imagen"}</span>
+                        </button>
+                        <input
+                          ref={coverInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleCoverUpload}
+                          className="hidden"
+                        />
+                      </div>
+
+                      <span className="text-[11px] text-slate-400 block">
+                        O elige una de nuestras portadas prediseñadas en alta resolución:
+                      </span>
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                        {COVER_PRESETS.map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setFormData((prev) => ({ ...prev, coverImageUrl: preset.url }))}
+                            className={`h-12 rounded-lg overflow-hidden border transition-all ${
+                              formData.coverImageUrl === preset.url
+                                ? "border-cyan-400 ring-2 ring-cyan-500/50 scale-105"
+                                : "border-white/10 opacity-70 hover:opacity-100"
+                            }`}
+                            title={preset.title}
+                          >
+                            <img src={preset.url} alt={preset.title} className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between pt-4 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setWizardStep(1)}
+                  className="btn-falcon-secondary text-xs py-2.5 px-4"
+                >
+                  &larr; Paso Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWizardStep(3)}
+                  className="btn-falcon-primary text-xs py-2.5 px-6 shadow-glow flex items-center gap-1.5 font-bold"
+                >
+                  <span>Continuar a Precio & Entrega</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: PRICE, DELIVERABLES & PUBLISH */}
+          {wizardStep === 3 && (
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                <div>
+                  <span className="text-xs uppercase font-bold text-cyan-400 font-mono">Paso 3 de 3</span>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Precio de Venta & Entrega al Comprador</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setWizardStep(2)}
+                  className="text-xs text-slate-400 hover:text-white"
+                >
+                  &larr; Volver a Info
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-5">
+                  {/* Price Setting */}
+                  <div className="bg-slate-950/60 p-5 rounded-2xl border border-white/5 space-y-3">
+                    <label className="block text-xs font-semibold text-slate-300">
+                      Precio de Venta (USD) *
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3.5 top-3 text-cyan-400 font-bold font-mono">$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleChange}
+                          placeholder="49.00"
+                          required
+                          className="input-falcon text-lg font-black font-mono w-full py-2.5 pl-8 text-white"
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">USD</span>
+                    </div>
+                  </div>
+
+                  {/* Delivery Mode Selection: Files or URL Link */}
+                  <div className="space-y-4">
+                    <label className="block text-xs font-semibold text-slate-300">
+                      ¿Cómo recibirá el producto tu cliente tras pagar?
+                    </label>
+
+                    {/* Option A: Digital Files */}
+                    <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4 text-cyan-400" />
+                          Archivos Digitales Descargables (PDF, ZIP, Videos, etc.)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingFile}
+                          className="btn-falcon-primary text-[11px] py-1 px-3 shadow-glow flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>{uploadingFile ? "Subiendo..." : "Agregar Archivo"}</span>
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          multiple
+                          onChange={handleDeliverableFileUpload}
+                          className="hidden"
+                        />
+                      </div>
+
+                      {digitalFiles.length > 0 ? (
+                        <div className="space-y-2">
+                          {digitalFiles.map((file) => (
+                            <div
+                              key={file.id}
+                              className="bg-slate-900/80 p-3 rounded-xl border border-white/5 flex items-center justify-between text-xs"
+                            >
+                              <div className="flex items-center gap-2.5 truncate">
+                                <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
+                                <span className="text-white font-medium truncate">{file.fileName}</span>
+                                <span className="text-[10px] text-slate-500 font-mono shrink-0">
+                                  ({(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB)
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFile(file.id)}
+                                className="text-slate-500 hover:text-rose-400 p-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-500 italic">No hay archivos cargados aún.</p>
+                      )}
+                    </div>
+
+                    {/* Option B: Direct Link or Community Access */}
+                    <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-3">
+                      <span className="text-xs font-bold text-white flex items-center gap-2">
+                        <LinkIcon className="w-4 h-4 text-purple-400" />
+                        O Enlace Privado de Acceso (Notion, Drive, Canal VIP, Discord)
+                      </span>
+                      <input
+                        type="url"
+                        name="accessUrl"
+                        value={formData.accessUrl}
+                        onChange={handleChange}
+                        placeholder="https://t.me/+canal_vip o https://notion.so/mi-plantilla"
+                        className="input-falcon text-xs w-full py-2 font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Earnings & Split Summary Widget */}
+                <div className="glass-panel p-5 rounded-2xl border border-cyan-500/30 bg-slate-950/90 flex flex-col justify-between space-y-4 shadow-glow">
+                  <div>
+                    <span className="text-[10px] uppercase font-mono font-bold text-cyan-400 block mb-1">
+                      Desglose de Ganancias
+                    </span>
+                    <h3 className="text-base font-bold text-white mb-4">Lo que recibes por venta</h3>
+
+                    <div className="space-y-3 text-xs">
+                      <div className="flex justify-between text-slate-300">
+                        <span>Precio al comprador:</span>
+                        <span className="font-mono font-bold text-white">
+                          {formatCurrency(numPrice, "USD")}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between text-slate-400">
+                        <span>Tarifa FALKO (10%):</span>
+                        <span className="font-mono text-slate-400">
+                          - {formatCurrency(split.platformFeeConverted, "USD")}
+                        </span>
+                      </div>
+
+                      <div className="pt-3 border-t border-white/10 flex justify-between items-center text-emerald-400">
+                        <span className="font-bold">Tu Ganancia Neta:</span>
+                        <span className="text-xl font-black font-mono">
+                          {formatCurrency(split.sellerEarningAmount, "USD")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ready to Publish Button */}
+                  <div className="pt-4 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                      className="w-full btn-falcon-primary py-3.5 text-sm font-bold shadow-glow flex items-center justify-center gap-2"
+                    >
+                      <Rocket className="w-4 h-4" />
+                      <span>{loading ? "Publicando Producto..." : "¡Publicar Producto Ahora!"}</span>
+                    </button>
+                    <span className="text-[10px] text-slate-400 text-center block mt-2">
+                      Garantía protegida y pasarelas globales activas al instante.
                     </span>
                   </div>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFile(file.id)}
-                  className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-950/30 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Enlace Externo */}
-        <div className="bg-slate-950/60 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-200 block flex items-center gap-1.5">
-              <LinkIcon className="w-4 h-4 text-purple-400" />
-              Enlace de Acceso Externo (Notion, Google Drive, Discord, Telegram, SaaS) (Opcional)
-            </label>
-            <p className="text-[11px] text-slate-400">
-              Pega el enlace privado de acceso a tu espacio de trabajo o comunidad.
-            </p>
-          </div>
-
-          <div>
-            <input
-              type="url"
-              name="accessUrl"
-              value={formData.accessUrl}
-              onChange={handleChange}
-              placeholder="https://notion.so/... o https://drive.google.com/..."
-              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-semibold text-slate-300 block mb-1">
-              Instrucciones de Acceso para el Comprador
-            </label>
-            <textarea
-              rows={2}
-              name="accessInstructions"
-              value={formData.accessInstructions}
-              onChange={handleChange}
-              placeholder="Ej: Haz clic en el botón para duplicar la plantilla en tu Notion..."
-              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Módulos & Lecciones (Cursos / Formaciones) */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-heading font-bold text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-cyan-400" />
-              4. Módulos y Lecciones de Curso (Opcional)
-            </h3>
-            <p className="text-xs text-slate-400">
-              Estructura tu formación en capítulos con video y duración estimada.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleAddModule}
-            className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5 text-cyan-400" />
-            Añadir Módulo
-          </button>
-        </div>
-
-        {modules.length > 0 ? (
-          <div className="space-y-4">
-            {modules.map((mod, mIdx) => (
-              <div key={mod.id} className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <input
-                    type="text"
-                    value={mod.title}
-                    onChange={(e) =>
-                      setModules((prev) =>
-                        prev.map((m) => (m.id === mod.id ? { ...m, title: e.target.value } : m))
-                      )
-                    }
-                    className="font-bold text-sm text-cyan-300 bg-transparent border-b border-white/10 focus:border-cyan-400 outline-none pb-1 w-full max-w-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveModule(mod.id)}
-                    className="text-slate-400 hover:text-rose-400 p-1"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Lessons in module */}
-                <div className="space-y-2 pl-2 border-l-2 border-cyan-500/30">
-                  {mod.lessons.map((les, lIdx) => (
-                    <div key={les.id} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center bg-slate-900/60 p-2.5 rounded-xl border border-white/5 text-xs">
-                      <input
-                        type="text"
-                        value={les.title}
-                        onChange={(e) =>
-                          setModules((prev) =>
-                            prev.map((m) =>
-                              m.id === mod.id
-                                ? {
-                                    ...m,
-                                    lessons: m.lessons.map((l) =>
-                                      l.id === les.id ? { ...l, title: e.target.value } : l
-                                    ),
-                                  }
-                                : m
-                            )
-                          )
-                        }
-                        placeholder="Título de la clase"
-                        className="glass-input px-2.5 py-1.5 rounded-lg text-xs"
-                      />
-                      <input
-                        type="text"
-                        value={les.videoUrl}
-                        onChange={(e) =>
-                          setModules((prev) =>
-                            prev.map((m) =>
-                              m.id === mod.id
-                                ? {
-                                    ...m,
-                                    lessons: m.lessons.map((l) =>
-                                      l.id === les.id ? { ...l, videoUrl: e.target.value } : l
-                                    ),
-                                  }
-                                : m
-                            )
-                          )
-                        }
-                        placeholder="URL de Video (YouTube / Loom / MP4)"
-                        className="glass-input px-2.5 py-1.5 rounded-lg text-xs font-mono"
-                      />
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          value={les.durationMin}
-                          onChange={(e) =>
-                            setModules((prev) =>
-                              prev.map((m) =>
-                                m.id === mod.id
-                                  ? {
-                                      ...m,
-                                      lessons: m.lessons.map((l) =>
-                                        l.id === les.id
-                                          ? { ...l, durationMin: parseInt(e.target.value) || 5 }
-                                          : l
-                                      ),
-                                    }
-                                  : m
-                              )
-                            )
-                          }
-                          className="glass-input w-20 px-2 py-1.5 rounded-lg text-xs font-mono"
-                        />
-                        <span className="text-[11px] text-slate-400">min</span>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => handleAddLesson(mod.id)}
-                    className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold pt-1"
-                  >
-                    <Plus className="w-3 h-3" /> Añadir Lección
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="border border-dashed border-white/10 rounded-2xl p-4 text-center text-slate-500 text-xs">
-            Sin módulos de curso configurados. Ideal si vendes cursos paso a paso.
-          </div>
-        )}
-      </div>
-
-      {/* 5. Order Bump (Venta Adicional en Checkout) & Píxeles de Tracking */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <h3 className="text-base font-heading font-bold text-white flex items-center gap-2">
-          <Zap className="w-4 h-4 text-amber-400" />
-          5. Order Bump (Venta Adicional 1-Click) y Píxeles de Conversión
-        </h3>
-
-        {/* Order Bump Settings */}
-        <div className="bg-amber-950/20 border border-amber-500/30 rounded-2xl p-4 sm:p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-amber-300 block flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              Configurar Oferta Order Bump en el Checkout
-            </label>
-            <span className="text-[10px] font-mono text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">
-              Aumenta tu ticket +30%
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
-              <label className="text-[11px] text-slate-300 block mb-1">Título del Bump</label>
-              <input
-                type="text"
-                name="orderBumpTitle"
-                value={formData.orderBumpTitle}
-                onChange={handleChange}
-                placeholder="Ej: + Pack de 100 Prompts y Plantillas Editables"
-                className="w-full px-3 py-2 rounded-xl glass-input text-xs"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-slate-300 block mb-1">Precio Adicional (USD)</label>
-              <input
-                type="number"
-                step="0.01"
-                name="orderBumpPrice"
-                value={formData.orderBumpPrice}
-                onChange={handleChange}
-                placeholder="9.99"
-                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono font-bold"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[11px] text-slate-300 block mb-1">Descripción breve del beneficio</label>
-            <input
-              type="text"
-              name="orderBumpDescription"
-              value={formData.orderBumpDescription}
-              onChange={handleChange}
-              placeholder="Ej: Accede a todos los archivos fuente listos para usar con licencia comercial."
-              className="w-full px-3 py-2 rounded-xl glass-input text-xs"
-            />
-          </div>
-        </div>
-
-        {/* Píxeles de Tracking */}
-        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Píxeles de Conversión y Anuncios (Tracking para Ads)</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <label className="text-[11px] text-slate-400 block mb-1">Meta Pixel ID (Facebook/IG)</label>
-              <input
-                type="text"
-                name="metaPixelId"
-                value={formData.metaPixelId}
-                onChange={handleChange}
-                placeholder="Ej: 1234567890"
-                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-slate-400 block mb-1">Google Analytics / Ads ID</label>
-              <input
-                type="text"
-                name="googleAnalyticsId"
-                value={formData.googleAnalyticsId}
-                onChange={handleChange}
-                placeholder="Ej: G-XXXXXX o AW-XXXX"
-                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-slate-400 block mb-1">TikTok Pixel ID</label>
-              <input
-                type="text"
-                name="tiktokPixelId"
-                value={formData.tiktokPixelId}
-                onChange={handleChange}
-                placeholder="Ej: CXXXXXXX"
-                className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Cupones de Descuento & Kit para Afiliados */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <h3 className="text-base font-heading font-bold text-white flex items-center gap-2">
-          <Tag className="w-4 h-4 text-purple-400" />
-          6. Cupones de Descuento y Materiales para Afiliados
-        </h3>
-
-        {/* Cupones */}
-        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
-          <label className="text-xs font-bold text-slate-200 block">Cupones de Descuento Promocionales</label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newCouponCode}
-              onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
-              placeholder="Código (ej: VIP50)"
-              className="w-full px-3 py-2 rounded-xl glass-input text-xs font-mono"
-            />
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                min="5"
-                max="90"
-                value={newCouponPct}
-                onChange={(e) => setNewCouponPct(parseInt(e.target.value) || 10)}
-                className="w-20 px-3 py-2 rounded-xl glass-input text-xs font-mono"
-              />
-              <span className="text-xs text-slate-400">%</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleAddCoupon}
-              className="btn-falcon-secondary text-xs px-3 py-2 shrink-0"
-            >
-              Crear Cupón
-            </button>
-          </div>
-
-          {coupons.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {coupons.map((c) => (
-                <div key={c.id} className="bg-purple-950/60 border border-purple-800/80 px-3 py-1 rounded-xl text-xs flex items-center gap-2 text-purple-300">
-                  <span className="font-mono font-bold">{c.code}</span>
-                  <span>(-{c.discountPct}%)</span>
-                  <button type="button" onClick={() => handleRemoveCoupon(c.id)} className="text-slate-400 hover:text-rose-400">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
             </div>
           )}
         </div>
+      )}
 
-        {/* Swipe Kit */}
-        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-2">
-          <label className="text-xs font-bold text-slate-200 block">
-            Carpeta de Recursos & Swipe Files para tus Afiliados (Opcional)
-          </label>
-          <p className="text-[11px] text-slate-400">
-            Enlace a Google Drive o Notion con creativos, videos para TikTok/Reels y copys de ventas para tus afiliados.
-          </p>
-          <input
-            type="url"
-            name="affiliateSwipeUrl"
-            value={formData.affiliateSwipeUrl}
-            onChange={handleChange}
-            placeholder="https://drive.google.com/drive/folders/..."
-            className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs font-mono"
-          />
-        </div>
-      </div>
-
-      {/* 7. Pricing & Financial Rules */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <h3 className="text-base font-heading font-bold text-white mb-2 flex items-center justify-between">
-          <span>7. Precio, Garantía y Reparto Contable</span>
-          <span className="text-xs font-mono text-cyan-400 font-bold bg-cyan-950 px-2.5 py-1 rounded border border-cyan-800">
-            Regla FALKO 25 UYU Base
-          </span>
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Precio Base *</label>
-            <input
-              type="number"
-              step="0.01"
-              required
-              min="1"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs font-mono font-bold"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Moneda Base</label>
-            <select
-              name="currencyCode"
-              value={formData.currencyCode}
-              onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-200 text-xs focus:outline-none focus:border-cyan-400 font-mono"
-            >
-              {Object.keys(CURRENCY_RATES).map((code) => (
-                <option key={code} value={code}>
-                  {code} ({CURRENCY_RATES[code].symbol})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Período de Garantía (Mín. 7 días) *
-            </label>
-            <select
-              name="guaranteeDays"
-              value={formData.guaranteeDays}
-              onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-emerald-400 text-xs focus:outline-none focus:border-cyan-400 font-bold"
-            >
-              <option value="7">7 Días de Garantía (Estándar)</option>
-              <option value="14">14 Días de Garantía (Recomendado)</option>
-              <option value="30">30 Días de Garantía (Máxima Confianza)</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Simulator Box */}
-        <div className="bg-slate-950/80 rounded-2xl p-5 border border-cyan-500/30 shadow-glow space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold text-white border-b border-white/5 pb-2">
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              Simulación Contable por Venta Unitaria
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono">Calculado en Servidor</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="bg-purple-950/30 border border-purple-900/50 p-3 rounded-xl">
-              <span className="text-purple-300 text-[11px] block">Comisión Afiliado ({formData.affiliateEnabled ? formData.affiliateCommissionPct : 0}%)</span>
-              <span className="text-base font-black font-mono text-purple-400">
-                {formatCurrency(split.affiliateCommissionAmount, formData.currencyCode)}
-              </span>
+      {/* ========================================================================= */}
+      {/* 💎 MODO 2: PRO STUDIO AVANZADO (Módulos, Bump, Píxeles, Cupones) */}
+      {/* ========================================================================= */}
+      {creationMode === "pro" && (
+        <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in duration-200">
+          {/* Main Info */}
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-white/5">
+              <Sparkles className="w-5 h-5 text-cyan-400" />
+              <h2 className="text-base font-bold text-white">1. Información del Producto</h2>
             </div>
 
-            <div className="bg-cyan-950/30 border border-cyan-900/50 p-3 rounded-xl">
-              <span className="text-cyan-300 text-[11px] block">Tarifa Plataforma FALKO</span>
-              <span className="text-base font-black font-mono text-cyan-400">
-                {formatCurrency(split.platformFeeConverted, formData.currencyCode)}
-              </span>
-            </div>
-
-            <div className="bg-emerald-950/40 border border-emerald-800/60 p-3 rounded-xl">
-              <span className="text-emerald-300 text-[11px] block font-bold">Tu Ganancia Neta</span>
-              <span className="text-base font-black font-mono text-emerald-400">
-                {formatCurrency(split.sellerEarningAmount, formData.currencyCode)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 8. Affiliate Program Settings */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-heading font-bold text-white">
-              8. Programa de Afiliados para este Producto
-            </h3>
-            <p className="text-xs text-slate-400">
-              Permite que la red de promotores de FALKO venda tu producto a cambio de una comisión.
-            </p>
-          </div>
-          <input
-            type="checkbox"
-            name="affiliateEnabled"
-            checked={formData.affiliateEnabled}
-            onChange={handleChange}
-            className="w-5 h-5 accent-cyan-400 cursor-pointer"
-          />
-        </div>
-
-        {formData.affiliateEnabled && (
-          <div className="space-y-4 pt-4 border-t border-white/10">
-            <div>
-              <div className="flex justify-between text-xs text-slate-300 mb-1">
-                <span>Porcentaje de Comisión para Afiliados:</span>
-                <span className="font-mono font-bold text-purple-400">{formData.affiliateCommissionPct}%</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Título del Producto *
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  placeholder="ej: SaaS Boilerplate Ultra"
+                  className="input-falcon text-sm w-full py-2.5"
+                />
               </div>
-              <input
-                type="range"
-                min="10"
-                max="80"
-                step="5"
-                name="affiliateCommissionPct"
-                value={formData.affiliateCommissionPct}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Categoría
+                </label>
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  className="input-falcon text-xs w-full py-2.5"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Garantía (días)
+                </label>
+                <select
+                  name="guaranteeDays"
+                  value={formData.guaranteeDays}
+                  onChange={handleChange}
+                  className="input-falcon text-xs w-full py-2.5"
+                >
+                  <option value={7}>7 días</option>
+                  <option value={14}>14 días</option>
+                  <option value={30}>30 días</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Descripción Completa (Markdown soportado)
+              </label>
+              <textarea
+                rows={5}
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
-                className="w-full accent-purple-500 cursor-pointer"
+                placeholder="Explica qué incluye, características y beneficios..."
+                className="input-falcon text-xs w-full py-2.5 resize-none font-mono"
               />
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <label
-                onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "AUTO" }))}
-                className={`p-3.5 rounded-xl border text-xs cursor-pointer ${
-                  formData.affiliateApprovalMode === "AUTO"
-                    ? "bg-cyan-950/40 border-cyan-500 text-white font-bold"
-                    : "bg-slate-900 border-white/10 text-slate-400"
-                }`}
-              >
-                <strong className="block text-cyan-400">Automática (AUTO)</strong>
-                <span className="text-[11px] font-normal">Cualquier afiliado puede generar su enlace de inmediato.</span>
-              </label>
+          {/* Pricing & Order Bump */}
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-white/5">
+              <DollarSign className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-base font-bold text-white">2. Precio & Venta Adicional (Order Bump)</h2>
+            </div>
 
-              <label
-                onClick={() => setFormData((prev) => ({ ...prev, affiliateApprovalMode: "MANUAL" }))}
-                className={`p-3.5 rounded-xl border text-xs cursor-pointer ${
-                  formData.affiliateApprovalMode === "MANUAL"
-                    ? "bg-purple-950/40 border-purple-500 text-white font-bold"
-                    : "bg-slate-900 border-white/10 text-slate-400"
-                }`}
-              >
-                <strong className="block text-purple-400">Manual (MANUAL)</strong>
-                <span className="text-[11px] font-normal">El afiliado debe solicitarte autorización previa.</span>
-              </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Precio Base (USD) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="input-falcon text-sm font-mono w-full py-2.5"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Título de Order Bump (Opcional)
+                </label>
+                <input
+                  type="text"
+                  name="orderBumpTitle"
+                  value={formData.orderBumpTitle}
+                  onChange={handleChange}
+                  placeholder="ej: + Plantilla Notion Exclusiva (9.99 USD)"
+                  className="input-falcon text-xs w-full py-2.5"
+                />
+              </div>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end gap-3 pt-4">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="btn-falcon-secondary text-xs py-3 px-6"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={loading || uploadingCover || uploadingGallery || uploadingFile || uploadingVideo}
-          className="btn-falcon-primary text-sm py-3 px-8 shadow-glow cursor-pointer"
-        >
-          <Zap className="w-4 h-4" />
-          {loading ? "Publicando en FALKO..." : "Publicar Producto Ahora"}
-        </button>
-      </div>
-    </form>
+          {/* Pixels & Tracking */}
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-white/5">
+              <Target className="w-5 h-5 text-purple-400" />
+              <h2 className="text-base font-bold text-white">3. Píxeles de Conversión & Tráfico</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Meta Pixel ID (Facebook Ads)
+                </label>
+                <input
+                  type="text"
+                  name="metaPixelId"
+                  value={formData.metaPixelId}
+                  onChange={handleChange}
+                  placeholder="1234567890"
+                  className="input-falcon text-xs w-full py-2.5 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Google Analytics 4 ID
+                </label>
+                <input
+                  type="text"
+                  name="googleAnalyticsId"
+                  value={formData.googleAnalyticsId}
+                  onChange={handleChange}
+                  placeholder="G-XXXXXXX"
+                  className="input-falcon text-xs w-full py-2.5 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  TikTok Pixel ID
+                </label>
+                <input
+                  type="text"
+                  name="tiktokPixelId"
+                  value={formData.tiktokPixelId}
+                  onChange={handleChange}
+                  placeholder="CXXXXXXXX"
+                  className="input-falcon text-xs w-full py-2.5 font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-falcon-primary py-3.5 px-8 text-sm font-bold shadow-glow flex items-center gap-2"
+            >
+              <Rocket className="w-4 h-4" />
+              <span>{loading ? "Publicando..." : "Publicar Producto Pro"}</span>
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }
