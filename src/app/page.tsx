@@ -19,6 +19,8 @@ import {
   Zap,
 } from "lucide-react";
 import { FalconLogo } from "@/components/layout/FalconLogo";
+import { LandingHeroFeeStat } from "@/components/landing/LandingHeroFeeStat";
+import { LandingSellerFeePill, LandingMigrationSection } from "@/components/landing/LandingFeeDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -79,12 +81,9 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {/* Floating Live Mock Stats Pill Grid */}
+        {/* Floating Live Mock Stats Pill Grid with Adaptive Localized Fee */}
         <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
-          <div className="glass-panel p-3.5 rounded-2xl border border-white/5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Tarifa Base</span>
-            <span className="text-sm font-black font-mono text-cyan-400">25 UYU Fijo</span>
-          </div>
+          <LandingHeroFeeStat />
 
           <div className="glass-panel p-3.5 rounded-2xl border border-white/5">
             <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Garantía</span>
@@ -148,9 +147,7 @@ export default async function HomePage() {
               <p className="text-slate-300 text-xs leading-relaxed">
                 Publica tus productos en minutos, sube archivos o videos, define enlaces privados de Notion o Drive y cobra en tu moneda local con retiros directos.
               </p>
-              <div className="pt-2 flex items-center gap-1.5 text-cyan-400 text-[11px] font-semibold">
-                <Sparkles className="w-4 h-4" /> Tarifa plana de 25 UYU
-              </div>
+              <LandingSellerFeePill />
             </div>
 
             {/* Afiliado */}
@@ -175,58 +172,7 @@ export default async function HomePage() {
       {/* ======================================================== */}
       {/* 3. PÁSATE A FALKO: COMPARATIVA & MIGRACIÓN EXCLUSIVA     */}
       {/* ======================================================== */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-        <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/20 via-slate-950 to-slate-950 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-          <div className="space-y-4 max-w-2xl text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>¿VENDES EN HOTMART, GUMROAD O CLICKBANK?</span>
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl font-heading font-black text-white">
-              Pásate a FALKO y Aumenta tu Margen de Ganancia
-            </h2>
-
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Conserva el máximo de dinero de cada venta. En FALKO la única comisión de la plataforma es una <strong>tarifa fija de 25 UYU</strong> (pesos uruguayos) sin importar el precio de tu producto, sin mensualidades y con cobros en tu moneda local o Cripto USDT.
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-left">
-              <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
-                <span className="text-[10px] text-slate-400 font-mono block">Tarifa FALKO</span>
-                <span className="text-xs font-bold text-emerald-400">25 UYU Fija</span>
-              </div>
-              <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
-                <span className="text-[10px] text-slate-400 font-mono block">Retiros Locales</span>
-                <span className="text-xs font-bold text-cyan-400">PIX, SPEI, PSE, MP</span>
-              </div>
-              <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5 col-span-2 sm:col-span-1">
-                <span className="text-[10px] text-slate-400 font-mono block">Velocidad</span>
-                <span className="text-xs font-bold text-purple-300">Pagos Inmediatos</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
-            <Link
-              href="/migrate"
-              className="btn-falcon-primary text-xs py-3.5 px-8 shadow-glow font-bold flex items-center justify-center gap-2 text-center"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Ver Calculadora de Migración</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/register"
-              className="btn-falcon-secondary text-xs py-3 px-6 text-center text-slate-300"
-            >
-              Crear Cuenta y Empezar
-            </Link>
-          </div>
-        </div>
-      </section>
+      <LandingMigrationSection />
 
       {/* ======================================================== */}
       {/* 4. LLAMADO A LA ACCIÓN FINAL                             */}
