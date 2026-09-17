@@ -21,6 +21,9 @@ import {
 import { FalconLogo } from "@/components/layout/FalconLogo";
 import { LandingHeroFeeStat } from "@/components/landing/LandingHeroFeeStat";
 import { LandingSellerFeePill, LandingMigrationSection } from "@/components/landing/LandingFeeDisplay";
+import { LandingInteractiveDemo } from "@/components/landing/LandingInteractiveDemo";
+import { LandingProfitCalculator } from "@/components/landing/LandingProfitCalculator";
+import { LandingFaq } from "@/components/landing/LandingFaq";
 
 export const dynamic = "force-dynamic";
 
@@ -34,16 +37,16 @@ export default async function HomePage() {
   return (
     <div className="relative overflow-hidden">
       {/* Dynamic Ambient Aurora Lights */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[550px] bg-gradient-to-b from-cyan-500/20 via-purple-600/10 to-transparent blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] bg-gradient-to-b from-cyan-500/20 via-purple-600/10 to-transparent blur-[140px] pointer-events-none -z-10" />
       <div className="absolute top-80 right-10 w-96 h-96 bg-cyan-500/10 blur-[100px] pointer-events-none -z-10" />
       <div className="absolute top-96 left-10 w-96 h-96 bg-purple-500/10 blur-[100px] pointer-events-none -z-10" />
 
       {/* ======================================================== */}
       {/* 1. HERO: REGISTRARSE & INICIAR SESIÓN                     */}
       {/* ======================================================== */}
-      <section className="relative pt-16 pb-24 md:pt-24 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center">
+      <section className="relative pt-16 pb-16 md:pt-24 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center">
         {/* Falcon Top Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 border border-cyan-500/40 text-cyan-300 text-xs font-semibold mb-8 backdrop-blur-xl shadow-glow">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/80 border border-cyan-500/40 text-cyan-300 text-xs font-semibold mb-8 backdrop-blur-xl shadow-glow">
           <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
           <span>Infraestructura Global de Productos Digitales</span>
           <span className="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full">
@@ -82,23 +85,28 @@ export default async function HomePage() {
         </div>
 
         {/* Floating Live Mock Stats Pill Grid with Adaptive Localized Fee */}
-        <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
+        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
           <LandingHeroFeeStat />
 
-          <div className="glass-panel p-3.5 rounded-2xl border border-white/5">
+          <div className="glass-panel p-3.5 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all">
             <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Garantía</span>
             <span className="text-sm font-black font-mono text-emerald-400">7 a 30 Días</span>
           </div>
 
-          <div className="glass-panel p-3.5 rounded-2xl border border-white/5">
+          <div className="glass-panel p-3.5 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all">
             <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Afiliados</span>
             <span className="text-sm font-black font-mono text-purple-400">Hasta 80% Comis.</span>
           </div>
 
-          <div className="glass-panel p-3.5 rounded-2xl border border-white/5">
+          <div className="glass-panel p-3.5 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all">
             <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Bóveda Digital</span>
             <span className="text-sm font-black font-mono text-white">Cifrado AES-256</span>
           </div>
+        </div>
+
+        {/* Live Interactive Product & Vault Demo */}
+        <div className="mt-16">
+          <LandingInteractiveDemo />
         </div>
       </section>
 
@@ -170,14 +178,24 @@ export default async function HomePage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 3. PÁSATE A FALKO: COMPARATIVA & MIGRACIÓN EXCLUSIVA     */}
+      {/* 3. SIMULADOR DE BENEFICIOS PARA CREADORES                */}
+      {/* ======================================================== */}
+      <LandingProfitCalculator />
+
+      {/* ======================================================== */}
+      {/* 4. PÁSATE A FALKO: COMPARATIVA & MIGRACIÓN EXCLUSIVA     */}
       {/* ======================================================== */}
       <LandingMigrationSection />
 
       {/* ======================================================== */}
-      {/* 4. LLAMADO A LA ACCIÓN FINAL                             */}
+      {/* 5. PREGUNTAS FRECUENTES (FAQ INTERACTIVO)                 */}
       {/* ======================================================== */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto text-center">
+      <LandingFaq />
+
+      {/* ======================================================== */}
+      {/* 6. LLAMADO A LA ACCIÓN FINAL                             */}
+      {/* ======================================================== */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto text-center">
         <div className="glass-panel-glow p-8 sm:p-14 border border-cyan-500/40 shadow-glow rounded-3xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
           <FalconLogo size="lg" className="justify-center mb-6" />
