@@ -74,6 +74,7 @@ model Product {
   shortDescription       String?
   coverImageUrl          String
   demoUrl                String?
+  salesPageUrl           String?
   videoUrl               String?
   accessUrl              String?
   accessInstructions     String?

@@ -93,10 +93,11 @@ export function EditProductClient({
   const [guaranteeDays, setGuaranteeDays] = useState(initialProduct.guaranteeDays?.toString() || "7");
   const [status, setStatus] = useState(initialProduct.status || "APPROVED");
 
-  // Media
+  // Media & Landing
   const [coverImageUrl, setCoverImageUrl] = useState(initialProduct.coverImageUrl || "");
   const [videoUrl, setVideoUrl] = useState(initialProduct.videoUrl || "");
   const [demoUrl, setDemoUrl] = useState(initialProduct.demoUrl || "");
+  const [salesPageUrl, setSalesPageUrl] = useState(initialProduct.salesPageUrl || "");
 
   // Delivery / Vault
   const [accessUrl, setAccessUrl] = useState(initialProduct.accessUrl || "");
@@ -179,6 +180,7 @@ export function EditProductClient({
         coverImageUrl: coverImageUrl.trim() || COVER_PRESETS[0].url,
         videoUrl: videoUrl.trim() || null,
         demoUrl: demoUrl.trim() || null,
+        salesPageUrl: salesPageUrl.trim() || null,
         accessUrl: accessUrl.trim() || null,
         accessInstructions: accessInstructions.trim() || null,
         affiliateEnabled: Boolean(affiliateEnabled),
@@ -478,7 +480,7 @@ export function EditProductClient({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-300 block">
-                  Enlace de Previsualización Pública (Demo / Landing Externa)
+                  Enlace de Previsualización Pública (Demo Externa)
                 </label>
                 <input
                   type="url"
@@ -487,6 +489,28 @@ export function EditProductClient({
                   placeholder="https://midemo.com"
                   className="input-falcon w-full text-sm"
                 />
+              </div>
+
+              <div className="md:col-span-2 space-y-1.5 pt-2 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Página de Ventas Propia / Landing Page Externa (Opcional)</span>
+                  </label>
+                  <span className="text-[11px] text-cyan-400 font-medium">
+                    {salesPageUrl ? "✓ Landing personalizada activa" : "✓ Usando página de ventas nativa de FALKO"}
+                  </span>
+                </div>
+                <input
+                  type="url"
+                  value={salesPageUrl}
+                  onChange={(e) => setSalesPageUrl(e.target.value)}
+                  placeholder="https://tupropiaweb.com/producto-landing (Si lo dejas vacío, se usa la página de ventas de FALKO)"
+                  className="input-falcon w-full text-sm"
+                />
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Si tienes una página de ventas propia en WordPress, Webflow o Framer, ingrésala aquí. Si lo dejas vacío, se mostrará automáticamente la <strong>página de ventas optimizada de FALKO</strong> con checkout integrado.
+                </p>
               </div>
             </div>
           </div>

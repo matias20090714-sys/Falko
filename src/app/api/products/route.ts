@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
       affiliateApprovalMode = "AUTO",
       coverImageUrl,
       demoUrl,
+      salesPageUrl,
       videoUrl,
       accessUrl,
       accessInstructions,
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
         affiliateCommissionPct: validatedComm,
         affiliateApprovalMode,
         demoUrl: demoUrl || null,
+        salesPageUrl: salesPageUrl || null,
         videoUrl: videoUrl || null,
         accessUrl: accessUrl || null,
         accessInstructions: accessInstructions || null,
@@ -216,6 +218,7 @@ export async function PUT(req: NextRequest) {
       affiliateApprovalMode = "AUTO",
       coverImageUrl,
       demoUrl,
+      salesPageUrl,
       videoUrl,
       accessUrl,
       accessInstructions,
@@ -264,6 +267,7 @@ export async function PUT(req: NextRequest) {
     if (affiliateApprovalMode) updateData.affiliateApprovalMode = affiliateApprovalMode;
     if (coverImageUrl) updateData.coverImageUrl = coverImageUrl;
     if (demoUrl !== undefined) updateData.demoUrl = demoUrl || null;
+    if (salesPageUrl !== undefined) updateData.salesPageUrl = salesPageUrl || null;
     if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null;
     if (accessUrl !== undefined) updateData.accessUrl = accessUrl || null;
     if (accessInstructions !== undefined) updateData.accessInstructions = accessInstructions || null;

@@ -214,6 +214,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     affiliateApprovalMode: "AUTO",
     coverImageUrl: COVER_PRESETS[0].url,
     demoUrl: "",
+    salesPageUrl: "",
     videoUrl: "",
     accessUrl: "",
     accessInstructions: "",
@@ -229,16 +230,8 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     affiliateSwipeUrl: "",
   });
 
-  // Digital Files
-  const [digitalFiles, setDigitalFiles] = useState<UploadedFileItem[]>([
-    {
-      id: "initial-1",
-      fileName: "recursos_digitales_falko.zip",
-      fileSizeBytes: 18450000,
-      fileType: "application/zip",
-      storageKey: "vault/recursos_digitales_falko.zip",
-    },
-  ]);
+  // Digital Files (Default empty so only seller's real files exist)
+  const [digitalFiles, setDigitalFiles] = useState<UploadedFileItem[]>([]);
 
   // Gallery
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
@@ -993,8 +986,32 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                         value={formData.accessUrl}
                         onChange={handleChange}
                         placeholder="https://t.me/+canal_vip o https://notion.so/mi-plantilla"
-                        className="input-falcon text-xs w-full py-2 font-mono"
+                        className="input-falcon text-xs w-full py-2"
                       />
+                    </div>
+
+                    {/* Option C: Custom External Sales Page */}
+                    <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-cyan-400" />
+                          Página de Ventas Propia / Landing Page Externa (Opcional)
+                        </span>
+                        <span className="text-[10px] text-cyan-400 font-semibold">
+                          {formData.salesPageUrl ? "✓ Landing personalizada" : "✓ Landing nativa FALKO"}
+                        </span>
+                      </div>
+                      <input
+                        type="url"
+                        name="salesPageUrl"
+                        value={formData.salesPageUrl}
+                        onChange={handleChange}
+                        placeholder="https://miweb.com/landing-producto (Vacío = Página de ventas automática de FALKO)"
+                        className="input-falcon text-xs w-full py-2"
+                      />
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        Si ya tienes tu propia web o landing externa, colócala aquí. Si lo dejas vacío, tus compradores verán directamente la <strong>página de ventas de alta conversión de FALKO</strong>.
+                      </p>
                     </div>
 
                     {/* ======================================================== */}
