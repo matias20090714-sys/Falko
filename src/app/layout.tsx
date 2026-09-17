@@ -40,6 +40,9 @@ export const metadata: Metadata = {
     title: "FALKO — Marketplace de Productos Digitales",
     description: "El marketplace de productos digitales de alta conversión con garantía protegida y comisiones inmediatas.",
   },
+  verification: {
+    google: "OU7NqV62yDytfaTd7LKtaoGiG0wlSFAiKPQI9P1POks",
+  },
 };
 
 export default async function RootLayout({
