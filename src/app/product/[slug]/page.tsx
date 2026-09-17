@@ -145,13 +145,49 @@ export default async function ProductDetailPage({
     hasPurchased = !!existingOrder;
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.shortDescription || product.description.substring(0, 200),
+    image: [product.coverImageUrl],
+    offers: {
+      "@type": "Offer",
+      price: product.price,
+      priceCurrency: product.currencyCode || "USD",
+      availability: "https://schema.org/InStock",
+      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://falko.dpdns.org"}/product/${product.slug}`,
+      seller: {
+        "@type": "Person",
+        name: `${product.seller?.firstName || "Creador"} ${product.seller?.lastName || "Verificado"}`,
+      },
+    },
+    ...(product.ratingAvg && product.ratingAvg > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.ratingAvg.toFixed(1),
+            reviewCount: Math.max(1, product.reviewsCount || 1),
+            bestRating: "5",
+            worstRating: "1",
+          },
+        }
+      : {}),
+  };
+
   return (
-    <ProductDetailClient
-      product={product}
-      currentUser={currentUser}
-      affiliateProductRecord={affiliateProductRecord}
-      hasPurchased={hasPurchased}
-      refCodeParam={searchParams.ref || ""}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetailClient
+        product={product}
+        currentUser={currentUser}
+        affiliateProductRecord={affiliateProductRecord}
+        hasPurchased={hasPurchased}
+        refCodeParam={searchParams.ref || ""}
+      />
+    </>
   );
 }
