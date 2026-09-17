@@ -143,14 +143,7 @@ export async function POST(req: NextRequest) {
                   fileType: f.fileType || "application/zip",
                   storageKey: f.storageKey || `vault/${Date.now()}_${f.fileName || "recurso.zip"}`,
                 }))
-              : [
-                  {
-                    fileName: "paquete_recursos_completo.zip",
-                    fileSizeBytes: 24500000,
-                    fileType: "application/zip",
-                    storageKey: `vault/${Date.now()}_paquete.zip`,
-                  },
-                ],
+              : [],
         },
         images: {
           create:
@@ -197,6 +190,129 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, product });
   } catch (error: any) {
     console.error("Product creation error:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: "No autenticado." }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const {
+      id,
+      title,
+      description,
+      shortDescription,
+      price,
+      currencyCode = "USD",
+      categoryId,
+      guaranteeDays = 7,
+      affiliateEnabled = true,
+      affiliateCommissionPct = 20,
+      affiliateApprovalMode = "AUTO",
+      coverImageUrl,
+      demoUrl,
+      videoUrl,
+      accessUrl,
+      accessInstructions,
+      orderBumpTitle,
+      orderBumpPrice,
+      orderBumpDescription,
+      metaPixelId,
+      googleAnalyticsId,
+      tiktokPixelId,
+      affiliateSwipeUrl,
+      files,
+      status,
+    } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "ID de producto requerido." }, { status: 400 });
+    }
+
+    // Check ownership or ADMIN
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      include: { files: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: "Producto no encontrado." }, { status: 404 });
+    }
+
+    const isAdmin = Array.isArray(user.roles) && user.roles.includes("ADMIN");
+    if (existing.sellerId !== user.id && !isAdmin) {
+      return NextResponse.json({ success: false, error: "No tienes permiso para modificar este producto." }, { status: 403 });
+    }
+
+    const updateData: any = {};
+    if (title) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (shortDescription !== undefined) updateData.shortDescription = shortDescription;
+    if (price !== undefined && parseFloat(price) > 0) updateData.price = parseFloat(price);
+    if (currencyCode) updateData.currencyCode = currencyCode;
+    if (categoryId) updateData.categoryId = categoryId;
+    if (guaranteeDays !== undefined) updateData.guaranteeDays = Math.max(7, parseInt(guaranteeDays) || 7);
+    if (affiliateEnabled !== undefined) updateData.affiliateEnabled = Boolean(affiliateEnabled);
+    if (affiliateCommissionPct !== undefined) {
+      updateData.affiliateCommissionPct = Math.min(90, Math.max(5, parseFloat(affiliateCommissionPct) || 20));
+    }
+    if (affiliateApprovalMode) updateData.affiliateApprovalMode = affiliateApprovalMode;
+    if (coverImageUrl) updateData.coverImageUrl = coverImageUrl;
+    if (demoUrl !== undefined) updateData.demoUrl = demoUrl || null;
+    if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null;
+    if (accessUrl !== undefined) updateData.accessUrl = accessUrl || null;
+    if (accessInstructions !== undefined) updateData.accessInstructions = accessInstructions || null;
+    if (orderBumpTitle !== undefined) updateData.orderBumpTitle = orderBumpTitle || null;
+    if (orderBumpPrice !== undefined) updateData.orderBumpPrice = orderBumpPrice ? parseFloat(orderBumpPrice) : null;
+    if (orderBumpDescription !== undefined) updateData.orderBumpDescription = orderBumpDescription || null;
+    if (metaPixelId !== undefined) updateData.metaPixelId = metaPixelId || null;
+    if (googleAnalyticsId !== undefined) updateData.googleAnalyticsId = googleAnalyticsId || null;
+    if (tiktokPixelId !== undefined) updateData.tiktokPixelId = tiktokPixelId || null;
+    if (affiliateSwipeUrl !== undefined) updateData.affiliateSwipeUrl = affiliateSwipeUrl || null;
+    if (status) updateData.status = status;
+
+    // Handle files update if provided
+    if (Array.isArray(files)) {
+      // Delete old files and replace with current files list
+      await prisma.productFile.deleteMany({
+        where: { productId: id },
+      });
+
+      if (files.length > 0) {
+        await prisma.productFile.createMany({
+          data: files.map((f: any) => ({
+            productId: id,
+            fileName: f.fileName || "recurso.zip",
+            fileSizeBytes: f.fileSizeBytes || 1048576,
+            fileType: f.fileType || "application/octet-stream",
+            storageKey: f.storageKey || `vault/${Date.now()}_${f.fileName || "recurso.zip"}`,
+          })),
+        });
+      }
+    }
+
+    const updated = await prisma.product.update({
+      where: { id },
+      data: updateData,
+      include: {
+        category: true,
+        files: true,
+        images: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Producto actualizado con éxito.",
+      product: updated,
+    });
+  } catch (error: any) {
+    console.error("Product update error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

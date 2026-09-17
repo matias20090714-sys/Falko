@@ -249,16 +249,23 @@ export function ProductDetailClient({
             <h1 className="text-2xl sm:text-3xl font-heading font-black text-white leading-snug">
               {product.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-400">
-              <div className="flex items-center gap-1 text-amber-400 font-bold">
-                <Star className="w-4 h-4 fill-amber-400" />
-                <span>{product.ratingAvg ? product.ratingAvg.toFixed(1) : "5.0"}</span>
-                <span className="text-slate-400 font-normal">
-                  ({product.reviewsCount || 0} opiniones)
-                </span>
-              </div>
+            <div className="flex flex-wrap items-center gap-3.5 mt-3 text-xs text-slate-400">
+              {product.reviewsCount && product.reviewsCount > 0 ? (
+                <div className="flex items-center gap-1 text-amber-400 font-bold">
+                  <Star className="w-4 h-4 fill-amber-400" />
+                  <span>{product.ratingAvg ? product.ratingAvg.toFixed(1) : "5.0"}</span>
+                  <span className="text-slate-400 font-normal">
+                    ({product.reviewsCount} opiniones)
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-cyan-400 font-bold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Nuevo Lanzamiento</span>
+                </div>
+              )}
               <span>•</span>
-              <span className="font-mono text-slate-300">{product.salesCount || 0} ventas confirmadas</span>
+              <span className="text-slate-300 font-semibold">{product.salesCount || 0} ventas confirmadas</span>
               <span>•</span>
               <div className="flex items-center gap-1 text-emerald-400 font-semibold">
                 <ShieldCheck className="w-4 h-4" />
@@ -268,7 +275,7 @@ export function ProductDetailClient({
           </div>
 
           {/* Special Post-Purchase Access Banner (if user already owns it) */}
-          {hasPurchased && (product.accessUrl || product.files?.length > 0) && (
+          {hasPurchased && (product.accessUrl || (product.files && product.files.length > 0)) && (
             <div className="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-6 shadow-glow space-y-4">
               <div className="flex items-center gap-2 text-emerald-300 font-bold text-base">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -299,7 +306,7 @@ export function ProductDetailClient({
 
               <div className="flex items-center justify-between pt-1">
                 <span className="text-xs text-slate-300">
-                  También puedes gestionar todas tus descargas y compras en tu biblioteca personal.
+                  Gestiona todas tus compras y descargas en tu biblioteca personal.
                 </span>
                 <Link href="/library" className="btn-falcon-secondary text-xs py-1.5 px-3">
                   Ir a mi Biblioteca
@@ -318,24 +325,24 @@ export function ProductDetailClient({
             </div>
           </div>
 
-          {/* Included Digital Deliverables Vault */}
-          <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-heading font-bold text-white flex items-center gap-2">
-                <FileCode className="w-5 h-5 text-cyan-400" />
-                Archivos Digitales Incluidos ({product.files?.length || 0})
-              </h3>
-              <span className="text-xs text-slate-400 flex items-center gap-1">
-                <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                Bóveda Segura FALKO
-              </span>
-            </div>
+          {/* Included Digital Deliverables Vault (Only if files exist or accessUrl is provided) */}
+          {(product.files && product.files.length > 0) ? (
+            <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-heading font-bold text-white flex items-center gap-2">
+                  <FileCode className="w-5 h-5 text-cyan-400" />
+                  Archivos Digitales Incluidos ({product.files.length})
+                </h3>
+                <span className="text-xs text-slate-400 flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                  Bóveda Segura FALKO
+                </span>
+              </div>
 
-            {product.files && product.files.length > 0 ? (
               <div className="space-y-3">
                 {product.files.map((file: any) => (
                   <div
-                    key={file.id}
+                    key={file.id || file.fileName}
                     className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-3">
@@ -344,7 +351,7 @@ export function ProductDetailClient({
                       </div>
                       <div>
                         <span className="font-bold text-white block">{file.fileName}</span>
-                        <span className="text-[11px] text-slate-500 font-mono">
+                        <span className="text-[11px] text-slate-500">
                           {(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB • {file.fileType}
                         </span>
                       </div>
@@ -359,19 +366,31 @@ export function ProductDetailClient({
                         Descargar
                       </Link>
                     ) : (
-                      <span className="text-slate-500 font-mono text-[11px] bg-slate-900 px-2 py-1 rounded">
+                      <span className="text-slate-500 text-[11px] bg-slate-900 px-2 py-1 rounded">
                         Disponible tras compra
                       </span>
                     )}
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-xs text-slate-400 italic">
-                {product.accessUrl ? "Acceso directo mediante enlace y plataforma privada." : "Entrega digital inmediata tras confirmación."}
+            </div>
+          ) : product.accessUrl ? (
+            <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-heading font-bold text-white flex items-center gap-2">
+                  <ExternalLink className="w-5 h-5 text-cyan-400" />
+                  Acceso & Entrega Inmediata
+                </h3>
+                <span className="text-xs text-slate-400 flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                  Garantía Protegida
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Este producto se entrega con enlace de acceso privado y credenciales exclusivas inmediatamente después de completado el pago.
               </p>
-            )}
-          </div>
+            </div>
+          ) : null}
 
           {/* Verified Customer Reviews Section */}
           <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
@@ -456,12 +475,12 @@ export function ProductDetailClient({
             <div className="mb-6">
               <span className="text-xs text-slate-400 block mb-1">Precio Final</span>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black font-mono text-cyan-400">
+                <span className="text-3xl font-black text-cyan-400">
                   {formatCurrency(convertedPrice, currency)}
                 </span>
               </div>
               {currency !== product.currencyCode && (
-                <span className="text-xs text-slate-500 font-mono block mt-0.5">
+                <span className="text-xs text-slate-400 block mt-0.5">
                   Precio Base: {formatCurrency(product.price, product.currencyCode)}
                 </span>
               )}
@@ -553,13 +572,13 @@ export function ProductDetailClient({
                     Programa de Afiliados
                   </h4>
                 </div>
-                <span className="text-xs font-bold font-mono text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800">
+                <span className="text-xs font-bold text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800">
                   {product.affiliateCommissionPct}% Comisión
                 </span>
               </div>
 
               <p className="text-xs text-slate-300 mb-3">
-                Gana hasta <strong className="text-white font-mono">{formatCurrency(convertedAffiliateEst, currency)}</strong> por cada venta referida con tu enlace único.
+                Gana hasta <strong className="text-white font-bold">{formatCurrency(convertedAffiliateEst, currency)}</strong> por cada venta referida con tu enlace único.
               </p>
 
               {affiliateRecord && affiliateRecord.status === "APPROVED" ? (
@@ -571,7 +590,7 @@ export function ProductDetailClient({
                     <input
                       readOnly
                       value={`${typeof window !== "undefined" ? window.location.origin : ""}/product/${product.slug}?ref=${affiliateRecord.uniqueRefCode}`}
-                      className="bg-transparent text-[11px] text-slate-300 flex-1 outline-none font-mono truncate"
+                      className="bg-transparent text-[11px] text-slate-300 flex-1 outline-none truncate"
                     />
                     <button
                       onClick={handleCopyAffiliateLink}
@@ -624,7 +643,7 @@ export function ProductDetailClient({
         <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
           <div>
             <span className="text-[10px] text-slate-400 block">Precio Digital</span>
-            <span className="text-base font-black font-mono text-cyan-400">
+            <span className="text-base font-black text-cyan-400">
               {formatCurrency(convertedPrice, currency)}
             </span>
           </div>

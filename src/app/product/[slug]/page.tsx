@@ -99,7 +99,7 @@ export default async function ProductDetailPage({
       product = {
         ...fallback,
         status: "APPROVED",
-        files: [{ id: "mock-file-1", fileName: "recurso_completo_falko.zip", fileSizeBytes: 24500000 }],
+        files: [],
         reviews: [],
         createdAt: new Date(),
         updatedAt: new Date(),

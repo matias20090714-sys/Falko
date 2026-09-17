@@ -231,6 +231,16 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                   />
                 </button>
 
+                {/* Edit Full Product Details */}
+                <Link
+                  href={`/seller/products/${p.id}/edit`}
+                  className="btn-falcon-primary text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold shadow-glow"
+                  title="Editar detalles, precio, contenido y archivos de este producto"
+                >
+                  <Settings2 className="w-3.5 h-3.5" />
+                  <span>Editar</span>
+                </Link>
+
                 {/* Quick Edit Affiliate Settings Modal Trigger */}
                 <button
                   type="button"
@@ -238,7 +248,7 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                   className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-cyan-400 transition-colors"
                   title="Configurar porcentaje y modo de aprobación de afiliados"
                 >
-                  <Settings2 className="w-3.5 h-3.5" />
+                  <Percent className="w-3.5 h-3.5" />
                 </button>
 
                 {/* Copy Sales Link */}
