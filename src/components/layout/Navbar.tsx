@@ -125,7 +125,7 @@ export function Navbar({ initialUser }: NavbarProps) {
             <div className="relative">
               <button
                 onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                className="flex items-center gap-1.5 text-xs font-mono font-semibold bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-white/10 hover:border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all shadow-sm"
+                className="flex items-center gap-1.5 text-xs font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-white/10 hover:border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all shadow-sm"
               >
                 <Globe className="w-3.5 h-3.5 text-cyan-400" />
                 <span>{selectedCurrency}</span>
@@ -134,7 +134,7 @@ export function Navbar({ initialUser }: NavbarProps) {
 
               {isCurrencyOpen && (
                 <div className="absolute right-0 mt-2 w-52 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl py-2 z-50 max-h-72 overflow-y-auto">
-                  <div className="px-3.5 py-1.5 text-[10px] uppercase font-bold text-slate-400 border-b border-white/5 font-mono">
+                  <div className="px-3.5 py-1.5 text-[10px] uppercase font-bold text-slate-400 border-b border-white/5 tracking-wider">
                     Selecciona Moneda
                   </div>
                   {Object.keys(CURRENCY_RATES).map((currCode) => {
@@ -154,7 +154,7 @@ export function Navbar({ initialUser }: NavbarProps) {
                           selectedCurrency === currCode ? "text-cyan-400 font-bold bg-cyan-950/40" : "text-slate-300"
                         }`}
                       >
-                        <span className="font-mono font-bold">{c.symbol} {c.code}</span>
+                        <span className="font-bold">{c.symbol} {c.code}</span>
                         <span className="text-[10px] text-slate-400 truncate max-w-[100px]">{c.name}</span>
                       </button>
                     );

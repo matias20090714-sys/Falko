@@ -105,7 +105,7 @@ export function LandingInteractiveDemo() {
             <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-5 space-y-4 shadow-glow">
               <div className="flex items-center justify-between pb-3 border-b border-white/5 text-xs">
                 <span className="font-bold text-white">Demo: SaaS Boilerplate Pro</span>
-                <span className="font-mono font-black text-cyan-400">$49.00 USD</span>
+                <span className="font-extrabold text-cyan-400 text-sm">$49.00 USD</span>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
@@ -131,7 +131,7 @@ export function LandingInteractiveDemo() {
                 </div>
                 <div className="flex justify-between text-slate-300 font-bold">
                   <span>Total a Pagar:</span>
-                  <span className="text-emerald-400 font-mono">$49.00 USD</span>
+                  <span className="text-emerald-400 font-extrabold">$49.00 USD</span>
                 </div>
               </div>
 
@@ -147,7 +147,7 @@ export function LandingInteractiveDemo() {
         {activeTab === "vault" && (
           <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-in fade-in duration-200">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/40 text-purple-300 text-[11px] font-mono font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/40 text-purple-300 text-[11px] font-bold">
                 <Lock className="w-3.5 h-3.5 text-purple-400" />
                 <span>Cifrado de Alta Seguridad</span>
               </div>
@@ -160,7 +160,7 @@ export function LandingInteractiveDemo() {
             </div>
 
             <div className="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-5 space-y-3 shadow-glow">
-              <span className="text-[10px] font-mono uppercase text-purple-300 font-bold block">
+              <span className="text-[10px] uppercase text-purple-300 font-bold block">
                 📦 Biblioteca del Comprador
               </span>
               <div className="space-y-2 text-xs">
@@ -169,7 +169,7 @@ export function LandingInteractiveDemo() {
                     <Package className="w-4 h-4 text-purple-400" />
                     <span className="text-white font-semibold truncate">paquete_master_completo.zip</span>
                   </div>
-                  <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800 font-mono">
+                  <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800 font-bold">
                     Token Activo
                   </span>
                 </div>
@@ -182,7 +182,7 @@ export function LandingInteractiveDemo() {
         {activeTab === "affiliate" && (
           <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-in fade-in duration-200">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[11px] font-mono font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold">
                 <Share2 className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Multiplica tus Ventas en Piloto Automático</span>
               </div>
@@ -197,9 +197,9 @@ export function LandingInteractiveDemo() {
             <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-5 space-y-3 shadow-glow text-xs">
               <div className="flex justify-between items-center text-slate-300">
                 <span>Tu Producto ($50.00 USD):</span>
-                <span className="text-white font-mono font-bold">Comisión Afiliado 40%</span>
+                <span className="text-white font-bold">Comisión Afiliado 40%</span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-white/5 flex justify-between font-mono font-bold">
+              <div className="p-3 rounded-xl bg-slate-950 border border-white/5 flex justify-between font-bold">
                 <span className="text-emerald-400">Afiliado gana: +$20.00 USD</span>
                 <span className="text-cyan-400">Tú ganas: +$29.37 USD</span>
               </div>

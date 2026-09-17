@@ -90,7 +90,7 @@ export function LandingMigrationSection() {
         <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="space-y-4 max-w-2xl text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-xs font-bold">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>¿VENDES EN HOTMART, GUMROAD O CLICKBANK?</span>
           </div>
@@ -106,17 +106,17 @@ export function LandingMigrationSection() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-left">
             <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
-              <span className="text-[10px] text-slate-400 font-mono block">Tarifa FALKO ({currency})</span>
-              <span className="text-xs font-bold text-emerald-400 font-mono">
+              <span className="text-[10px] text-slate-400 block tracking-wider">Tarifa FALKO ({currency})</span>
+              <span className="text-xs font-bold text-emerald-400">
                 {formattedFee} Fija
               </span>
             </div>
             <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5">
-              <span className="text-[10px] text-slate-400 font-mono block">Retiros Locales</span>
+              <span className="text-[10px] text-slate-400 block tracking-wider">Retiros Locales</span>
               <span className="text-xs font-bold text-cyan-400">PIX, SPEI, PSE, MP</span>
             </div>
             <div className="bg-slate-900/80 p-3 rounded-xl border border-white/5 col-span-2 sm:col-span-1">
-              <span className="text-[10px] text-slate-400 font-mono block">Velocidad</span>
+              <span className="text-[10px] text-slate-400 block tracking-wider">Velocidad</span>
               <span className="text-xs font-bold text-purple-300">Pagos Inmediatos</span>
             </div>
           </div>

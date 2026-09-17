@@ -43,16 +43,16 @@ export function LandingHeroFeeStat() {
 
   return (
     <div className="glass-panel p-3.5 rounded-2xl border border-cyan-500/20 bg-slate-950/80 shadow-glow transition-all duration-300">
-      <span className="text-[10px] uppercase font-bold text-cyan-400 block font-mono">
+      <span className="text-[10px] uppercase font-bold text-cyan-400 block tracking-wider">
         Tarifa Base ({currency})
       </span>
       <div className="flex items-baseline gap-1 mt-0.5">
-        <span className="text-sm font-black font-mono text-cyan-300">
+        <span className="text-sm font-black text-cyan-300">
           {isUyu ? "25 UYU Fijo" : `~${formatCurrency(fee.feeConverted, currency)}`}
         </span>
       </div>
       {!isUyu && (
-        <span className="text-[9px] text-slate-400 font-mono block">
+        <span className="text-[9px] text-slate-400 font-medium block">
           Equivalente a 25 UYU fija
         </span>
       )}

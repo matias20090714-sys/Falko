@@ -89,18 +89,18 @@ export default async function HomePage() {
           <LandingHeroFeeStat />
 
           <div className="glass-panel p-3.5 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Garantía</span>
-            <span className="text-sm font-black font-mono text-emerald-400">7 a 30 Días</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Garantía</span>
+            <span className="text-sm font-black text-emerald-400">7 a 30 Días</span>
           </div>
 
           <div className="glass-panel p-3.5 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Afiliados</span>
-            <span className="text-sm font-black font-mono text-purple-400">Hasta 80% Comis.</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Afiliados</span>
+            <span className="text-sm font-black text-purple-400">Hasta 80% Comis.</span>
           </div>
 
           <div className="glass-panel p-3.5 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block font-mono">Bóveda Digital</span>
-            <span className="text-sm font-black font-mono text-white">Cifrado AES-256</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Bóveda Digital</span>
+            <span className="text-sm font-black text-white">Cifrado AES-256</span>
           </div>
         </div>
 
@@ -116,7 +116,7 @@ export default async function HomePage() {
       <section id="como-funciona" className="py-20 bg-slate-950/70 border-t border-slate-900/80 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold font-mono text-cyan-400 uppercase tracking-widest mb-2">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2">
               <Zap className="w-3.5 h-3.5" /> Arquitectura Unificada
             </div>
             <h2 className="text-3xl sm:text-4xl font-heading font-black text-white">

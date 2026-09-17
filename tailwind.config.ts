@@ -37,6 +37,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
         heading: ["var(--font-outfit)", "sans-serif"],
+        mono: ["var(--font-inter)", "sans-serif"],
       },
       boxShadow: {
         'glow': '0 0 25px -5px rgba(0, 242, 254, 0.25)',
