@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     description: "El marketplace de productos digitales de alta conversión con garantía protegida y comisiones inmediatas.",
   },
   verification: {
-    google: "OU7NqV62yDytfaTd7LKtaoGiG0wlSFAiKPQI9P1POks",
+    google: "E32DKYJtKNNKi6pj3tlgSIaINJp42Kx1iQKzNlc4dbM",
   },
 };
 
