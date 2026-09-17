@@ -14,6 +14,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://falko.dpdns.org"),
   title: "FALKO — Marketplace Internacional de Productos Digitales",
   description:
     "El marketplace donde los productos digitales se convierten en oportunidades. Compra con garantía protegida, vende tus conocimientos o gana comisiones promocionando productos.",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "FALKO — Marketplace Internacional de Productos Digitales",
     description: "Compra, vende o promociona productos digitales de alto rendimiento con comisiones instantáneas y garantía protegida.",
-    url: "https://falko.io",
+    url: "https://falko.dpdns.org",
     siteName: "FALKO",
     locale: "es_ES",
     type: "website",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "FALKO — Marketplace de Productos Digitales",
-    description: "El marketplace de escala global con ranking en USD y garantía protegida.",
+    description: "El marketplace de productos digitales de alta conversión con garantía protegida y comisiones inmediatas.",
   },
 };
 
