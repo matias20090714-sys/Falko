@@ -59,6 +59,9 @@ export async function POST(req: NextRequest) {
       price,
       compareAtPrice,
       currencyCode = "USD",
+      pricingType = "ONE_TIME",
+      billingInterval = "MONTHLY",
+      trialDays = 0,
       categoryId,
       guaranteeDays = 7,
       storeTheme = "dark",
@@ -130,6 +133,9 @@ export async function POST(req: NextRequest) {
         price: parseFloat(price),
         compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
         currencyCode,
+        pricingType: pricingType || "ONE_TIME",
+        billingInterval: pricingType === "SUBSCRIPTION" ? (billingInterval || "MONTHLY") : "MONTHLY",
+        trialDays: parseInt(trialDays?.toString() || "0") || 0,
         categoryId,
         guaranteeDays: validatedGuarantee,
         storeTheme: storeTheme || "dark",
@@ -233,6 +239,9 @@ export async function PUT(req: NextRequest) {
       price,
       compareAtPrice,
       currencyCode = "USD",
+      pricingType,
+      billingInterval,
+      trialDays,
       categoryId,
       guaranteeDays = 7,
       storeTheme,
@@ -285,6 +294,9 @@ export async function PUT(req: NextRequest) {
     if (shortDescription !== undefined) updateData.shortDescription = shortDescription;
     if (price !== undefined && parseFloat(price) > 0) updateData.price = parseFloat(price);
     if (compareAtPrice !== undefined) updateData.compareAtPrice = compareAtPrice ? parseFloat(compareAtPrice) : null;
+    if (pricingType !== undefined) updateData.pricingType = pricingType || "ONE_TIME";
+    if (billingInterval !== undefined) updateData.billingInterval = billingInterval || "MONTHLY";
+    if (trialDays !== undefined) updateData.trialDays = parseInt(trialDays?.toString() || "0") || 0;
     if (storeTheme !== undefined) updateData.storeTheme = storeTheme || "dark";
     if (upsellTitle !== undefined) updateData.upsellTitle = upsellTitle || null;
     if (upsellDescription !== undefined) updateData.upsellDescription = upsellDescription || null;

@@ -306,8 +306,15 @@ export function MarketplaceClient({
                     alt={p.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-2 left-2 bg-slate-950/85 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-md border border-white/10 shadow-sm truncate max-w-[120px]">
-                    {p.category.name}
+                  <div className="absolute top-2 left-2 flex items-center gap-1">
+                    <div className="bg-slate-950/85 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-md border border-white/10 shadow-sm truncate max-w-[120px]">
+                      {p.category.name}
+                    </div>
+                    {p.pricingType === "SUBSCRIPTION" && (
+                      <div className="bg-purple-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-purple-300 px-1.5 py-0.5 rounded-md border border-purple-800/80 flex items-center gap-0.5 shadow-sm">
+                        <span>Membresía</span>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Discount Badge or Affiliate Badge */}
@@ -388,6 +395,11 @@ export function MarketplaceClient({
                         )}
                         <span className="text-xs sm:text-sm font-black font-mono text-cyan-400">
                           {formatCurrency(convertedPrice, currency)}
+                          {p.pricingType === "SUBSCRIPTION" && (
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              {p.billingInterval === "YEARLY" ? "/año" : p.billingInterval === "QUARTERLY" ? "/trim" : "/mes"}
+                            </span>
+                          )}
                         </span>
                       </div>
                     </div>

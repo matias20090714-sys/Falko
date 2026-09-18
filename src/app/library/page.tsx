@@ -37,6 +37,21 @@ export default async function LibraryPage() {
     },
   });
 
+  const subscriptions = await prisma.subscription.findMany({
+    where: { userId: user.id },
+    include: {
+      product: {
+        include: {
+          files: true,
+          seller: {
+            select: { firstName: true, lastName: true, avatarUrl: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <DashboardShell initialUser={user}>
       <div className="max-w-7xl mx-auto space-y-8">
@@ -45,11 +60,11 @@ export default async function LibraryPage() {
             Mi Biblioteca Digital
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Accede a todos tus productos digitales adquiridos, genera descargas privadas firmadas y gestiona tus garantías.
+            Accede a todos tus productos digitales adquiridos, genera descargas privadas firmadas y gestiona tus membresías.
           </p>
         </div>
 
-        <LibraryClient orders={orders} currentUser={user} />
+        <LibraryClient orders={orders} subscriptions={subscriptions} currentUser={user} />
       </div>
     </DashboardShell>
   );

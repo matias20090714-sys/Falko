@@ -32,11 +32,17 @@ import {
 
 interface LibraryClientProps {
   orders: any[];
+  subscriptions?: any[];
   currentUser: any;
 }
 
-export function LibraryClient({ orders: initialOrders, currentUser }: LibraryClientProps) {
+export function LibraryClient({
+  orders: initialOrders,
+  subscriptions: initialSubscriptions = [],
+  currentUser,
+}: LibraryClientProps) {
   const [orders, setOrders] = useState(initialOrders);
+  const [subscriptions, setSubscriptions] = useState<any[]>(initialSubscriptions);
   const [selectedOrderForReview, setSelectedOrderForReview] = useState<any>(null);
   const [selectedOrderForRefund, setSelectedOrderForRefund] = useState<any>(null);
   const [selectedOrderForSupport, setSelectedOrderForSupport] = useState<any>(null);
@@ -179,13 +185,36 @@ export function LibraryClient({ orders: initialOrders, currentUser }: LibraryCli
     }, 1000);
   };
 
-  if (orders.length === 0) {
+  const handleCancelSubscription = async (subId: string) => {
+    if (!confirm("¿Estás seguro de que deseas cancelar esta membresía? Ya no se realizarán más cobros.")) return;
+    try {
+      const res = await fetch("/api/subscriptions/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId: subId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubscriptions((prev) =>
+          prev.map((s) => (s.id === subId ? { ...s, status: "CANCELLED" } : s))
+        );
+        setStatusMessage("Membresía cancelada correctamente. No se realizarán más cobros.");
+        setTimeout(() => setStatusMessage(""), 4000);
+      } else {
+        alert(data.error || "No se pudo cancelar la membresía.");
+      }
+    } catch {
+      alert("Error al comunicarse con el servidor.");
+    }
+  };
+
+  if (orders.length === 0 && subscriptions.length === 0) {
     return (
       <div className="glass-panel rounded-3xl p-12 text-center border border-white/10 my-8 shadow-2xl">
         <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
         <h3 className="text-lg font-bold text-white mb-1">Tu biblioteca está vacía</h3>
         <p className="text-xs text-slate-400 max-w-sm mx-auto mb-6">
-          Aún no has adquirido recursos digitales. Explora nuestro marketplace con garantía respaldada.
+          Aún no has adquirido recursos digitales o membresías. Explora nuestro marketplace con garantía respaldada.
         </p>
         <Link href="/marketplace" className="btn-falcon-primary text-xs py-2.5 px-5 shadow-glow">
           Explorar Marketplace
@@ -200,6 +229,70 @@ export function LibraryClient({ orders: initialOrders, currentUser }: LibraryCli
         <div className="bg-emerald-950/60 border border-emerald-500/60 text-emerald-300 text-xs p-3.5 rounded-xl flex items-center gap-2 shadow-glow">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{statusMessage}</span>
+        </div>
+      )}
+
+      {/* Active Subscriptions Section */}
+      {subscriptions.length > 0 && (
+        <div className="glass-panel rounded-3xl p-6 border border-purple-500/30 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-purple-400" />
+              <h2 className="text-base font-bold text-white">Mis Membresías & Suscripciones Activas</h2>
+            </div>
+            <span className="text-xs text-purple-300 font-semibold bg-purple-950 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+              {subscriptions.filter((s) => s.status === "ACTIVE").length} Activas
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {subscriptions.map((sub) => (
+              <div
+                key={sub.id}
+                className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 space-y-3 flex flex-col justify-between"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider">
+                      {sub.billingInterval === "YEARLY" ? "Membresía Anual" : "Membresía Mensual"}
+                    </span>
+                    <h3 className="text-sm font-bold text-white truncate">{sub.product?.title}</h3>
+                    <p className="text-xs font-mono text-cyan-400 font-semibold mt-0.5">
+                      {formatCurrency(sub.amount, sub.currencyCode)} {sub.billingInterval === "YEARLY" ? "/ año" : "/ mes"}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                      sub.status === "ACTIVE"
+                        ? "bg-emerald-950 text-emerald-400 border-emerald-500/40"
+                        : "bg-slate-800 text-slate-400 border-white/10"
+                    }`}
+                  >
+                    {sub.status === "ACTIVE" ? "✓ Activa" : "Cancelada"}
+                  </span>
+                </div>
+
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-slate-400">
+                    {sub.status === "ACTIVE" ? (
+                      <>Próximo cobro: <strong className="text-slate-200">{new Date(sub.nextBillingDate).toLocaleDateString()}</strong></>
+                    ) : (
+                      "Sin cobros pendientes"
+                    )}
+                  </span>
+                  {sub.status === "ACTIVE" && (
+                    <button
+                      type="button"
+                      onClick={() => handleCancelSubscription(sub.id)}
+                      className="text-rose-400 hover:text-rose-300 text-[11px] font-bold hover:underline"
+                    >
+                      Cancelar membresía
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -24,6 +24,7 @@ import {
   Lock,
   Percent,
   Plus,
+  RefreshCw,
   Rocket,
   Save,
   ShieldCheck,
@@ -96,6 +97,15 @@ export function EditProductClient({
   const [price, setPrice] = useState(initialProduct.price?.toString() || "29");
   const [compareAtPrice, setCompareAtPrice] = useState(
     initialProduct.compareAtPrice?.toString() || ""
+  );
+  const [pricingType, setPricingType] = useState<"ONE_TIME" | "SUBSCRIPTION">(
+    initialProduct.pricingType || "ONE_TIME"
+  );
+  const [billingInterval, setBillingInterval] = useState(
+    initialProduct.billingInterval || "MONTHLY"
+  );
+  const [trialDays, setTrialDays] = useState(
+    initialProduct.trialDays?.toString() || "0"
   );
   const [currencyCode, setCurrencyCode] = useState(initialProduct.currencyCode || "USD");
   const [categoryId, setCategoryId] = useState(initialProduct.categoryId || (categories[0]?.id || ""));
@@ -194,6 +204,9 @@ export function EditProductClient({
         description: description.trim(),
         price: parseFloat(price),
         compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
+        pricingType,
+        billingInterval: pricingType === "SUBSCRIPTION" ? billingInterval : "MONTHLY",
+        trialDays: parseInt(trialDays) || 0,
         currencyCode,
         categoryId,
         guaranteeDays: parseInt(guaranteeDays) || 7,
@@ -357,9 +370,95 @@ export function EditProductClient({
               </select>
             </div>
 
+            {/* Pricing Model Selector: One-Time vs Subscription */}
+            <div className="md:col-span-2 space-y-3 pt-2 pb-2 border-t border-b border-white/5">
+              <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Modelo de Cobro del Producto *</span>
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div
+                  onClick={() => setPricingType("ONE_TIME")}
+                  className={`cursor-pointer rounded-2xl p-3.5 border transition-all ${
+                    pricingType === "ONE_TIME"
+                      ? "bg-cyan-950/40 border-cyan-400 shadow-glow"
+                      : "bg-slate-950/60 border-white/5 hover:border-white/20 opacity-80"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <strong className="text-xs text-white flex items-center gap-1.5">
+                      <DollarSign className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Pago Único (Vitalicio)</span>
+                    </strong>
+                    {pricingType === "ONE_TIME" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    El comprador paga una sola vez y obtiene acceso permanente a sus archivos.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setPricingType("SUBSCRIPTION")}
+                  className={`cursor-pointer rounded-2xl p-3.5 border transition-all ${
+                    pricingType === "SUBSCRIPTION"
+                      ? "bg-purple-950/40 border-purple-400 shadow-glow"
+                      : "bg-slate-950/60 border-white/5 hover:border-white/20 opacity-80"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <strong className="text-xs text-white flex items-center gap-1.5">
+                      <RefreshCw className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Suscripción Recurrente / Membresía</span>
+                    </strong>
+                    {pricingType === "SUBSCRIPTION" && <Check className="w-3.5 h-3.5 text-purple-400" />}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Cobro automático mensual o anual para comunidades, software SaaS o newsletters.
+                  </p>
+                </div>
+              </div>
+
+              {/* Expanded options for Subscription */}
+              {pricingType === "SUBSCRIPTION" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-purple-950/20 border border-purple-500/30 rounded-2xl animate-in fade-in-50">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-purple-300 block">
+                      Frecuencia de Cobro Recurrente:
+                    </label>
+                    <select
+                      value={billingInterval}
+                      onChange={(e) => setBillingInterval(e.target.value)}
+                      className="input-falcon w-full text-xs"
+                    >
+                      <option value="MONTHLY">Mensual (Cada 30 días - /mes)</option>
+                      <option value="YEARLY">Anual (Cada 365 días - /año)</option>
+                      <option value="QUARTERLY">Trimestral (Cada 90 días - /trimestre)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-purple-300 block">
+                      Días de Prueba Gratuita (Trial):
+                    </label>
+                    <select
+                      value={trialDays}
+                      onChange={(e) => setTrialDays(e.target.value)}
+                      className="input-falcon w-full text-xs"
+                    >
+                      <option value="0">Sin prueba (Cobro inmediato)</option>
+                      <option value="7">7 Días de Prueba Gratis</option>
+                      <option value="14">14 Días de Prueba Gratis</option>
+                      <option value="30">30 Días de Prueba Gratis</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-300 block">
-                Precio de Venta (Final) *
+                Precio de {pricingType === "SUBSCRIPTION" ? "la Membresía" : "Venta"} (Final) *
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />

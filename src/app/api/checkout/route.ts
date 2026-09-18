@@ -240,6 +240,32 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // If product is a subscription, create a Subscription record
+    if (product.pricingType === "SUBSCRIPTION") {
+      const interval = product.billingInterval || "MONTHLY";
+      const nextBilling = new Date();
+      if (interval === "YEARLY") {
+        nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+      } else if (interval === "QUARTERLY") {
+        nextBilling.setMonth(nextBilling.getMonth() + 3);
+      } else {
+        nextBilling.setMonth(nextBilling.getMonth() + 1);
+      }
+
+      await prisma.subscription.create({
+        data: {
+          userId: buyerUser.id,
+          productId: product.id,
+          orderId: order.id,
+          status: "ACTIVE",
+          billingInterval: interval,
+          amount: split.totalAmount,
+          currencyCode: split.currencyCode,
+          nextBillingDate: nextBilling,
+        },
+      });
+    }
+
     // 10. Process Immutable Double-Entry Ledger & Guarantee Holds
     await processOrderLedger({
       orderId: order.id,

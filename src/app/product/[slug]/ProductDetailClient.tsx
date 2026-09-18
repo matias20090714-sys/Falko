@@ -787,17 +787,47 @@ export function ProductDetailClient({
 
             {/* Price Display */}
             <div>
-              <span className="text-xs text-slate-400 block mb-1">Precio de Oferta</span>
-              <div className="flex items-baseline gap-2.5 flex-wrap">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-slate-400">
+                  {product.pricingType === "SUBSCRIPTION" ? "Precio de la Membresía" : "Precio de Oferta"}
+                </span>
+                {product.pricingType === "SUBSCRIPTION" && (
+                  <span className="text-[10px] bg-purple-950 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-bold">
+                    🔄 Recurrente
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-4xl font-black text-white font-heading">
                   {formatCurrency(convertedPrice, currency)}
                 </span>
+                {product.pricingType === "SUBSCRIPTION" && (
+                  <span className="text-sm text-purple-300 font-bold font-mono">
+                    {product.billingInterval === "YEARLY" ? "/ año" : product.billingInterval === "QUARTERLY" ? "/ trim" : "/ mes"}
+                  </span>
+                )}
                 {convertedCompareAt && discountPct > 0 && (
                   <span className="text-lg text-slate-500 line-through font-mono">
                     {formatCurrency(convertedCompareAt, currency)}
                   </span>
                 )}
               </div>
+
+              {product.pricingType === "SUBSCRIPTION" && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-[11px] text-slate-300 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    <span>Facturación automática {product.billingInterval === "YEARLY" ? "anual" : product.billingInterval === "QUARTERLY" ? "trimestral" : "mensual"} • Cancela con 1 clic</span>
+                  </p>
+                  {product.trialDays > 0 && (
+                    <div className="text-[11px] font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded-lg inline-flex items-center gap-1">
+                      <span>✨ Incluye {product.trialDays} días de prueba gratuita</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {discountPct > 0 && convertedCompareAt && (
                 <div className="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-1 rounded-xl inline-flex items-center gap-1.5 animate-pulse">
                   <span>🔥 ¡Ahorras {formatCurrency(convertedCompareAt - convertedPrice, currency)} ({discountPct}% OFF)!</span>
@@ -826,13 +856,13 @@ export function ProductDetailClient({
             ) : hasPurchased ? (
               <div className="space-y-2.5">
                 <div className="bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs p-3.5 rounded-2xl text-center font-bold">
-                  ✓ Ya tienes este producto en tu biblioteca
+                  ✓ Tienes acceso activo a este producto
                 </div>
                 <Link
                   href="/library"
                   className="btn-falcon-primary w-full text-center justify-center text-xs py-3.5 font-bold shadow-glow"
                 >
-                  Acceder a mis Descargas
+                  Acceder a mis Descargas / Membresías
                 </Link>
               </div>
             ) : (
@@ -842,7 +872,11 @@ export function ProductDetailClient({
                   className="btn-falcon-primary w-full text-center justify-center text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
-                  <span>Comprar con Garantía Protegida</span>
+                  <span>
+                    {product.pricingType === "SUBSCRIPTION"
+                      ? `Suscribirme (${formatCurrency(convertedPrice, currency)}${product.billingInterval === "YEARLY" ? "/año" : "/mes"})`
+                      : "Comprar con Garantía Protegida"}
+                  </span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
