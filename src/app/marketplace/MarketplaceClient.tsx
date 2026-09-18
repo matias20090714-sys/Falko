@@ -266,15 +266,16 @@ export function MarketplaceClient({
                   </div>
 
                   <div>
-                    {/* Rating & Sales */}
+                    {/* Rating & Trust tag */}
                     <div className="flex items-center justify-between text-xs text-slate-400 pb-3 mb-3 border-b border-white/5">
                       <div className="flex items-center gap-1 text-amber-400 font-bold">
                         <Star className="w-3.5 h-3.5 fill-amber-400" />
                         <span>{p.ratingAvg.toFixed(1)}</span>
                         <span className="text-slate-500 font-normal">({p.reviewsCount})</span>
                       </div>
-                      <span className="text-slate-400 text-[11px] font-mono">
-                        {p.salesCount} ventas
+                      <span className="text-emerald-400 text-[11px] font-semibold flex items-center gap-1">
+                        <Zap className="w-3 h-3 text-cyan-400" />
+                        Entrega Inmediata
                       </span>
                     </div>
 

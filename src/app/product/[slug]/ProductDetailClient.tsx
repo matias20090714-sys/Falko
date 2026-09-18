@@ -312,37 +312,75 @@ export function ProductDetailClient({
 
           {/* Title & Metadata */}
           <div className="space-y-3">
-            <h1 className="text-2xl sm:text-4xl font-heading font-black text-white leading-tight">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
+                {product.category?.name || "Recurso Digital"}
+              </span>
+              <span className="text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Producto Verificado</span>
+              </span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white leading-[1.15] tracking-tight">
               {product.title}
             </h1>
+
             {product.shortDescription && (
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+              <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
                 {product.shortDescription}
               </p>
             )}
 
-            <div className="flex flex-wrap items-center gap-3.5 pt-1 text-xs text-slate-400">
+            <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-300">
               {product.reviewsCount && product.reviewsCount > 0 ? (
                 <div className="flex items-center gap-1 text-amber-400 font-bold">
                   <Star className="w-4 h-4 fill-amber-400" />
                   <span>{product.ratingAvg ? product.ratingAvg.toFixed(1) : "5.0"}</span>
                   <span className="text-slate-400 font-normal">
-                    ({product.reviewsCount} opiniones)
+                    ({product.reviewsCount} opiniones verificadas)
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 text-cyan-400 font-bold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Nuevo Lanzamiento</span>
+                <div className="flex items-center gap-1 text-cyan-300 font-bold">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span>⭐ 100% Calidad Garantizada</span>
                 </div>
               )}
               <span>•</span>
-              <span className="text-slate-300 font-semibold">{product.salesCount || 0} compras verificadas</span>
-              <span>•</span>
-              <div className="flex items-center gap-1 text-emerald-400 font-semibold">
+              <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Garantía {product.guaranteeDays} días</span>
+                <span>Garantía de Satisfacción {product.guaranteeDays} Días</span>
               </div>
+              <span>•</span>
+              <div className="flex items-center gap-1.5 text-purple-300 font-semibold">
+                <Lock className="w-3.5 h-3.5 text-purple-400" />
+                <span>Entrega Inmediata</span>
+              </div>
+            </div>
+          </div>
+
+          {/* High-Conversion 4-Pillar Value Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
+              <Zap className="w-5 h-5 text-cyan-400" />
+              <strong className="text-xs font-bold text-white block">Acceso de por Vida</strong>
+              <span className="text-[11px] text-slate-400 block leading-tight">Sin suscripciones ni cobros extra</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <strong className="text-xs font-bold text-white block">Garantía Total</strong>
+              <span className="text-[11px] text-slate-400 block leading-tight">{product.guaranteeDays} días de prueba segura</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
+              <Lock className="w-5 h-5 text-purple-400" />
+              <strong className="text-xs font-bold text-white block">Bóveda Cifrada</strong>
+              <span className="text-[11px] text-slate-400 block leading-tight">Descarga privada y segura</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
+              <MessageSquare className="w-5 h-5 text-amber-400" />
+              <strong className="text-xs font-bold text-white block">Soporte Creador</strong>
+              <span className="text-[11px] text-slate-400 block leading-tight">Atención directa vía WhatsApp</span>
             </div>
           </div>
 
@@ -392,10 +430,10 @@ export function ProductDetailClient({
             <div className="flex items-center gap-2 pb-3 border-b border-white/5">
               <Sparkles className="w-4 h-4 text-cyan-400" />
               <h3 className="text-lg font-heading font-bold text-white">
-                Descripción & Detalles del Recurso
+                ¿Qué incluye este producto y qué beneficios obtendrás?
               </h3>
             </div>
-            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-line space-y-4">
+            <div className="text-slate-200 text-sm sm:text-base leading-relaxed whitespace-pre-line space-y-4">
               {product.description}
             </div>
           </div>
@@ -407,7 +445,7 @@ export function ProductDetailClient({
                 <div className="flex items-center gap-2">
                   <FileCode className="w-5 h-5 text-cyan-400" />
                   <h3 className="text-lg font-heading font-bold text-white">
-                    Archivos Digitales Incluidos ({product.files.length})
+                    Archivos Digitales Listos para Descargar ({product.files.length})
                   </h3>
                 </div>
                 <span className="text-xs text-slate-400 flex items-center gap-1">
@@ -420,14 +458,14 @@ export function ProductDetailClient({
                 {product.files.map((file: any) => (
                   <div
                     key={file.id || file.fileName}
-                    className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 flex items-center justify-between text-xs"
+                    className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 flex items-center justify-between text-xs hover:border-cyan-500/30 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center text-cyan-400">
-                        <FileText className="w-4 h-4" />
+                      <div className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center text-cyan-400 shadow-sm">
+                        <FileText className="w-5 h-5" />
                       </div>
                       <div>
-                        <strong className="text-white block text-xs">{file.fileName}</strong>
+                        <strong className="text-white block text-sm font-semibold">{file.fileName}</strong>
                         <span className="text-[11px] text-slate-400">
                           {(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB • {file.fileType}
                         </span>
@@ -437,14 +475,14 @@ export function ProductDetailClient({
                     {hasPurchased ? (
                       <Link
                         href="/library"
-                        className="btn-falcon-primary text-xs py-1.5 px-3.5 font-bold shadow-glow flex items-center gap-1"
+                        className="btn-falcon-primary text-xs py-2 px-4 font-bold shadow-glow flex items-center gap-1"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Descargar</span>
                       </Link>
                     ) : (
-                      <span className="text-slate-400 text-[11px] bg-slate-900 px-3 py-1.5 rounded-xl border border-white/5">
-                        Entrega al comprar
+                      <span className="text-cyan-300 text-xs bg-cyan-950/60 border border-cyan-500/30 px-3 py-1.5 rounded-xl font-semibold">
+                        ⚡ Entrega Inmediata
                       </span>
                     )}
                   </div>
@@ -457,7 +495,7 @@ export function ProductDetailClient({
                 <div className="flex items-center gap-2">
                   <ExternalLink className="w-5 h-5 text-cyan-400" />
                   <h3 className="text-lg font-heading font-bold text-white">
-                    Acceso & Entrega Digital Inmediata
+                    Acceso Exclusivo & Entrega Digital
                   </h3>
                 </div>
                 <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
@@ -470,6 +508,70 @@ export function ProductDetailClient({
               </p>
             </div>
           ) : null}
+
+          {/* 3 Simple Steps to Access */}
+          <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+            <div className="flex items-center gap-2 pb-3 border-b border-white/5">
+              <Zap className="w-5 h-5 text-cyan-400" />
+              <h3 className="text-lg font-heading font-bold text-white">
+                Cómo Funciona tu Compra en 3 Pasos Sencillos
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-950/70 border border-white/5 p-4 rounded-2xl space-y-2 relative">
+                <div className="w-8 h-8 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-black text-sm flex items-center justify-center">
+                  1
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white">Elige tu Forma de Pago</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Paga con Tarjeta, Mercado Pago, PIX, SPEI o USDT con 0% comisiones ocultas.
+                </p>
+              </div>
+
+              <div className="bg-slate-950/70 border border-white/5 p-4 rounded-2xl space-y-2 relative">
+                <div className="w-8 h-8 rounded-xl bg-purple-950 border border-purple-500/40 text-purple-300 font-black text-sm flex items-center justify-center">
+                  2
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white">Cifrado Seguro SSL</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Tus datos viajan 100% cifrados con protección bancaria de grado empresarial.
+                </p>
+              </div>
+
+              <div className="bg-slate-950/70 border border-white/5 p-4 rounded-2xl space-y-2 relative">
+                <div className="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-500/40 text-emerald-300 font-black text-sm flex items-center justify-center">
+                  3
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white">Acceso Inmediato & Vitalicio</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Obtén tus enlaces y descargas al instante en tu Bóveda Privada de por vida.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Money Back Zero-Risk Guarantee Seal Box */}
+          <div className="bg-gradient-to-r from-emerald-950/60 via-slate-950 to-slate-950 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-glow">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border-2 border-emerald-400/60 flex flex-col items-center justify-center text-center p-2 shrink-0 shadow-lg">
+              <ShieldCheck className="w-9 h-9 text-emerald-400 mb-1" />
+              <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider">
+                {product.guaranteeDays} DÍAS
+              </span>
+            </div>
+            <div className="space-y-2 text-center sm:text-left">
+              <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                Garantía Total de Satisfacción 100% Cero Riesgo
+              </span>
+              <h4 className="text-lg sm:text-xl font-heading font-black text-white">
+                Pruébalo con Total Tranquilidad
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Adquiere este producto hoy y explóralo sin riesgo. Si dentro de los primeros{" "}
+                <strong className="text-white font-bold">{product.guaranteeDays} días</strong> sientes que no cumple tus expectativas, puedes solicitar el reembolso de tu dinero con un solo clic desde tu panel.
+              </p>
+            </div>
+          </div>
 
           {/* Product FAQ Accordion */}
           <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-4">
