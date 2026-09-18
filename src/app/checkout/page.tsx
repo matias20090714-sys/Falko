@@ -197,8 +197,12 @@ function CheckoutContent() {
           includeOrderBump,
           couponCode: appliedCoupon?.code || "",
           customerEmail: currentUser ? currentUser.email : guestEmail.trim(),
-          customerFirstName: currentUser ? currentUser.firstName : guestFirstName.trim(),
-          customerLastName: currentUser ? currentUser.lastName : guestLastName.trim(),
+          customerFirstName: currentUser
+            ? currentUser.firstName
+            : (guestFirstName.trim().split(" ")[0] || "Cliente"),
+          customerLastName: currentUser
+            ? currentUser.lastName
+            : (guestFirstName.trim().split(" ").slice(1).join(" ") || ""),
           customerCountryCode: currentUser ? currentUser.countryCode : guestCountryCode,
         }),
       });
@@ -326,32 +330,18 @@ function CheckoutContent() {
               </div>
             ) : (
               <div className="space-y-3.5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
-                      Nombre <span className="text-cyan-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Tu nombre (ej: Juan)"
-                      value={guestFirstName}
-                      onChange={(e) => setGuestFirstName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
-                      Apellido
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Tu apellido (ej: Pérez)"
-                      value={guestLastName}
-                      onChange={(e) => setGuestLastName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
-                    />
-                  </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                    Nombre Completo <span className="text-cyan-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Tu nombre y apellido"
+                    value={guestFirstName}
+                    onChange={(e) => setGuestFirstName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                  />
                 </div>
 
                 <div>

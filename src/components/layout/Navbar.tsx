@@ -99,9 +99,13 @@ export function Navbar({ initialUser }: NavbarProps) {
   const navLinks = user
     ? [
         { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+        { label: "Mis Compras", href: "/library", icon: Package },
         { label: "Panel de Ventas", href: "/seller", icon: Zap },
       ]
-    : [{ label: "Cómo Funciona", href: "/#como-funciona", icon: null }];
+    : [
+        { label: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+        { label: "Cómo Funciona", href: "/#como-funciona", icon: null },
+      ];
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-[#05070e]/85 backdrop-blur-2xl border-b border-white/[0.08] shadow-2xl">
