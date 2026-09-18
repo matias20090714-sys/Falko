@@ -24,17 +24,23 @@ export function MobileBottomNav({ initialUser }: MobileBottomNavProps) {
   const [user, setUser] = useState<any>(initialUser || null);
 
   useEffect(() => {
-    if (!initialUser) {
+    const checkAuth = () => {
       fetch("/api/auth/me")
         .then((res) => res.json())
         .then((data) => {
           if (data.user) {
             setUser(data.user);
+          } else {
+            setUser(null);
           }
         })
         .catch(() => {});
-    }
-  }, [initialUser]);
+    };
+
+    checkAuth();
+    window.addEventListener("authChange", checkAuth);
+    return () => window.removeEventListener("authChange", checkAuth);
+  }, [pathname]);
 
   // Don't show on checkout or product sales page to maximize buyer conversion
   if (pathname === "/checkout" || pathname?.startsWith("/product/")) return null;

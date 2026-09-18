@@ -57,8 +57,8 @@ export function Navbar({ initialUser }: NavbarProps) {
 
     window.addEventListener("currencyChange", handleCurrencyChange);
 
-    // Check session via API if not passed from SSR
-    if (!initialUser) {
+    // Check session via API to ensure latest auth status
+    const checkAuth = () => {
       fetch("/api/auth/me")
         .then((res) => res.json())
         .then((data) => {
@@ -68,13 +68,21 @@ export function Navbar({ initialUser }: NavbarProps) {
               setSelectedCurrency(data.user.preferredCurrency);
               localStorage.setItem("falko_currency", data.user.preferredCurrency);
             }
+          } else {
+            setUser(null);
           }
         })
         .catch(() => {});
-    }
+    };
 
-    return () => window.removeEventListener("currencyChange", handleCurrencyChange);
-  }, [initialUser]);
+    checkAuth();
+    window.addEventListener("authChange", checkAuth);
+
+    return () => {
+      window.removeEventListener("currencyChange", handleCurrencyChange);
+      window.removeEventListener("authChange", checkAuth);
+    };
+  }, [pathname]);
 
   // If on product store page, let the product page render its independent, distraction-free store header
   if (pathname?.startsWith("/product/")) {

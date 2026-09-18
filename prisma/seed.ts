@@ -78,11 +78,7 @@ async function main() {
       },
     },
     update: {
-      passwordHash: adminPasswordHash,
-      firstName: "Matías",
-      lastName: "Administrador",
-      countryCode: "UY",
-      preferredCurrency: "UYU",
+      // Do not overwrite customized firstName, lastName, country or currency
     },
   });
 
