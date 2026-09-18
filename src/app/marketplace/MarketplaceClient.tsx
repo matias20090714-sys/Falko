@@ -285,112 +285,107 @@ export function MarketplaceClient({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-4.5">
           {initialProducts.map((p) => {
             const convertedPrice = convertCurrency(p.price, p.currencyCode, currency);
 
             return (
               <div
                 key={p.id}
-                className="group glass-panel rounded-2xl overflow-hidden border border-white/10 hover:border-cyan-500/50 transition-all duration-300 flex flex-col hover:-translate-y-1 shadow-xl hover:shadow-glow"
+                className="group glass-panel rounded-2xl overflow-hidden border border-white/10 hover:border-cyan-500/50 transition-all duration-300 flex flex-col hover:-translate-y-1 shadow-lg hover:shadow-glow"
               >
                 {/* Product Cover Link */}
-                <Link href={`/product/${p.slug}`} className="relative aspect-[16/9] w-full overflow-hidden bg-slate-950 block">
+                <Link href={`/product/${p.slug}`} className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950 block">
                   <img
                     src={p.coverImageUrl}
                     alt={p.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-lg border border-white/10 shadow-sm">
+                  <div className="absolute top-2 left-2 bg-slate-950/85 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-md border border-white/10 shadow-sm truncate max-w-[120px]">
                     {p.category.name}
                   </div>
                   {p.affiliateEnabled && (
-                    <div className="absolute top-3 right-3 bg-purple-950/90 backdrop-blur-md text-[10px] font-bold text-purple-300 px-2.5 py-1 rounded-lg border border-purple-800/70 flex items-center gap-1 shadow-sm">
-                      <Percent className="w-3 h-3" />
-                      {p.affiliateCommissionPct}% Afiliados
+                    <div className="absolute top-2 right-2 bg-purple-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-purple-300 px-2 py-0.5 rounded-md border border-purple-800/70 flex items-center gap-1 shadow-sm">
+                      <Percent className="w-2.5 h-2.5" />
+                      <span>{p.affiliateCommissionPct}%</span>
                     </div>
                   )}
-                  <div className="absolute bottom-3 right-3 bg-slate-950/90 text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-md border border-emerald-900/60 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    Garantía {p.guaranteeDays}d
+                  <div className="absolute bottom-2 right-2 bg-slate-950/90 text-[9px] sm:text-[10px] text-emerald-400 font-semibold px-1.5 py-0.5 rounded border border-emerald-900/60 flex items-center gap-0.5">
+                    <ShieldCheck className="w-2.5 h-2.5" />
+                    <span>{p.guaranteeDays}d</span>
                   </div>
                 </Link>
 
                 {/* Body Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3">
                   <div>
                     <Link href={`/product/${p.slug}`}>
-                      <h3 className="text-base font-heading font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 mb-1.5">
+                      <h3 className="text-xs sm:text-sm font-heading font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 mb-1 leading-snug">
                         {p.title}
                       </h3>
                     </Link>
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-2 leading-relaxed hidden sm:block">
                       {p.shortDescription || p.description}
                     </p>
                   </div>
 
-                  <div className="space-y-3.5">
+                  <div className="space-y-2 sm:space-y-2.5">
                     {/* Rating & Trust tag */}
-                    <div className="flex items-center justify-between text-xs text-slate-400 pb-2.5 border-b border-white/5">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pb-1.5 border-b border-white/5">
                       <div className="flex items-center gap-1 text-amber-400 font-bold">
-                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                        <Star className="w-3 h-3 fill-amber-400" />
                         <span>{p.ratingAvg.toFixed(1)}</span>
-                        <span className="text-slate-500 font-normal">({p.reviewsCount})</span>
+                        <span className="text-slate-500 font-normal text-[10px]">({p.reviewsCount})</span>
                       </div>
-                      <span className="text-emerald-400 text-[11px] font-semibold flex items-center gap-1">
-                        <Zap className="w-3 h-3 text-cyan-400" />
-                        Entrega Inmediata
+                      <span className="text-emerald-400 text-[10px] sm:text-[11px] font-semibold flex items-center gap-0.5">
+                        <Zap className="w-2.5 h-2.5 text-cyan-400" />
+                        <span>Instantáneo</span>
                       </span>
                     </div>
 
                     {/* Footer: Seller & Price */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-800 overflow-hidden border border-white/10">
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <div className="w-5 h-5 rounded-full bg-slate-800 overflow-hidden border border-white/10 shrink-0">
                           {p.seller.avatarUrl ? (
                             <img src={p.seller.avatarUrl} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full bg-cyan-800 flex items-center justify-center text-[10px] text-white font-bold">
+                            <div className="w-full h-full bg-cyan-800 flex items-center justify-center text-[9px] text-white font-bold">
                               {p.seller.firstName[0]}
                             </div>
                           )}
                         </div>
-                        <span className="text-xs text-slate-300 truncate max-w-[100px] font-semibold">
-                          {p.seller.firstName} {p.seller.lastName?.[0]}.
+                        <span className="text-[11px] text-slate-300 truncate font-semibold">
+                          {p.seller.firstName}
                         </span>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-base font-black font-mono text-cyan-400">
+                      <div className="text-right shrink-0">
+                        <span className="text-xs sm:text-sm font-black font-mono text-cyan-400">
                           {formatCurrency(convertedPrice, currency)}
                         </span>
-                        {currency !== p.currencyCode && (
-                          <span className="text-[10px] text-slate-500 block font-mono">
-                            Base: {formatCurrency(p.price, p.currencyCode)}
-                          </span>
-                        )}
                       </div>
                     </div>
 
                     {/* Action Buttons: Más Info + Afiliarse */}
-                    <div className={`grid ${p.affiliateEnabled ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-2 border-t border-white/5`}>
+                    <div className={`grid ${p.affiliateEnabled ? "grid-cols-2" : "grid-cols-1"} gap-1.5 pt-1.5 border-t border-white/5`}>
                       <Link
                         href={`/product/${p.slug}`}
-                        className="btn-falcon-primary w-full justify-center text-xs py-2 px-2.5 font-bold flex items-center gap-1 shadow-glow truncate"
+                        className="btn-falcon-primary w-full justify-center text-[10px] sm:text-xs py-1.5 px-2 font-bold flex items-center gap-1 shadow-glow truncate"
                       >
                         <span className="truncate">Más Info</span>
-                        <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                        <ArrowRight className="w-3 h-3 shrink-0" />
                       </Link>
 
                       {p.affiliateEnabled && (
                         <button
                           type="button"
                           onClick={() => handleOpenAffiliateModal(p)}
-                          className="btn-falcon-secondary w-full text-xs py-2 px-2 justify-center text-purple-300 border-purple-500/40 hover:border-purple-400 hover:text-white flex items-center gap-1 font-bold truncate"
+                          className="btn-falcon-secondary w-full text-[10px] sm:text-xs py-1.5 px-1.5 justify-center text-purple-300 border-purple-500/40 hover:border-purple-400 hover:text-white flex items-center gap-0.5 font-bold truncate"
                           title="Obtener enlace de afiliado y ganar comisión"
                         >
-                          <Percent className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                          <span className="truncate">Afiliarse ({p.affiliateCommissionPct}%)</span>
+                          <Percent className="w-3 h-3 text-purple-400 shrink-0" />
+                          <span className="truncate">Afiliarse</span>
                         </button>
                       )}
                     </div>
