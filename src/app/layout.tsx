@@ -86,6 +86,18 @@ export default async function RootLayout({
 
   return (
     <html lang="es" className="dark scroll-smooth">
+      <head>
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="FALKO" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="FALKO" />
+      </head>
       <body className="bg-[#05070e] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
         <Navbar initialUser={currentUser} />
         <main className="flex-1 w-full pb-20 md:pb-0">{children}</main>

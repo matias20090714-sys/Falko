@@ -22,15 +22,25 @@ export function WelcomeOnboardingModal({ user }: WelcomeOnboardingModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Only show if the user hasn't dismissed it
-    const dismissed = localStorage.getItem(`falko_onboarding_dismissed_${user?.id || "guest"}`);
-    if (!dismissed && user) {
+    if (!user) return;
+    const key = `falko_onboarding_seen_${user.id}`;
+    const globalKey = "falko_onboarding_shown";
+    const alreadySeen = localStorage.getItem(key) || localStorage.getItem(globalKey) || localStorage.getItem(`falko_onboarding_dismissed_${user.id}`);
+
+    if (!alreadySeen) {
       setIsOpen(true);
+      // Auto-mark as seen immediately so it never triggers again
+      localStorage.setItem(key, "true");
+      localStorage.setItem(globalKey, "true");
     }
   }, [user]);
 
   const handleDismiss = () => {
-    localStorage.setItem(`falko_onboarding_dismissed_${user?.id || "guest"}`, "true");
+    if (user) {
+      localStorage.setItem(`falko_onboarding_seen_${user.id}`, "true");
+      localStorage.setItem(`falko_onboarding_dismissed_${user.id}`, "true");
+    }
+    localStorage.setItem("falko_onboarding_shown", "true");
     setIsOpen(false);
   };
 

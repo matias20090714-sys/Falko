@@ -66,8 +66,10 @@ export default async function DashboardPage() {
   return (
     <DashboardShell initialUser={user}>
       <div className="max-w-7xl mx-auto space-y-8">
-      {/* 60-Second Guided Welcome Onboarding */}
-      <WelcomeOnboardingModal user={user} />
+      {/* 60-Second Guided Welcome Onboarding - Solo para usuarios nuevos */}
+      {productsCount === 0 && purchasesCount === 0 && (
+        <WelcomeOnboardingModal user={user} />
+      )}
 
       {/* Welcome Banner */}
       <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-glow relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
