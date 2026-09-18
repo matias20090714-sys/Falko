@@ -70,6 +70,7 @@ export default async function ProductDetailPage({
             firstName: true,
             lastName: true,
             avatarUrl: true,
+            phone: true,
             countryCode: true,
             createdAt: true,
           },

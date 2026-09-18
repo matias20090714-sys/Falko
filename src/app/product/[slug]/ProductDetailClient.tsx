@@ -799,8 +799,9 @@ export function ProductDetailClient({
 
           {/* Direct WhatsApp Pre-sale Questions Card */}
           <WhatsAppChatButton
-            sellerPhone={product.seller?.phone}
+            sellerPhone={product.seller?.phone || (isSeller ? currentUser?.phone : null)}
             sellerName={product.seller?.firstName || "el Creador"}
+            sellerCountryCode={product.seller?.countryCode || currentUser?.countryCode}
             productTitle={product.title}
             variant="card"
           />
@@ -879,8 +880,9 @@ export function ProductDetailClient({
 
       {/* Floating WhatsApp Pre-sale Button for Instant Mobile/Desktop Reach */}
       <WhatsAppChatButton
-        sellerPhone={product.seller?.phone}
+        sellerPhone={product.seller?.phone || (isSeller ? currentUser?.phone : null)}
         sellerName={product.seller?.firstName || "el Creador"}
+        sellerCountryCode={product.seller?.countryCode || currentUser?.countryCode}
         productTitle={product.title}
         variant="floating"
       />

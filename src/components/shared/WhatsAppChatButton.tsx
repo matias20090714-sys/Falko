@@ -3,9 +3,12 @@
 import React from "react";
 import { MessageCircle, ExternalLink } from "lucide-react";
 
+import { COUNTRIES } from "@/lib/currency";
+
 interface WhatsAppChatButtonProps {
   sellerPhone?: string | null;
   sellerName: string;
+  sellerCountryCode?: string | null;
   productTitle: string;
   className?: string;
   variant?: "floating" | "button" | "card";
@@ -14,16 +17,33 @@ interface WhatsAppChatButtonProps {
 export function WhatsAppChatButton({
   sellerPhone,
   sellerName,
+  sellerCountryCode,
   productTitle,
   className = "",
   variant = "button",
 }: WhatsAppChatButtonProps) {
-  // If no specific phone is configured by seller, provide general Falko verified support assistant fallback
-  const cleanPhone = sellerPhone ? sellerPhone.replace(/[^0-9+]/g, "") : "";
-  const targetPhone = cleanPhone || "59899123456";
+  // Normalize and format the WhatsApp phone number
+  let rawPhone = (sellerPhone || "").trim();
+  let digitsOnly = rawPhone.replace(/[^0-9]/g, "");
 
-  const messageText = `Hola ${sellerName}! Tengo una duda antes de comprar "${productTitle}" en FALKO.`;
-  const whatsappUrl = `https://wa.me/${targetPhone.replace("+", "")}?text=${encodeURIComponent(messageText)}`;
+  if (digitsOnly) {
+    const countryPrefix = sellerCountryCode && COUNTRIES[sellerCountryCode]
+      ? COUNTRIES[sellerCountryCode].phonePrefix.replace(/[^0-9]/g, "")
+      : "598"; // default to Uruguay prefix if not specified
+
+    // If starts with 0 (e.g., local 099123456 or 011...)
+    if (digitsOnly.startsWith("0")) {
+      digitsOnly = countryPrefix + digitsOnly.substring(1);
+    } else if (digitsOnly.length <= 9 && !rawPhone.startsWith("+") && !digitsOnly.startsWith(countryPrefix)) {
+      // Local number without country code
+      digitsOnly = countryPrefix + digitsOnly;
+    }
+  }
+
+  const targetPhone = digitsOnly || "59899123456";
+
+  const messageText = `Hola ${sellerName}! Tengo una consulta sobre "${productTitle}" en FALKO.`;
+  const whatsappUrl = `https://wa.me/${targetPhone}?text=${encodeURIComponent(messageText)}`;
 
   if (variant === "floating") {
     return (
