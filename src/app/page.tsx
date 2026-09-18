@@ -21,7 +21,6 @@ import {
 import { FalconLogo } from "@/components/layout/FalconLogo";
 import { LandingHeroFeeStat } from "@/components/landing/LandingHeroFeeStat";
 import { LandingSellerFeePill, LandingMigrationSection } from "@/components/landing/LandingFeeDisplay";
-import { LandingInteractiveDemo } from "@/components/landing/LandingInteractiveDemo";
 import { LandingProfitCalculator } from "@/components/landing/LandingProfitCalculator";
 import { LandingFaq } from "@/components/landing/LandingFaq";
 
@@ -102,11 +101,6 @@ export default async function HomePage() {
             <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Bóveda Digital</span>
             <span className="text-sm font-black text-white">Cifrado AES-256</span>
           </div>
-        </div>
-
-        {/* Live Interactive Product & Vault Demo */}
-        <div className="mt-16">
-          <LandingInteractiveDemo />
         </div>
       </section>
 
