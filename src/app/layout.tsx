@@ -32,6 +32,14 @@ export const metadata: Metadata = {
     description: "Compra, vende o promociona productos digitales de alto rendimiento con comisiones instantáneas y garantía protegida.",
     url: "https://falko.dpdns.org",
     siteName: "FALKO",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FALKO Marketplace",
+      },
+    ],
     locale: "es_ES",
     type: "website",
   },
@@ -39,6 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "FALKO — Marketplace de Productos Digitales",
     description: "El marketplace de productos digitales de alta conversión con garantía protegida y comisiones inmediatas.",
+    images: ["/og-image.png"],
   },
   manifest: "/manifest.json",
   appleWebApp: {
@@ -47,8 +56,16 @@ export const metadata: Metadata = {
     title: "FALKO",
   },
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon-precomposed.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/apple-touch-icon.png",
   },
   verification: {
     google: "E32DKYJtKNNKi6pj3tlgSIaINJp42Kx1iQKzNlc4dbM",
