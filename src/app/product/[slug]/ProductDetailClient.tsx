@@ -31,6 +31,7 @@ import {
   Sparkles,
   Star,
   User,
+  X,
   Zap,
 } from "lucide-react";
 import { WhatsAppChatButton } from "@/components/shared/WhatsAppChatButton";
@@ -70,6 +71,8 @@ export function ProductDetailClient({
   );
 
   const parsedVideo = product.videoUrl ? getVideoEmbedUrl(product.videoUrl) : null;
+  const [showMiniPlayer, setShowMiniPlayer] = useState(false);
+  const [isMiniPlayerDismissed, setIsMiniPlayerDismissed] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("falko_currency");
@@ -83,7 +86,29 @@ export function ProductDetailClient({
     return () => window.removeEventListener("currencyChange", handleCurrencyChange);
   }, []);
 
+  useEffect(() => {
+    if (!parsedVideo) return;
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      if (scrollY > 500 && !isMiniPlayerDismissed) {
+        setShowMiniPlayer(true);
+      } else {
+        setShowMiniPlayer(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [parsedVideo, isMiniPlayerDismissed]);
+
   const convertedPrice = convertCurrency(product.price, product.currencyCode, currency);
+  const convertedCompareAt = product.compareAtPrice
+    ? convertCurrency(product.compareAtPrice, product.currencyCode, currency)
+    : null;
+  const discountPct =
+    product.compareAtPrice && product.compareAtPrice > product.price
+      ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+      : 0;
+
   const affiliateEarningsEst = (product.price * product.affiliateCommissionPct) / 100;
   const convertedAffiliateEst = convertCurrency(affiliateEarningsEst, product.currencyCode, currency);
 
@@ -717,6 +742,23 @@ export function ProductDetailClient({
                     <h5 className="text-xs font-bold text-slate-200">{rev.title}</h5>
                     <p className="text-xs text-slate-400 leading-relaxed">{rev.comment}</p>
 
+                    {rev.imageUrl && (
+                      <div className="pt-2">
+                        <a
+                          href={rev.imageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block rounded-xl overflow-hidden border border-white/10 hover:border-cyan-500/50 transition-all max-w-[180px]"
+                        >
+                          <img
+                            src={rev.imageUrl}
+                            alt="Foto adjunta por el cliente"
+                            className="w-full h-auto object-cover max-h-32 rounded-xl"
+                          />
+                        </a>
+                      </div>
+                    )}
+
                     {rev.sellerReply && (
                       <div className="mt-3 ml-3 bg-slate-900 border-l-2 border-cyan-400 p-3 rounded-r-xl text-xs space-y-1">
                         <span className="font-bold text-cyan-400 block text-[11px]">Respuesta del Creador:</span>
@@ -745,14 +787,24 @@ export function ProductDetailClient({
 
             {/* Price Display */}
             <div>
-              <span className="text-xs text-slate-400 block mb-1">Precio Final</span>
-              <div className="flex items-baseline gap-2">
+              <span className="text-xs text-slate-400 block mb-1">Precio de Oferta</span>
+              <div className="flex items-baseline gap-2.5 flex-wrap">
                 <span className="text-4xl font-black text-white font-heading">
                   {formatCurrency(convertedPrice, currency)}
                 </span>
+                {convertedCompareAt && discountPct > 0 && (
+                  <span className="text-lg text-slate-500 line-through font-mono">
+                    {formatCurrency(convertedCompareAt, currency)}
+                  </span>
+                )}
               </div>
+              {discountPct > 0 && convertedCompareAt && (
+                <div className="mt-2 text-xs font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-1 rounded-xl inline-flex items-center gap-1.5 animate-pulse">
+                  <span>🔥 ¡Ahorras {formatCurrency(convertedCompareAt - convertedPrice, currency)} ({discountPct}% OFF)!</span>
+                </div>
+              )}
               {currency !== product.currencyCode && (
-                <span className="text-xs text-slate-400 block mt-1">
+                <span className="text-xs text-slate-400 block mt-1.5">
                   Precio Base: {formatCurrency(product.price, product.currencyCode)}
                 </span>
               )}
@@ -910,6 +962,35 @@ export function ProductDetailClient({
           </Link>
         </div>
       </div>
+
+      {/* Floating Picture-in-Picture Mini Video Player on Scroll */}
+      {showMiniPlayer && parsedVideo && (
+        <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 w-72 sm:w-80 rounded-2xl overflow-hidden border border-cyan-500/50 bg-slate-950/95 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-5">
+          <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/90 border-b border-white/10 text-xs">
+            <span className="font-bold text-cyan-300 flex items-center gap-1 text-[11px] truncate">
+              <Film className="w-3.5 h-3.5" />
+              <span>Demo en Vivo</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsMiniPlayerDismissed(true)}
+              className="text-slate-400 hover:text-white p-0.5 rounded-lg transition-colors"
+              title="Cerrar mini reproductor"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="relative aspect-video w-full bg-black">
+            <iframe
+              src={parsedVideo.embedUrl}
+              title={`Demo en video - ${product.title}`}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

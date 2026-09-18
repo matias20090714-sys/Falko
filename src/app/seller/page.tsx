@@ -24,6 +24,7 @@ import {
   BookOpen,
   ArrowRight,
   CheckCircle2,
+  ShoppingCart,
 } from "lucide-react";
 
 export const revalidate = 0;
@@ -81,6 +82,17 @@ export default async function SellerDashboardPage() {
     0
   );
 
+  const pendingOrdersCount = await prisma.order.count({
+    where: {
+      status: "PENDING",
+      items: {
+        some: {
+          product: { sellerId: user.id },
+        },
+      },
+    },
+  });
+
   return (
     <DashboardShell initialUser={user}>
       <div className="max-w-7xl mx-auto space-y-8">
@@ -104,6 +116,10 @@ export default async function SellerDashboardPage() {
           <Link href="/seller/academy" className="btn-falcon-secondary text-xs py-2 px-3.5 text-cyan-300 hover:text-cyan-200 bg-cyan-950/40 border-cyan-500/30">
             <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
             <span>Academia de Ventas</span>
+          </Link>
+          <Link href="/seller/abandoned-carts" className="btn-falcon-secondary text-xs py-2 px-3.5 text-amber-300 hover:text-amber-200 bg-amber-950/30 border-amber-500/30">
+            <ShoppingCart className="w-3.5 h-3.5 text-amber-400" />
+            <span>Carritos ({pendingOrdersCount})</span>
           </Link>
           <Link href="/seller/webhooks" className="btn-falcon-secondary text-xs py-2 px-3.5">
             <Webhook className="w-3.5 h-3.5 text-cyan-400" />

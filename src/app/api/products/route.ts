@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
         where: { slug },
         include: {
           category: true,
-          seller: { select: { firstName: true, lastName: true, avatarUrl: true } },
+          seller: { select: { firstName: true, lastName: true, avatarUrl: true, isVerifiedSeller: true, countryCode: true, phone: true } },
           files: true,
           images: { orderBy: { sortOrder: "asc" } },
           modules: {
@@ -18,6 +18,12 @@ export async function GET(req: NextRequest) {
             orderBy: { sortOrder: "asc" },
           },
           coupons: { where: { isActive: true } },
+          reviews: {
+            include: {
+              buyer: { select: { firstName: true, lastName: true, avatarUrl: true } },
+            },
+            orderBy: { createdAt: "desc" },
+          },
         },
       });
       return NextResponse.json({ product });
@@ -27,7 +33,7 @@ export async function GET(req: NextRequest) {
       where: { status: "APPROVED" },
       include: {
         category: true,
-        seller: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        seller: { select: { firstName: true, lastName: true, avatarUrl: true, isVerifiedSeller: true } },
         images: true,
       },
       orderBy: { salesCount: "desc" },
@@ -51,9 +57,15 @@ export async function POST(req: NextRequest) {
       description,
       shortDescription,
       price,
+      compareAtPrice,
       currencyCode = "USD",
       categoryId,
       guaranteeDays = 7,
+      storeTheme = "dark",
+      upsellTitle,
+      upsellDescription,
+      upsellPrice,
+      upsellFileUrl,
       affiliateEnabled = true,
       affiliateCommissionPct = 20,
       affiliateApprovalMode = "AUTO",
@@ -71,10 +83,13 @@ export async function POST(req: NextRequest) {
       tiktokPixelId,
       affiliateSwipeUrl,
       files = [],
+      digitalFiles = [],
       images = [],
       modules = [],
       coupons = [],
     } = await req.json();
+
+    const finalFiles = files.length > 0 ? files : digitalFiles;
 
     if (!title || !description || !price || !categoryId) {
       return NextResponse.json({ success: false, error: "Completa los campos obligatorios." }, { status: 400 });
@@ -113,9 +128,15 @@ export async function POST(req: NextRequest) {
         description,
         shortDescription,
         price: parseFloat(price),
+        compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
         currencyCode,
         categoryId,
         guaranteeDays: validatedGuarantee,
+        storeTheme: storeTheme || "dark",
+        upsellTitle: upsellTitle || null,
+        upsellDescription: upsellDescription || null,
+        upsellPrice: upsellPrice ? parseFloat(upsellPrice) : null,
+        upsellFileUrl: upsellFileUrl || null,
         affiliateEnabled: Boolean(affiliateEnabled),
         affiliateCommissionPct: validatedComm,
         affiliateApprovalMode,
@@ -138,8 +159,8 @@ export async function POST(req: NextRequest) {
         sellerId: user.id,
         files: {
           create:
-            files.length > 0
-              ? files.map((f: any) => ({
+            finalFiles.length > 0
+              ? finalFiles.map((f: any) => ({
                   fileName: f.fileName || "recurso_digital.zip",
                   fileSizeBytes: f.fileSizeBytes || 10485760,
                   fileType: f.fileType || "application/zip",
@@ -210,9 +231,15 @@ export async function PUT(req: NextRequest) {
       description,
       shortDescription,
       price,
+      compareAtPrice,
       currencyCode = "USD",
       categoryId,
       guaranteeDays = 7,
+      storeTheme,
+      upsellTitle,
+      upsellDescription,
+      upsellPrice,
+      upsellFileUrl,
       affiliateEnabled = true,
       affiliateCommissionPct = 20,
       affiliateApprovalMode = "AUTO",
@@ -257,6 +284,12 @@ export async function PUT(req: NextRequest) {
     if (description !== undefined) updateData.description = description;
     if (shortDescription !== undefined) updateData.shortDescription = shortDescription;
     if (price !== undefined && parseFloat(price) > 0) updateData.price = parseFloat(price);
+    if (compareAtPrice !== undefined) updateData.compareAtPrice = compareAtPrice ? parseFloat(compareAtPrice) : null;
+    if (storeTheme !== undefined) updateData.storeTheme = storeTheme || "dark";
+    if (upsellTitle !== undefined) updateData.upsellTitle = upsellTitle || null;
+    if (upsellDescription !== undefined) updateData.upsellDescription = upsellDescription || null;
+    if (upsellPrice !== undefined) updateData.upsellPrice = upsellPrice ? parseFloat(upsellPrice) : null;
+    if (upsellFileUrl !== undefined) updateData.upsellFileUrl = upsellFileUrl || null;
     if (currencyCode) updateData.currencyCode = currencyCode;
     if (categoryId) updateData.categoryId = categoryId;
     if (guaranteeDays !== undefined) updateData.guaranteeDays = Math.max(7, parseInt(guaranteeDays) || 7);

@@ -40,6 +40,16 @@ export const metadata: Metadata = {
     title: "FALKO — Marketplace de Productos Digitales",
     description: "El marketplace de productos digitales de alta conversión con garantía protegida y comisiones inmediatas.",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FALKO",
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   verification: {
     google: "E32DKYJtKNNKi6pj3tlgSIaINJp42Kx1iQKzNlc4dbM",
   },

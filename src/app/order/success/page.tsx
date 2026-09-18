@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { CheckCircle2, Download, ExternalLink, FileText, Lock, Mail, Package, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileText, Lock, Mail, Package, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 export default async function OrderSuccessPage({
@@ -159,6 +159,51 @@ export default async function OrderSuccessPage({
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* 1-Click Post-Purchase Upsell (OTO) Offer */}
+        {purchasedProduct?.upsellTitle && purchasedProduct?.upsellPrice && (
+          <div className="bg-gradient-to-br from-amber-950/60 via-slate-950 to-purple-950/40 border-2 border-amber-500/50 rounded-2xl p-5 text-left space-y-3.5 shadow-2xl relative overflow-hidden animate-in fade-in-50">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2 py-0.5 rounded-md">
+                ⚡ Oferta Exclusiva Post-Compra (Solo por esta sesión)
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-300">
+                ${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+                <span>{purchasedProduct.upsellTitle}</span>
+              </h3>
+              {purchasedProduct.upsellDescription && (
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  {purchasedProduct.upsellDescription}
+                </p>
+              )}
+            </div>
+
+            {purchasedProduct.upsellFileUrl ? (
+              <a
+                href={purchasedProduct.upsellFileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-falcon-primary w-full text-center justify-center text-xs py-3 font-bold flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:opacity-90 shadow-glow"
+              >
+                <Zap className="w-4 h-4 text-slate-950" />
+                <span>Añadir Oferta con 1-Clic (${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD)</span>
+              </a>
+            ) : (
+              <Link
+                href={`/checkout?product=${purchasedProduct.slug}&upsell=1`}
+                className="btn-falcon-primary w-full text-center justify-center text-xs py-3 font-bold flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:opacity-90 shadow-glow"
+              >
+                <Zap className="w-4 h-4 text-slate-950" />
+                <span>Añadir Oferta con 1-Clic (${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD)</span>
+              </Link>
             )}
           </div>
         )}

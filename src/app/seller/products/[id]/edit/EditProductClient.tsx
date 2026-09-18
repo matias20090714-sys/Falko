@@ -29,6 +29,9 @@ import {
   ShieldCheck,
   Sparkles,
   Store,
+  Sun,
+  Moon,
+  Flame,
   Tag,
   Trash2,
   Upload,
@@ -91,10 +94,20 @@ export function EditProductClient({
   const [shortDescription, setShortDescription] = useState(initialProduct.shortDescription || "");
   const [description, setDescription] = useState(initialProduct.description || "");
   const [price, setPrice] = useState(initialProduct.price?.toString() || "29");
+  const [compareAtPrice, setCompareAtPrice] = useState(
+    initialProduct.compareAtPrice?.toString() || ""
+  );
   const [currencyCode, setCurrencyCode] = useState(initialProduct.currencyCode || "USD");
   const [categoryId, setCategoryId] = useState(initialProduct.categoryId || (categories[0]?.id || ""));
   const [guaranteeDays, setGuaranteeDays] = useState(initialProduct.guaranteeDays?.toString() || "7");
   const [status, setStatus] = useState(initialProduct.status || "APPROVED");
+  const [storeTheme, setStoreTheme] = useState(initialProduct.storeTheme || "dark");
+
+  // 1-Click Post-Purchase Upsell
+  const [upsellTitle, setUpsellTitle] = useState(initialProduct.upsellTitle || "");
+  const [upsellDescription, setUpsellDescription] = useState(initialProduct.upsellDescription || "");
+  const [upsellPrice, setUpsellPrice] = useState(initialProduct.upsellPrice?.toString() || "");
+  const [upsellFileUrl, setUpsellFileUrl] = useState(initialProduct.upsellFileUrl || "");
 
   // Media & Landing
   const [coverImageUrl, setCoverImageUrl] = useState(initialProduct.coverImageUrl || "");
@@ -180,10 +193,16 @@ export function EditProductClient({
         shortDescription: shortDescription.trim() || null,
         description: description.trim(),
         price: parseFloat(price),
+        compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
         currencyCode,
         categoryId,
         guaranteeDays: parseInt(guaranteeDays) || 7,
         status,
+        storeTheme,
+        upsellTitle: upsellTitle.trim() || null,
+        upsellDescription: upsellDescription.trim() || null,
+        upsellPrice: upsellPrice ? parseFloat(upsellPrice) : null,
+        upsellFileUrl: upsellFileUrl.trim() || null,
         coverImageUrl: coverImageUrl.trim() || COVER_PRESETS[0].url,
         videoUrl: videoUrl.trim() || null,
         demoUrl: demoUrl.trim() || null,
@@ -340,7 +359,7 @@ export function EditProductClient({
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-300 block">
-                Precio de Venta *
+                Precio de Venta (Final) *
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
@@ -352,6 +371,31 @@ export function EditProductClient({
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   className="input-falcon w-full text-sm pl-9 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-300 block">
+                  Precio de Lista / Antes (Tachado)
+                </label>
+                {parseFloat(compareAtPrice) > parseFloat(price) && (
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded-full animate-pulse">
+                    🔥 {Math.round(((parseFloat(compareAtPrice) - parseFloat(price)) / parseFloat(compareAtPrice)) * 100)}% OFF
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.5"
+                  placeholder="Ej: 49.00 (Opcional)"
+                  value={compareAtPrice}
+                  onChange={(e) => setCompareAtPrice(e.target.value)}
+                  className="input-falcon w-full text-sm pl-9"
                 />
               </div>
             </div>
@@ -592,6 +636,86 @@ export function EditProductClient({
                   </div>
                 </div>
 
+                {/* Falko Store Theme Selector */}
+                {salesPageMode === "falko" && (
+                  <div className="bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-cyan-500/30 space-y-3 animate-in fade-in-50">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Tema Visual de la Tienda FALKO</span>
+                      </label>
+                      <span className="text-[11px] text-cyan-400 font-medium">Personaliza el diseño visual</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Dark Cyber */}
+                      <button
+                        type="button"
+                        onClick={() => setStoreTheme("dark")}
+                        className={`p-3.5 rounded-xl border text-left transition-all ${
+                          storeTheme === "dark"
+                            ? "bg-slate-900 border-cyan-400 shadow-glow ring-2 ring-cyan-500/30"
+                            : "bg-slate-950 border-white/10 hover:border-white/20 opacity-80"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <Moon className="w-4 h-4 text-cyan-400" />
+                            <span className="text-xs font-bold text-white">Cyber Dark</span>
+                          </div>
+                          {storeTheme === "dark" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          Fondo oscuro profundo con reflejos neón cian. Máximo impacto visual.
+                        </p>
+                      </button>
+
+                      {/* Light Clean */}
+                      <button
+                        type="button"
+                        onClick={() => setStoreTheme("light")}
+                        className={`p-3.5 rounded-xl border text-left transition-all ${
+                          storeTheme === "light"
+                            ? "bg-slate-900 border-amber-300 shadow-glow ring-2 ring-amber-400/30"
+                            : "bg-slate-950 border-white/10 hover:border-white/20 opacity-80"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <Sun className="w-4 h-4 text-amber-300" />
+                            <span className="text-xs font-bold text-white">Clean Light</span>
+                          </div>
+                          {storeTheme === "light" && <Check className="w-3.5 h-3.5 text-amber-300" />}
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          Fondo claro y tipografía de alta lectura. Ideal para ebooks, cursos y guías.
+                        </p>
+                      </button>
+
+                      {/* Vibrant Sunset */}
+                      <button
+                        type="button"
+                        onClick={() => setStoreTheme("vibrant")}
+                        className={`p-3.5 rounded-xl border text-left transition-all ${
+                          storeTheme === "vibrant"
+                            ? "bg-slate-900 border-fuchsia-400 shadow-glow ring-2 ring-fuchsia-500/30"
+                            : "bg-slate-950 border-white/10 hover:border-white/20 opacity-80"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <Flame className="w-4 h-4 text-fuchsia-400" />
+                            <span className="text-xs font-bold text-white">Sunset Glow</span>
+                          </div>
+                          {storeTheme === "vibrant" && <Check className="w-3.5 h-3.5 text-fuchsia-400" />}
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          Acentos púrpura, magenta y oro cálido. Enfoque moderno y premium.
+                        </p>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Expanded settings when external web is chosen */}
                 {salesPageMode === "external" && (
                   <div className="bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-purple-500/30 space-y-4 animate-in fade-in-50">
@@ -809,7 +933,90 @@ export function EditProductClient({
         </div>
 
         {/* ======================================================== */}
-        {/* 4. PROGRAMA DE AFILIADOS & TRACKING                      */}
+        {/* 4. OFERTA POST-COMPRA (1-CLICK UPSELL / OTO)             */}
+        {/* ======================================================== */}
+        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-white/5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-950 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-lg font-heading font-bold text-white flex items-center gap-2">
+                  <span>4. Oferta Post-Compra (1-Click Upsell)</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold">
+                    Aumenta tus Ingresos +35%
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Esta oferta exclusiva se mostrará inmediatamente tras completar el pago en la pantalla de éxito.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-xs font-bold text-slate-300 block">
+                Título del Upsell / Oferta Especial (Opcional)
+              </label>
+              <input
+                type="text"
+                value={upsellTitle}
+                onChange={(e) => setUpsellTitle(e.target.value)}
+                placeholder="Ej: Masterclass VIP de Implementación Rápida + Plantillas Extra"
+                className="input-falcon w-full text-sm"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 block">
+                Precio Especial del Upsell (USD)
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  value={upsellPrice}
+                  onChange={(e) => setUpsellPrice(e.target.value)}
+                  placeholder="Ej: 14.99"
+                  className="input-falcon w-full text-sm pl-9 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 block">
+                Enlace / Archivo de Entrega del Upsell
+              </label>
+              <input
+                type="url"
+                value={upsellFileUrl}
+                onChange={(e) => setUpsellFileUrl(e.target.value)}
+                placeholder="https://drive.google.com/... o enlace privado"
+                className="input-falcon w-full text-sm"
+              />
+            </div>
+
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-xs font-bold text-slate-300 block">
+                Descripción / Beneficios del Upsell
+              </label>
+              <textarea
+                rows={2}
+                value={upsellDescription}
+                onChange={(e) => setUpsellDescription(e.target.value)}
+                placeholder="Explica qué incluye esta oferta complementaria y por qué es una oportunidad única..."
+                className="input-falcon w-full text-sm"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* 5. PROGRAMA DE AFILIADOS & TRACKING                      */}
         {/* ======================================================== */}
         <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-white/5">
@@ -818,7 +1025,7 @@ export function EditProductClient({
                 <Percent className="w-4 h-4" />
               </div>
               <h2 className="text-lg font-heading font-bold text-white">
-                4. Red de Afiliados & Tráfico
+                5. Red de Afiliados & Tráfico
               </h2>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">

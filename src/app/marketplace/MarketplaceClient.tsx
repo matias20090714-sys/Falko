@@ -7,6 +7,7 @@ import { formatCurrency, convertCurrency } from "@/lib/currency";
 import {
   ArrowRight,
   Check,
+  CheckCircle2,
   Copy,
   ExternalLink,
   Filter,
@@ -288,6 +289,10 @@ export function MarketplaceClient({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-4.5">
           {initialProducts.map((p) => {
             const convertedPrice = convertCurrency(p.price, p.currencyCode, currency);
+            const convertedCompareAt = p.compareAtPrice ? convertCurrency(p.compareAtPrice, p.currencyCode, currency) : null;
+            const discountPct = p.compareAtPrice && p.compareAtPrice > p.price
+              ? Math.round(((p.compareAtPrice - p.price) / p.compareAtPrice) * 100)
+              : 0;
 
             return (
               <div
@@ -304,12 +309,22 @@ export function MarketplaceClient({
                   <div className="absolute top-2 left-2 bg-slate-950/85 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-md border border-white/10 shadow-sm truncate max-w-[120px]">
                     {p.category.name}
                   </div>
-                  {p.affiliateEnabled && (
-                    <div className="absolute top-2 right-2 bg-purple-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-purple-300 px-2 py-0.5 rounded-md border border-purple-800/70 flex items-center gap-1 shadow-sm">
-                      <Percent className="w-2.5 h-2.5" />
-                      <span>{p.affiliateCommissionPct}%</span>
-                    </div>
-                  )}
+                  
+                  {/* Discount Badge or Affiliate Badge */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    {discountPct > 0 && (
+                      <div className="bg-emerald-500/90 backdrop-blur-md text-[9px] sm:text-[10px] font-black text-slate-950 px-1.5 py-0.5 rounded-md shadow-sm">
+                        -{discountPct}%
+                      </div>
+                    )}
+                    {p.affiliateEnabled && (
+                      <div className="bg-purple-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-purple-300 px-1.5 py-0.5 rounded-md border border-purple-800/70 flex items-center gap-0.5 shadow-sm">
+                        <Percent className="w-2.5 h-2.5" />
+                        <span>{p.affiliateCommissionPct}%</span>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="absolute bottom-2 right-2 bg-slate-950/90 text-[9px] sm:text-[10px] text-emerald-400 font-semibold px-1.5 py-0.5 rounded border border-emerald-900/60 flex items-center gap-0.5">
                     <ShieldCheck className="w-2.5 h-2.5" />
                     <span>{p.guaranteeDays}d</span>
@@ -355,12 +370,22 @@ export function MarketplaceClient({
                             </div>
                           )}
                         </div>
-                        <span className="text-[11px] text-slate-300 truncate font-semibold">
-                          {p.seller.firstName}
+                        <span className="text-[11px] text-slate-300 truncate font-semibold flex items-center gap-1">
+                          <span className="truncate">{p.seller.firstName}</span>
+                          {p.seller.isVerifiedSeller && (
+                            <span title="Creador Verificado Falko" className="inline-flex items-center">
+                              <CheckCircle2 className="w-3 h-3 text-cyan-400 shrink-0 inline" />
+                            </span>
+                          )}
                         </span>
                       </div>
 
-                      <div className="text-right shrink-0">
+                      <div className="text-right shrink-0 flex flex-col items-end">
+                        {convertedCompareAt && discountPct > 0 && (
+                          <span className="text-[10px] text-slate-500 line-through font-mono leading-none">
+                            {formatCurrency(convertedCompareAt, currency)}
+                          </span>
+                        )}
                         <span className="text-xs sm:text-sm font-black font-mono text-cyan-400">
                           {formatCurrency(convertedPrice, currency)}
                         </span>
