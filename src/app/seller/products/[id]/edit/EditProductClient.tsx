@@ -10,8 +10,10 @@ import {
   ArrowRight,
   Check,
   CheckCircle2,
+  Copy,
   DollarSign,
   ExternalLink,
+  Eye,
   FileCode,
   FileText,
   Film,
@@ -26,6 +28,7 @@ import {
   Save,
   ShieldCheck,
   Sparkles,
+  Store,
   Tag,
   Trash2,
   Upload,
@@ -98,6 +101,10 @@ export function EditProductClient({
   const [videoUrl, setVideoUrl] = useState(initialProduct.videoUrl || "");
   const [demoUrl, setDemoUrl] = useState(initialProduct.demoUrl || "");
   const [salesPageUrl, setSalesPageUrl] = useState(initialProduct.salesPageUrl || "");
+  const [salesPageMode, setSalesPageMode] = useState<"falko" | "external">(
+    initialProduct.salesPageUrl ? "external" : "falko"
+  );
+  const [copiedCheckoutLink, setCopiedCheckoutLink] = useState(false);
 
   // Delivery / Vault
   const [accessUrl, setAccessUrl] = useState(initialProduct.accessUrl || "");
@@ -180,7 +187,7 @@ export function EditProductClient({
         coverImageUrl: coverImageUrl.trim() || COVER_PRESETS[0].url,
         videoUrl: videoUrl.trim() || null,
         demoUrl: demoUrl.trim() || null,
-        salesPageUrl: salesPageUrl.trim() || null,
+        salesPageUrl: salesPageMode === "external" && salesPageUrl.trim() ? salesPageUrl.trim() : null,
         accessUrl: accessUrl.trim() || null,
         accessInstructions: accessInstructions.trim() || null,
         affiliateEnabled: Boolean(affiliateEnabled),
@@ -491,26 +498,183 @@ export function EditProductClient({
                 />
               </div>
 
-              <div className="md:col-span-2 space-y-1.5 pt-2 border-t border-white/5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Página de Ventas Propia / Landing Page Externa (Opcional)</span>
+              <div className="md:col-span-2 space-y-4 pt-4 border-t border-white/10">
+                <div>
+                  <label className="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                    <Store className="w-4 h-4 text-cyan-400" />
+                    <span>¿Dónde prefieres presentar y vender este producto?</span>
                   </label>
-                  <span className="text-[11px] text-cyan-400 font-medium">
-                    {salesPageUrl ? "✓ Landing personalizada activa" : "✓ Usando página de ventas nativa de FALKO"}
-                  </span>
+                  <p className="text-xs text-slate-400">
+                    Elige si deseas usar la tienda oficial automática de FALKO o conectar tu propia web externa.
+                  </p>
                 </div>
-                <input
-                  type="url"
-                  value={salesPageUrl}
-                  onChange={(e) => setSalesPageUrl(e.target.value)}
-                  placeholder="https://tupropiaweb.com/producto-landing (Si lo dejas vacío, se usa la página de ventas de FALKO)"
-                  className="input-falcon w-full text-sm"
-                />
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Si tienes una página de ventas propia en WordPress, Webflow o Framer, ingrésala aquí. Si lo dejas vacío, se mostrará automáticamente la <strong>página de ventas optimizada de FALKO</strong> con checkout integrado.
-                </p>
+
+                {/* 2-Card Mode Selector */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {/* Option 1: Tienda Oficial FALKO */}
+                  <div
+                    onClick={() => setSalesPageMode("falko")}
+                    className={`cursor-pointer rounded-2xl p-4 border transition-all relative ${
+                      salesPageMode === "falko"
+                        ? "bg-cyan-950/40 border-cyan-500 shadow-glow"
+                        : "bg-slate-950/50 border-white/5 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Store className="w-4 h-4 text-cyan-400" />
+                        <strong className="text-sm text-white">Tienda Oficial FALKO</strong>
+                      </div>
+                      <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">
+                        Recomendado
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                      Página de ventas de alta conversión lista para usar, con video, fotos, FAQs, soporte por WhatsApp, checkout multidivisa y entrega digital automática.
+                    </p>
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[11px] text-cyan-300 font-semibold">
+                        {salesPageMode === "falko" ? "✓ Modo Activo" : "Seleccionar"}
+                      </span>
+                      <a
+                        href={`/product/${initialProduct.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-slate-300 hover:text-white bg-slate-900 border border-white/10 px-2.5 py-1 rounded-xl flex items-center gap-1.5 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Ver Tienda</span>
+                        <ExternalLink className="w-3 h-3 text-slate-400" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Option 2: Mi Propia Web Externa */}
+                  <div
+                    onClick={() => setSalesPageMode("external")}
+                    className={`cursor-pointer rounded-2xl p-4 border transition-all relative ${
+                      salesPageMode === "external"
+                        ? "bg-purple-950/40 border-purple-500 shadow-glow"
+                        : "bg-slate-950/50 border-white/5 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-purple-400" />
+                        <strong className="text-sm text-white">Mi Propia Web Externa</strong>
+                      </div>
+                      <span className="text-[10px] bg-purple-950 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">
+                        Personalizada
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                      Usa tu propia landing page en WordPress, Webflow, Framer o ClickFunnels y conecta tus botones de compra con el checkout seguro de FALKO.
+                    </p>
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[11px] text-purple-300 font-semibold">
+                        {salesPageMode === "external" ? "✓ Modo Activo" : "Seleccionar"}
+                      </span>
+                      {salesPageUrl && (
+                        <a
+                          href={salesPageUrl.startsWith("http") ? salesPageUrl : `https://${salesPageUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs text-slate-300 hover:text-white bg-slate-900 border border-white/10 px-2.5 py-1 rounded-xl flex items-center gap-1.5 transition-colors"
+                        >
+                          <Globe className="w-3.5 h-3.5 text-purple-400" />
+                          <span>Ver Web Externa</span>
+                          <ExternalLink className="w-3 h-3 text-slate-400" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded settings when external web is chosen */}
+                {salesPageMode === "external" && (
+                  <div className="bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-purple-500/30 space-y-4 animate-in fade-in-50">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Globe className="w-3.5 h-3.5 text-purple-400" />
+                          <span>URL de tu Página de Ventas / Web Externa</span>
+                        </label>
+                        {salesPageUrl && (
+                          <a
+                            href={salesPageUrl.startsWith("http") ? salesPageUrl : `https://${salesPageUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-purple-400 hover:underline flex items-center gap-1 font-bold"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>Probar / Abrir Web</span>
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={salesPageUrl}
+                          onChange={(e) => setSalesPageUrl(e.target.value)}
+                          placeholder="https://tupropiaweb.com/mi-landing"
+                          className="input-falcon flex-1 text-sm"
+                        />
+                        {salesPageUrl && (
+                          <a
+                            href={salesPageUrl.startsWith("http") ? salesPageUrl : `https://${salesPageUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-falcon-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 shrink-0"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="hidden sm:inline">Ver Web</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Direct checkout snippet for their buttons */}
+                    <div className="bg-slate-900/90 border border-white/10 rounded-xl p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Enlace de Checkout para los botones de compra de tu web:</span>
+                        </span>
+                        {copiedCheckoutLink && (
+                          <span className="text-[11px] text-emerald-400 font-bold">
+                            ✓ ¡Copiado al portapapeles!
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={`${typeof window !== "undefined" ? window.location.origin : "https://falko.dpdns.org"}/checkout?product=${initialProduct.slug}`}
+                          className="input-falcon flex-1 text-xs font-mono bg-slate-950 text-cyan-300 select-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const origin = typeof window !== "undefined" ? window.location.origin : "https://falko.dpdns.org";
+                            navigator.clipboard.writeText(`${origin}/checkout?product=${initialProduct.slug}`);
+                            setCopiedCheckoutLink(true);
+                            setTimeout(() => setCopiedCheckoutLink(false), 2500);
+                          }}
+                          className="btn-falcon-primary text-xs py-2 px-3 flex items-center gap-1.5 shrink-0 font-bold"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar</span>
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        Pega este enlace en los botones de "Comprar" de tu WordPress/Webflow para que tus clientes vayan directo a pagar sin iniciar sesión ni pedir contraseñas.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

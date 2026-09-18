@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   Code,
   DollarSign,
+  ExternalLink,
+  Eye,
   FileCode,
   FileText,
   Film,
@@ -31,6 +33,7 @@ import {
   Rocket,
   ShieldCheck,
   Sparkles,
+  Store,
   Tag,
   Target,
   Trash2,
@@ -990,28 +993,123 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                       />
                     </div>
 
-                    {/* Option C: Custom External Sales Page */}
-                    <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white flex items-center gap-2">
-                          <Globe className="w-4 h-4 text-cyan-400" />
-                          Página de Ventas Propia / Landing Page Externa (Opcional)
+                    {/* Option C: Sales Page Type & External Web Choice */}
+                    <div className="space-y-4 pt-4 border-t border-white/10">
+                      <div>
+                        <span className="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                          <Store className="w-4 h-4 text-cyan-400" />
+                          ¿Dónde prefieres presentar y vender este producto?
                         </span>
-                        <span className="text-[10px] text-cyan-400 font-semibold">
-                          {formData.salesPageUrl ? "✓ Landing personalizada" : "✓ Landing nativa FALKO"}
-                        </span>
+                        <p className="text-xs text-slate-400">
+                          Elige si deseas usar la tienda oficial automática de FALKO o conectar tu propia web externa.
+                        </p>
                       </div>
-                      <input
-                        type="url"
-                        name="salesPageUrl"
-                        value={formData.salesPageUrl}
-                        onChange={handleChange}
-                        placeholder="https://miweb.com/landing-producto (Vacío = Página de ventas automática de FALKO)"
-                        className="input-falcon text-xs w-full py-2"
-                      />
-                      <p className="text-[11px] text-slate-400 leading-relaxed">
-                        Si ya tienes tu propia web o landing externa, colócala aquí. Si lo dejas vacío, tus compradores verán directamente la <strong>página de ventas de alta conversión de FALKO</strong>.
-                      </p>
+
+                      {/* 2-Card Mode Choice */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        {/* Option 1: Tienda Oficial FALKO */}
+                        <div
+                          onClick={() => setFormData({ ...formData, salesPageUrl: "" })}
+                          className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                            !formData.salesPageUrl
+                              ? "bg-cyan-950/40 border-cyan-500 shadow-glow"
+                              : "bg-slate-950/50 border-white/5 hover:border-white/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Store className="w-4 h-4 text-cyan-400" />
+                              <strong className="text-sm text-white">Tienda Oficial FALKO</strong>
+                            </div>
+                            <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">
+                              Recomendado
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            FALKO genera automáticamente una página de alta conversión para compradores, con video, fotos, FAQs, soporte por WhatsApp y checkout multidivisa.
+                          </p>
+                          <span className="text-[11px] text-cyan-300 font-semibold block mt-2">
+                            {!formData.salesPageUrl ? "✓ Modo Activo (Automático)" : "Seleccionar"}
+                          </span>
+                        </div>
+
+                        {/* Option 2: Mi Propia Web Externa */}
+                        <div
+                          onClick={() => {
+                            if (!formData.salesPageUrl) {
+                              setFormData({ ...formData, salesPageUrl: "https://" });
+                            }
+                          }}
+                          className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                            Boolean(formData.salesPageUrl)
+                              ? "bg-purple-950/40 border-purple-500 shadow-glow"
+                              : "bg-slate-950/50 border-white/5 hover:border-white/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Globe className="w-4 h-4 text-purple-400" />
+                              <strong className="text-sm text-white">Mi Propia Web Externa</strong>
+                            </div>
+                            <span className="text-[10px] bg-purple-950 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">
+                              Personalizada
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            Usa tu propia landing page en WordPress, Webflow, Framer o ClickFunnels y conecta tus botones de compra con el checkout seguro de FALKO.
+                          </p>
+                          <span className="text-[11px] text-purple-300 font-semibold block mt-2">
+                            {Boolean(formData.salesPageUrl) ? "✓ Modo Activo" : "Seleccionar"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Input for external web with test button */}
+                      {Boolean(formData.salesPageUrl) && (
+                        <div className="bg-slate-950/80 p-4 rounded-2xl border border-purple-500/30 space-y-3 animate-in fade-in-50">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Globe className="w-3.5 h-3.5 text-purple-400" />
+                              <span>URL de tu Página de Ventas Externa</span>
+                            </label>
+                            {formData.salesPageUrl && formData.salesPageUrl !== "https://" && (
+                              <a
+                                href={formData.salesPageUrl.startsWith("http") ? formData.salesPageUrl : `https://${formData.salesPageUrl}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-purple-400 hover:underline flex items-center gap-1 font-bold"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>Probar / Abrir Web</span>
+                              </a>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="url"
+                              name="salesPageUrl"
+                              value={formData.salesPageUrl}
+                              onChange={handleChange}
+                              placeholder="https://tupropiaweb.com/mi-landing"
+                              className="input-falcon flex-1 text-xs py-2"
+                            />
+                            {formData.salesPageUrl && formData.salesPageUrl !== "https://" && (
+                              <a
+                                href={formData.salesPageUrl.startsWith("http") ? formData.salesPageUrl : `https://${formData.salesPageUrl}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-falcon-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 shrink-0"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                                <span className="hidden sm:inline">Ver Web</span>
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Al publicar tu producto, obtendrás el enlace directo de checkout para enlazar en los botones de "Comprar" de tu web externa.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* ======================================================== */}
