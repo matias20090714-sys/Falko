@@ -150,7 +150,7 @@ export default async function HomePage() {
                 <TrendingUp className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-heading font-bold text-white">
-                2. Vende sin Fricción
+                2. Publica y Vende en Minutos
               </h3>
               <p className="text-slate-300 text-xs leading-relaxed">
                 Publica tus productos en minutos, sube archivos o videos, define enlaces privados de Notion o Drive y cobra en tu moneda local con retiros directos.

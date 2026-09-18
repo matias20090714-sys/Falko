@@ -83,7 +83,7 @@ export function LandingInteractiveDemo() {
                 <span>Conversión Optimizada en Móvil</span>
               </div>
               <h3 className="text-2xl sm:text-3xl font-heading font-black text-white">
-                El checkout con menos fricción de Latinoamérica
+                Pasarela de Pagos Global en Tu Moneda Local
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Tus compradores pagan en 1 clic con <strong>Mercado Pago, Cripto USDT en Solana/Polygon (0% fee), PIX Brasil, SPEI México o PSE Colombia</strong>.
