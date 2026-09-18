@@ -45,12 +45,17 @@ function CheckoutContent() {
   const [cryptoNetwork, setCryptoNetwork] = useState<"solana" | "polygon">("solana");
   const [copiedCrypto, setCopiedCrypto] = useState(false);
 
-  // Features: Order Bump & Coupons
   const [includeOrderBump, setIncludeOrderBump] = useState(false);
   const [couponCodeInput, setCouponCodeInput] = useState(initialCoupon);
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPct: number } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
+
+  // Guest buyer form state
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestFirstName, setGuestFirstName] = useState("");
+  const [guestLastName, setGuestLastName] = useState("");
+  const [guestCountryCode, setGuestCountryCode] = useState("UY");
 
   // Countdown Timer: 14:59 minutes
   const [timeLeft, setTimeLeft] = useState(14 * 60 + 59);
@@ -167,8 +172,14 @@ function CheckoutContent() {
 
   const handleCompleteOrder = async () => {
     if (!currentUser) {
-      router.push(`/login?redirect=/checkout?product=${productSlug}`);
-      return;
+      if (!guestEmail.trim() || !guestEmail.includes("@")) {
+        setError("Por favor ingresa un correo electrónico válido para recibir tu compra.");
+        return;
+      }
+      if (!guestFirstName.trim()) {
+        setError("Por favor ingresa tu nombre.");
+        return;
+      }
     }
 
     setProcessing(true);
@@ -185,6 +196,10 @@ function CheckoutContent() {
           paymentMethod: selectedMethod,
           includeOrderBump,
           couponCode: appliedCoupon?.code || "",
+          customerEmail: currentUser ? currentUser.email : guestEmail.trim(),
+          customerFirstName: currentUser ? currentUser.firstName : guestFirstName.trim(),
+          customerLastName: currentUser ? currentUser.lastName : guestLastName.trim(),
+          customerCountryCode: currentUser ? currentUser.countryCode : guestCountryCode,
         }),
       });
 
@@ -285,10 +300,17 @@ function CheckoutContent() {
         {/* Left Col: Customer Info, Order Bump & Payment Methods */}
         <div className="lg:col-span-2 space-y-6">
           {/* Buyer Details */}
-          <div className="glass-panel rounded-3xl p-6 border border-white/10 shadow-xl">
-            <h3 className="text-base font-heading font-bold text-white mb-4">
-              1. Datos del Comprador
-            </h3>
+          <div className="glass-panel rounded-3xl p-6 border border-white/10 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-heading font-bold text-white">
+                1. Datos del Comprador
+              </h3>
+              {!currentUser && (
+                <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800/60 px-2.5 py-0.5 rounded-full font-bold">
+                  ⚡ Compra Rápida Directa (Sin contraseña)
+                </span>
+              )}
+            </div>
 
             {currentUser ? (
               <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 flex items-center justify-between text-xs">
@@ -303,11 +325,78 @@ function CheckoutContent() {
                 </span>
               </div>
             ) : (
-              <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 text-xs text-center space-y-3">
-                <p className="text-slate-300">Debes ingresar para asociar la compra a tu cuenta y acceder a la descarga.</p>
-                <Link href={`/login?redirect=/checkout?product=${productSlug}`} className="btn-falcon-primary text-xs py-2 px-4 shadow-glow">
-                  Iniciar Sesión / Registrarme
-                </Link>
+              <div className="space-y-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                      Nombre <span className="text-cyan-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Tu nombre (ej: Juan)"
+                      value={guestFirstName}
+                      onChange={(e) => setGuestFirstName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                      Apellido
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Tu apellido (ej: Pérez)"
+                      value={guestLastName}
+                      onChange={(e) => setGuestLastName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                    Correo Electrónico donde recibirás tu compra <span className="text-cyan-400">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="ejemplo@correo.com"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                  />
+                  <span className="text-[10px] text-cyan-400/90 mt-1 block">
+                    ⚡ Te enviaremos tus archivos digitales y comprobante de acceso a este correo al instante.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                    País de Facturación
+                  </label>
+                  <select
+                    value={guestCountryCode}
+                    onChange={(e) => setGuestCountryCode(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white bg-slate-900 cursor-pointer"
+                  >
+                    {Object.values(COUNTRIES).map((c) => (
+                      <option key={c.code} value={c.code} className="bg-slate-950 text-white">
+                        {c.flag} {c.name} ({c.currency})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 border-t border-white/5">
+                  <span>¿Ya tienes una cuenta registrada en Falko?</span>
+                  <Link
+                    href={`/login?redirect=/checkout?product=${productSlug}`}
+                    className="text-cyan-400 hover:text-cyan-300 font-bold underline"
+                  >
+                    Iniciar Sesión
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -672,7 +761,7 @@ function CheckoutContent() {
             {/* Pay Button */}
             <button
               onClick={handleCompleteOrder}
-              disabled={processing || !currentUser}
+              disabled={processing}
               className="w-full btn-falcon-primary py-3.5 text-sm font-bold justify-center shadow-glow disabled:opacity-50 cursor-pointer"
             >
               <Zap className="w-4 h-4" />
@@ -698,7 +787,7 @@ function CheckoutContent() {
           </div>
           <button
             onClick={handleCompleteOrder}
-            disabled={processing || !currentUser}
+            disabled={processing}
             className="btn-falcon-primary py-2.5 px-5 text-xs font-bold shadow-glow disabled:opacity-50 flex items-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5" />

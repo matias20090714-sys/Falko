@@ -277,12 +277,6 @@ export function ProductDetailClient({
                 <div className="absolute top-4 left-4 bg-slate-950/85 backdrop-blur-md text-xs font-bold text-cyan-300 px-3 py-1 rounded-xl border border-white/10 shadow-lg">
                   {product.category?.name || "Recurso Digital"}
                 </div>
-                {product.affiliateEnabled && (
-                  <div className="absolute top-4 right-4 bg-purple-950/90 backdrop-blur-md text-xs font-bold text-purple-300 px-3 py-1 rounded-xl border border-purple-500/40 flex items-center gap-1.5 shadow-lg">
-                    <Percent className="w-3.5 h-3.5" />
-                    <span>{product.affiliateCommissionPct}% Afiliados</span>
-                  </div>
-                )}
               </div>
             )}
 
@@ -805,76 +799,6 @@ export function ProductDetailClient({
             productTitle={product.title}
             variant="card"
           />
-
-          {/* ======================================================== */}
-          {/* AFFILIATE PROGRAM SECTION FOR THIS PRODUCT               */}
-          {/* ======================================================== */}
-          {product.affiliateEnabled && !isSeller && (
-            <div className="glass-panel rounded-3xl p-6 border border-purple-500/30 shadow-glow relative space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Share2 className="w-5 h-5 text-purple-400" />
-                  <h4 className="font-heading font-bold text-white text-sm">
-                    Programa de Afiliados
-                  </h4>
-                </div>
-                <span className="text-xs font-bold text-purple-300 bg-purple-950/80 px-2.5 py-1 rounded-full border border-purple-500/40">
-                  {product.affiliateCommissionPct}% Comisión
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Gana hasta <strong className="text-white font-bold">{formatCurrency(convertedAffiliateEst, currency)}</strong> por cada venta referida con tu enlace único.
-              </p>
-
-              {affiliateRecord && affiliateRecord.status === "APPROVED" ? (
-                <div className="space-y-3 bg-slate-950/80 p-3.5 rounded-2xl border border-purple-900/50">
-                  <span className="text-[11px] font-semibold text-emerald-400 block">
-                    ✓ Tu enlace de afiliado está activo:
-                  </span>
-                  <div className="flex items-center gap-1.5 bg-slate-900 p-2 rounded-xl border border-white/10">
-                    <input
-                      readOnly
-                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/product/${product.slug}?ref=${affiliateRecord.uniqueRefCode}`}
-                      className="bg-transparent text-[11px] text-slate-300 flex-1 outline-none truncate"
-                    />
-                    <button
-                      onClick={handleCopyAffiliateLink}
-                      className="btn-falcon-primary text-[10px] py-1 px-3 font-bold"
-                    >
-                      {copiedLink ? <Check className="w-3 h-3 text-black" /> : <Copy className="w-3 h-3 text-black" />}
-                      <span>{copiedLink ? "Copiado" : "Copiar"}</span>
-                    </button>
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-400 pt-1">
-                    <span>Clics: <strong className="text-white">{affiliateRecord.clicksCount}</strong></span>
-                    <span>Ventas: <strong className="text-emerald-400">{affiliateRecord.conversionsCount}</strong></span>
-                  </div>
-                </div>
-              ) : affiliateRecord && affiliateRecord.status === "PENDING" ? (
-                <div className="bg-amber-950/40 border border-amber-800 p-3.5 rounded-2xl text-center text-xs text-amber-300">
-                  Solicitud en revisión manual por el creador.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    onClick={generateAffiliateLink}
-                    className="w-full btn-falcon-secondary text-xs py-2.5 justify-center hover:border-purple-400 text-purple-300 font-bold"
-                  >
-                    <Percent className="w-3.5 h-3.5 text-purple-400" />
-                    <span>
-                      {product.affiliateApprovalMode === "AUTO"
-                        ? "Generar Enlace de Afiliado (Auto)"
-                        : "Solicitar Aprobación de Afiliado"}
-                    </span>
-                  </button>
-                  {statusMessage && (
-                    <p className="text-[11px] text-cyan-400 text-center">{statusMessage}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 

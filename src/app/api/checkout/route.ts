@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, hashPassword } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { computeFinancialSplit, convertCurrency } from "@/lib/currency";
 import { validateOrderFraud } from "@/lib/fraud";
@@ -11,9 +11,6 @@ import { triggerWebhooksForSeller } from "@/lib/webhooks";
 export async function POST(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return NextResponse.json({ success: false, error: "Debes iniciar sesión para completar la compra." }, { status: 401 });
-    }
 
     const {
       productSlug,
@@ -22,7 +19,55 @@ export async function POST(req: NextRequest) {
       paymentMethod = "MERCADOPAGO",
       includeOrderBump = false,
       couponCode = "",
+      customerEmail = "",
+      customerFirstName = "",
+      customerLastName = "",
+      customerCountryCode = "UY",
     } = await req.json();
+
+    let buyerUser = currentUser;
+
+    if (!buyerUser) {
+      const cleanEmail = (customerEmail || "").trim().toLowerCase();
+      if (!cleanEmail || !cleanEmail.includes("@")) {
+        return NextResponse.json(
+          { success: false, error: "Por favor ingresa tu correo electrónico para enviarte los accesos del producto." },
+          { status: 400 }
+        );
+      }
+
+      let existingUser = await prisma.user.findUnique({
+        where: { email: cleanEmail },
+      });
+
+      if (!existingUser) {
+        const tempPassword = Math.random().toString(36).slice(-8) + Date.now().toString(36);
+        const passwordHash = await hashPassword(tempPassword);
+
+        existingUser = await prisma.user.create({
+          data: {
+            email: cleanEmail,
+            firstName: (customerFirstName || "").trim() || "Cliente",
+            lastName: (customerLastName || "").trim() || "FALKO",
+            passwordHash,
+            countryCode: customerCountryCode || "UY",
+            preferredCurrency: targetCurrency || "USD",
+            roles: {
+              create: { role: "BUYER" },
+            },
+          },
+        });
+      }
+
+      buyerUser = existingUser as any;
+    }
+
+    if (!buyerUser) {
+      return NextResponse.json(
+        { success: false, error: "No se pudo identificar los datos del comprador." },
+        { status: 400 }
+      );
+    }
 
     // 1. Fetch live product from DB (Never trust client prices)
     const product = await prisma.product.findUnique({
@@ -109,8 +154,8 @@ export async function POST(req: NextRequest) {
 
     // 5. Server-side Anti-Fraud Check
     const fraudCheck = await validateOrderFraud({
-      buyerId: currentUser.id,
-      buyerEmail: currentUser.email,
+      buyerId: buyerUser.id,
+      buyerEmail: buyerUser.email,
       affiliateProductId: affiliateProduct?.id,
       productSellerId: product.sellerId,
     });
@@ -137,9 +182,9 @@ export async function POST(req: NextRequest) {
       amount: split.totalAmount,
       currency: split.currencyCode,
       description: `Compra FALKO: ${product.title}${includeOrderBump ? " (+ Bump)" : ""}`,
-      customerEmail: currentUser.email,
-      customerName: `${currentUser.firstName} ${currentUser.lastName}`,
-      returnUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/order/success`,
+      customerEmail: buyerUser.email,
+      customerName: `${buyerUser.firstName} ${buyerUser.lastName}`,
+      returnUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/order/success?orderNumber=${orderNumber}&email=${encodeURIComponent(buyerUser.email)}`,
       cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/order/failed`,
     });
 
@@ -158,7 +203,7 @@ export async function POST(req: NextRequest) {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        buyerId: currentUser.id,
+        buyerId: buyerUser.id,
         affiliateProductId: affiliateProduct?.id || null,
         totalAmount: split.totalAmount,
         currencyCode: split.currencyCode,
@@ -267,10 +312,10 @@ export async function POST(req: NextRequest) {
             price: product.price,
           },
           buyer: {
-            id: currentUser.id,
-            name: `${currentUser.firstName} ${currentUser.lastName}`,
-            email: currentUser.email,
-            country: currentUser.countryCode,
+            id: buyerUser.id,
+            name: `${buyerUser.firstName} ${buyerUser.lastName}`,
+            email: buyerUser.email,
+            country: buyerUser.countryCode,
           },
           amounts: {
             total: split.totalAmount,
