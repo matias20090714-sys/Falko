@@ -165,18 +165,18 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
         </div>
       )}
 
-      <div className="divide-y divide-slate-800">
+      <div className="space-y-3">
         {products.map((p) => {
           const isUpdating = updatingId === p.id;
 
           return (
             <div
               key={p.id}
-              className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+              className="p-4 rounded-2xl bg-slate-950/60 border border-white/5 hover:border-cyan-500/30 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4 group"
             >
               {/* Product Info */}
               <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-14 h-14 rounded-2xl bg-slate-900 overflow-hidden border border-slate-800 shrink-0 relative">
+                <div className="w-14 h-14 rounded-2xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 relative">
                   <img src={p.coverImageUrl} alt={p.title} className="w-full h-full object-cover" />
                 </div>
 
@@ -185,28 +185,28 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                     {p.title}
                   </h4>
                   <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-slate-400">
-                    <span className="text-cyan-400 font-mono font-bold">
+                    <span className="text-cyan-400 font-bold">
                       {formatCurrency(p.price, p.currencyCode)}
                     </span>
                     <span>•</span>
-                    <span className="font-mono text-slate-300">{p.salesCount} ventas</span>
+                    <span className="text-slate-300 font-semibold">{p.salesCount} ventas</span>
                     <span>•</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
                       {p.status}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Affiliate Interactive Controls */}
-              <div className="flex flex-wrap items-center gap-3 shrink-0">
+              {/* Action Buttons Cluster */}
+              <div className="flex flex-wrap items-center gap-2 pt-2 xl:pt-0 border-t xl:border-t-0 border-white/5 shrink-0">
                 {/* 1-Click Affiliate Toggle Badge Button */}
                 <button
                   type="button"
                   onClick={() => handleToggleAffiliate(p)}
                   disabled={isUpdating}
                   title="Haz clic para activar o desactivar que otros vendan tu producto"
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all ${
                     p.affiliateEnabled
                       ? "bg-purple-950/80 border-purple-500/50 text-purple-300 hover:bg-purple-900/80 shadow-sm"
                       : "bg-slate-900/80 border-white/10 text-slate-400 hover:text-slate-200"
@@ -220,8 +220,8 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
 
                   <span>
                     {p.affiliateEnabled
-                      ? `Afiliados: ${p.affiliateCommissionPct}% (${p.affiliateApprovalMode})`
-                      : "Afiliados: Desactivado"}
+                      ? `Afiliados: ${p.affiliateCommissionPct}%`
+                      : "Afiliados: Off"}
                   </span>
 
                   <span
@@ -231,31 +231,31 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                   />
                 </button>
 
+                {/* Quick Edit Affiliate Settings Modal Trigger */}
+                <button
+                  type="button"
+                  onClick={() => openEditModal(p)}
+                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-cyan-400 transition-colors shrink-0"
+                  title="Configurar porcentaje y modo de aprobación de afiliados"
+                >
+                  <Percent className="w-3.5 h-3.5" />
+                </button>
+
                 {/* Edit Full Product Details */}
                 <Link
                   href={`/seller/products/${p.id}/edit`}
-                  className="btn-falcon-primary text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold shadow-glow"
+                  className="btn-falcon-primary text-xs py-1.5 px-3 flex items-center gap-1 font-bold shadow-glow whitespace-nowrap"
                   title="Editar detalles, precio, contenido y archivos de este producto"
                 >
                   <Settings2 className="w-3.5 h-3.5" />
                   <span>Editar</span>
                 </Link>
 
-                {/* Quick Edit Affiliate Settings Modal Trigger */}
-                <button
-                  type="button"
-                  onClick={() => openEditModal(p)}
-                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-cyan-400 transition-colors"
-                  title="Configurar porcentaje y modo de aprobación de afiliados"
-                >
-                  <Percent className="w-3.5 h-3.5" />
-                </button>
-
                 {/* Copy Sales Link */}
                 <button
                   type="button"
                   onClick={() => handleCopyLink(p.slug)}
-                  className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1"
+                  className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1 whitespace-nowrap"
                   title="Copiar enlace de venta directa"
                 >
                   {copiedSlug === p.slug ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-cyan-400" />}
@@ -265,7 +265,7 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                 {/* View on Marketplace */}
                 <Link
                   href={`/product/${p.slug}`}
-                  className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1"
+                  className="btn-falcon-secondary text-xs py-1.5 px-3 flex items-center gap-1 whitespace-nowrap hover:border-cyan-400 hover:text-cyan-300"
                 >
                   <ExternalLink className="w-3 h-3 text-slate-400" />
                   <span>Ver Tienda</span>
