@@ -373,24 +373,24 @@ export function MarketplaceClient({
                     </div>
 
                     {/* Action Buttons: Más Info + Afiliarse */}
-                    <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                    <div className={`grid ${p.affiliateEnabled ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-2 border-t border-white/5`}>
                       <Link
                         href={`/product/${p.slug}`}
-                        className="btn-falcon-primary flex-1 justify-center text-xs py-2 px-3 font-bold flex items-center gap-1 shadow-glow"
+                        className="btn-falcon-primary w-full justify-center text-xs py-2 px-2.5 font-bold flex items-center gap-1 shadow-glow truncate"
                       >
-                        <span>Más Info</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="truncate">Más Info</span>
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                       </Link>
 
                       {p.affiliateEnabled && (
                         <button
                           type="button"
                           onClick={() => handleOpenAffiliateModal(p)}
-                          className="btn-falcon-secondary text-xs py-2 px-3 justify-center text-purple-300 border-purple-500/40 hover:border-purple-400 hover:text-white flex items-center gap-1 font-bold whitespace-nowrap"
+                          className="btn-falcon-secondary w-full text-xs py-2 px-2 justify-center text-purple-300 border-purple-500/40 hover:border-purple-400 hover:text-white flex items-center gap-1 font-bold truncate"
                           title="Obtener enlace de afiliado y ganar comisión"
                         >
-                          <Percent className="w-3.5 h-3.5 text-purple-400" />
-                          <span>Afiliarse ({p.affiliateCommissionPct}%)</span>
+                          <Percent className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                          <span className="truncate">Afiliarse ({p.affiliateCommissionPct}%)</span>
                         </button>
                       )}
                     </div>

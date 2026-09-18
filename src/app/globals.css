@@ -410,15 +410,24 @@ select option:focus {
   }
 }
 
-/* Disable blue tap highlight on mobile browsers */
+/* Disable blue tap highlight & eliminate 300ms click delay on mobile */
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, select, textarea {
+  touch-action: manipulation;
 }
 
 /* Responsive Touch Target sizing for mobile buttons & inputs */
 @media (max-width: 640px) {
   input, select, textarea {
     font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+  }
+  
+  /* Ensure smooth scrolling across all scrollable containers */
+  .overflow-x-auto, .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
   }
 }
 

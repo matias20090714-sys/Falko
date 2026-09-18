@@ -261,7 +261,7 @@ function CheckoutContent() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24 lg:pb-10 space-y-6">
       {/* ⏳ Urgency Countdown Timer Bar */}
       <div className="bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-cyan-500/20 border border-amber-500/40 rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-glow backdrop-blur-xl">
         <div className="flex items-center gap-2 text-amber-300 font-semibold">
