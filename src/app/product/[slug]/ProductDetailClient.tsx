@@ -150,72 +150,126 @@ export function ProductDetailClient({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Conversion Trust Bar */}
-      <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-3 sm:p-3.5 backdrop-blur-xl grid grid-cols-2 md:grid-cols-4 gap-2.5 text-center text-xs shadow-lg">
-        <div className="flex items-center justify-center gap-2 text-emerald-400">
-          <ShieldCheck className="w-4 h-4 shrink-0" />
-          <span className="font-bold">Garantía {product.guaranteeDays} Días Protegida</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 text-cyan-300">
-          <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span className="font-bold">Entrega Inmediata al Pagar</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 text-purple-300">
-          <Lock className="w-4 h-4 text-purple-400 shrink-0" />
-          <span className="font-bold">Cifrado Bancario SSL</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 text-amber-300">
-          <MessageSquare className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="font-bold">Soporte con el Creador</span>
-        </div>
-      </div>
-
-      {/* External Custom Landing Page Banner (if seller configured one) */}
-      {product.salesPageUrl && (
-        <div className="bg-gradient-to-r from-cyan-950/80 via-slate-900 to-slate-950 p-4 rounded-2xl border border-cyan-500/40 shadow-glow flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 text-xs text-slate-200">
-            <Globe className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span>
-              Este producto cuenta con una <strong>página de presentación externa</strong> personalizada por el autor.
-            </span>
+    <div className="space-y-8 pb-12">
+      {/* Standalone Store Top Bar */}
+      <header className="sticky top-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          {/* Creator Profile Brand */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 shadow-sm">
+              {product.seller?.avatarUrl ? (
+                <img
+                  src={product.seller.avatarUrl}
+                  alt={product.seller.firstName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-xs font-bold text-slate-950">
+                  {product.seller?.firstName?.[0] || "C"}
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs sm:text-sm font-bold text-white truncate">
+                  {product.seller?.firstName} {product.seller?.lastName}
+                </span>
+                <span className="text-xs">{COUNTRIES[product.seller?.countryCode]?.flag || "🌐"}</span>
+              </div>
+              <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                Tienda Oficial Verificada
+              </span>
+            </div>
           </div>
-          <a
-            href={product.salesPageUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-falcon-primary text-xs py-1.5 px-4 flex items-center gap-1.5 shrink-0"
-          >
-            <span>Ver Landing Page Oficial</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-      )}
 
-      {/* Breadcrumb & Social QR Share Action */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Link href="/marketplace" className="hover:text-cyan-400">
-            Marketplace
-          </Link>
-          <span>/</span>
-          <Link
-            href={`/marketplace?category=${product.category?.slug || ""}`}
-            className="hover:text-cyan-400 font-semibold"
-          >
-            {product.category?.name || "Digital"}
-          </Link>
-          <span>/</span>
-          <span className="text-slate-200 truncate max-w-[200px]">{product.title}</span>
+          {/* Right Controls: Currency Switcher & Direct Buy CTA */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Currency Selector */}
+            <select
+              value={currency}
+              onChange={(e) => {
+                setCurrency(e.target.value);
+                localStorage.setItem("falko_currency", e.target.value);
+                window.dispatchEvent(new CustomEvent("currencyChange", { detail: e.target.value }));
+              }}
+              aria-label="Seleccionar moneda"
+              className="px-2.5 py-1.5 rounded-xl glass-input text-xs bg-slate-900 border border-white/10 text-white cursor-pointer font-mono"
+            >
+              {Object.values(COUNTRIES).map((c) => (
+                <option key={c.code} value={c.currency} className="bg-slate-950 text-white">
+                  {c.flag} {c.currency} ({c.currencySymbol})
+                </option>
+              ))}
+            </select>
+
+            <Link
+              href={checkoutUrl}
+              className="btn-falcon-primary text-xs py-2 px-4 font-bold shadow-glow flex items-center gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Comprar Ahora — </span>
+              <span>{formatCurrency(convertedPrice, currency)}</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Top Conversion Trust Bar */}
+        <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-3 sm:p-3.5 backdrop-blur-xl grid grid-cols-2 md:grid-cols-4 gap-2.5 text-center text-xs shadow-lg">
+          <div className="flex items-center justify-center gap-2 text-emerald-400">
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span className="font-bold">Garantía {product.guaranteeDays} Días Protegida</span>
+          </div>
+          <div className="flex items-center justify-center gap-2 text-cyan-300">
+            <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span className="font-bold">Entrega Inmediata al Pagar</span>
+          </div>
+          <div className="flex items-center justify-center gap-2 text-purple-300">
+            <Lock className="w-4 h-4 text-purple-400 shrink-0" />
+            <span className="font-bold">Cifrado Bancario SSL</span>
+          </div>
+          <div className="flex items-center justify-center gap-2 text-amber-300">
+            <MessageSquare className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="font-bold">Soporte con el Creador</span>
+          </div>
         </div>
 
-        {/* QR Code & Share Action */}
-        <QrCodeModal 
-          productTitle={product.title} 
-          productSlug={product.slug} 
-          refCode={refCodeParam || affiliateRecord?.uniqueRefCode} 
-        />
-      </div>
+        {/* External Custom Landing Page Banner (if seller configured one) */}
+        {product.salesPageUrl && (
+          <div className="bg-gradient-to-r from-cyan-950/80 via-slate-900 to-slate-950 p-4 rounded-2xl border border-cyan-500/40 shadow-glow flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-xs text-slate-200">
+              <Globe className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span>
+                Este producto cuenta con una <strong>página de presentación externa</strong> personalizada por el autor.
+              </span>
+            </div>
+            <a
+              href={product.salesPageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-falcon-primary text-xs py-1.5 px-4 flex items-center gap-1.5 shrink-0"
+            >
+              <span>Ver Landing Page Oficial</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        )}
+
+        {/* Buyer Trust Status Bar & QR Share */}
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-slate-300 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-white/5">
+            <Lock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <span>Compra Directa Segura • Sin Contraseñas Requeridas • Entrega Inmediata</span>
+          </div>
+
+          <QrCodeModal 
+            productTitle={product.title} 
+            productSlug={product.slug} 
+            refCode={refCodeParam || affiliateRecord?.uniqueRefCode} 
+          />
+        </div>
 
       {/* Main Grid: 2 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
@@ -800,6 +854,33 @@ export function ProductDetailClient({
             variant="card"
           />
         </div>
+      </div>
+
+      {/* Standalone Store Footer for Buyers */}
+      <footer className="mt-16 pt-8 pb-12 border-t border-white/10 text-center space-y-4">
+        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+          <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+            <ShieldCheck className="w-4 h-4" />
+            Garantía {product.guaranteeDays} Días
+          </span>
+          <span className="flex items-center gap-1.5 text-cyan-400 font-semibold">
+            <Lock className="w-4 h-4" />
+            Cifrado Bancario SSL 256-bit
+          </span>
+          <span className="flex items-center gap-1.5 text-purple-400 font-semibold">
+            <Zap className="w-4 h-4" />
+            Entrega Inmediata a tu Correo
+          </span>
+        </div>
+        <p className="text-[11px] text-slate-400 max-w-xl mx-auto leading-relaxed">
+          Esta es la página de compra oficial directa de <strong>{product.seller?.firstName} {product.seller?.lastName}</strong>. Al completar tu pago recibirás tu acceso y comprobante de forma instantánea.
+        </p>
+        <div className="text-[10px] text-slate-400 flex items-center justify-center gap-4 pt-2">
+          <span>© {new Date().getFullYear()} {product.seller?.firstName} {product.seller?.lastName}. Todos los derechos reservados.</span>
+          <span>•</span>
+          <span className="text-slate-400">Pago y Entrega Digital Segura</span>
+        </div>
+      </footer>
       </div>
 
       {/* Floating WhatsApp Pre-sale Button for Instant Mobile/Desktop Reach */}

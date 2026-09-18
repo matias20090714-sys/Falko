@@ -1,11 +1,20 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FalconLogo } from "./FalconLogo";
 import { ShieldCheck, Lock, Globe, Zap, Heart } from "lucide-react";
 import { COUNTRIES } from "@/lib/currency";
 
 export function Footer() {
+  const pathname = usePathname();
   const popularCountries = ["UY", "US", "BR", "MX", "AR", "CL", "CO", "PE", "ES"];
+
+  // Hide platform-wide footer on product sales page to provide an independent standalone store
+  if (pathname?.startsWith("/product/")) {
+    return null;
+  }
 
   return (
     <footer className="bg-[#050814] border-t border-slate-900 text-slate-400 text-xs mt-20">

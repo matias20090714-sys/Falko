@@ -76,6 +76,11 @@ export function Navbar({ initialUser }: NavbarProps) {
     return () => window.removeEventListener("currencyChange", handleCurrencyChange);
   }, [initialUser]);
 
+  // If on product store page, let the product page render its independent, distraction-free store header
+  if (pathname?.startsWith("/product/")) {
+    return null;
+  }
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);

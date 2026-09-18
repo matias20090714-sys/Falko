@@ -36,8 +36,8 @@ export function MobileBottomNav({ initialUser }: MobileBottomNavProps) {
     }
   }, [initialUser]);
 
-  // Don't show on checkout page to maximize focus on payment
-  if (pathname === "/checkout") return null;
+  // Don't show on checkout or product sales page to maximize buyer conversion
+  if (pathname === "/checkout" || pathname?.startsWith("/product/")) return null;
 
   const authNavItems = [
     { label: "Market", href: "/marketplace", icon: ShoppingBag },
