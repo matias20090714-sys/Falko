@@ -201,11 +201,22 @@ export async function POST(req: NextRequest) {
           })),
         },
         coupons: {
-          create: coupons.map((c: any) => ({
-            code: (c.code || "PROMO").toUpperCase().trim(),
-            discountPct: parseFloat(c.discountPct) || 20,
-            maxUses: parseInt(c.maxUses) || 500,
-          })),
+          create: Array.from(
+            new Set<string>(
+              (coupons || [])
+                .map((c: any) => String(c.code || "").toUpperCase().trim())
+                .filter(Boolean)
+            )
+          ).map((code: string) => {
+            const matching = coupons.find(
+              (c: any) => String(c.code || "").toUpperCase().trim() === code
+            );
+            return {
+              code,
+              discountPct: parseFloat(matching?.discountPct) || 20,
+              maxUses: parseInt(matching?.maxUses) || 500,
+            };
+          }),
         },
       },
       include: {

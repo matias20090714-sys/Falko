@@ -72,43 +72,101 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  const compressImageForAvatar = (file: File): Promise<{ blob: Blob; dataUrl: string }> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const MAX_SIZE = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ blob: file, dataUrl: reader.result as string });
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.90);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve({ blob, dataUrl });
+            } else {
+              resolve({ blob: file, dataUrl });
+            }
+          },
+          "image/jpeg",
+          0.90
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        const reader = new FileReader();
+        reader.onload = () => resolve({ blob: file, dataUrl: reader.result as string });
+        reader.readAsDataURL(file);
+      };
+      img.src = objectUrl;
+    });
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size (< 4MB)
-    if (file.size > 4 * 1024 * 1024) {
-      setNotification({ type: "error", message: "La imagen debe pesar menos de 4MB." });
+    // Check size (Support up to 25MB)
+    if (file.size > 25 * 1024 * 1024) {
+      setNotification({ type: "error", message: "La imagen es demasiado pesada. El límite es de 25MB." });
       return;
     }
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    setNotification(null);
 
     try {
+      // Auto-compress any heavy camera/phone photo to high-definition 800x800 avatar
+      const { blob, dataUrl } = await compressImageForAvatar(file);
+
+      const formData = new FormData();
+      formData.append("file", blob, "avatar.jpg");
+      formData.append("category", "image");
+
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
       const data = await res.json();
-      if (data.success && data.fileUrl) {
-        setAvatarUrl(data.fileUrl);
-        setNotification({ type: "success", message: "Foto cargada. Recuerda guardar cambios." });
+      if (data.success && (data.file?.url || data.fileUrl)) {
+        setAvatarUrl(data.file?.url || data.fileUrl);
+        setNotification({ type: "success", message: "¡Foto optimizada y cargada! Recuerda pulsar 'Guardar Cambios'." });
       } else {
-        // Fallback to FileReader base64 if upload endpoint is mock
-        const reader = new FileReader();
-        reader.onload = () => {
-          setAvatarUrl(reader.result as string);
-          setNotification({ type: "success", message: "Foto cargada. Recuerda guardar cambios." });
-        };
-        reader.readAsDataURL(file);
+        setAvatarUrl(dataUrl);
+        setNotification({ type: "success", message: "¡Foto optimizada y lista! Recuerda pulsar 'Guardar Cambios'." });
       }
     } catch {
       const reader = new FileReader();
       reader.onload = () => {
         setAvatarUrl(reader.result as string);
-        setNotification({ type: "success", message: "Foto cargada. Recuerda guardar cambios." });
+        setNotification({ type: "success", message: "¡Foto cargada! Recuerda pulsar 'Guardar Cambios'." });
       };
       reader.readAsDataURL(file);
     } finally {

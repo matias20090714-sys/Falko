@@ -502,7 +502,7 @@ model AdminLog {
 model Coupon {
   id          String    @id @default(cuid())
   productId   String?
-  code        String    @unique
+  code        String
   discountPct Float     @default(20.0) // 20%
   maxUses     Int       @default(1000)
   usedCount   Int       @default(0)
