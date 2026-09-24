@@ -180,12 +180,12 @@ export function ProductDetailClient({
       <header className="sticky top-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Creator Profile Brand */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 shadow-sm">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-2xl bg-slate-900 overflow-hidden border border-cyan-500/40 shrink-0 shadow-md">
               {product.seller?.avatarUrl ? (
                 <img
                   src={product.seller.avatarUrl}
-                  alt={product.seller.firstName}
+                  alt={product.seller.firstName || "Creador"}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -195,14 +195,19 @@ export function ProductDetailClient({
               )}
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-bold text-white truncate">
-                  {product.seller?.firstName} {product.seller?.lastName}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs sm:text-sm font-bold text-white">
+                  {product.seller?.firstName} {product.seller?.lastName || ""}
                 </span>
                 <span className="text-xs">{COUNTRIES[product.seller?.countryCode]?.flag || "🌐"}</span>
+                {product.seller?.isVerifiedSeller && (
+                  <span title="Creador Verificado Falko">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" />
+                  </span>
+                )}
               </div>
               <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
                 Tienda Oficial Verificada
               </span>
             </div>
@@ -384,7 +389,7 @@ export function ProductDetailClient({
           </div>
 
           {/* Title & Metadata */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
                 {product.category?.name || "Recurso Digital"}
@@ -393,6 +398,33 @@ export function ProductDetailClient({
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Producto Verificado</span>
               </span>
+
+              {/* Creator Pill Badge */}
+              <div className="inline-flex items-center gap-2 bg-slate-900/90 border border-cyan-500/30 px-3 py-1 rounded-full text-xs">
+                <div className="w-4 h-4 rounded-full bg-cyan-950 border border-cyan-500/50 overflow-hidden shrink-0">
+                  {product.seller?.avatarUrl ? (
+                    <img
+                      src={product.seller.avatarUrl}
+                      alt={product.seller.firstName || "Creador"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[8px] text-cyan-300 font-bold">
+                      {product.seller?.firstName?.[0] || "C"}
+                    </div>
+                  )}
+                </div>
+                <span className="text-slate-400">Por:</span>
+                <span className="font-bold text-white">
+                  {product.seller?.firstName} {product.seller?.lastName || ""}
+                </span>
+                <span className="text-xs">{COUNTRIES[product.seller?.countryCode]?.flag || ""}</span>
+                {product.seller?.isVerifiedSeller && (
+                  <span title="Creador Verificado Falko" className="inline-flex items-center">
+                    <CheckCircle2 className="w-3 h-3 text-cyan-400 inline shrink-0" />
+                  </span>
+                )}
+              </div>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white leading-[1.15] tracking-tight">
@@ -400,7 +432,7 @@ export function ProductDetailClient({
             </h1>
 
             {product.shortDescription && (
-              <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
+              <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal bg-slate-950/40 p-4 rounded-2xl border border-white/5">
                 {product.shortDescription}
               </p>
             )}
@@ -900,34 +932,48 @@ export function ProductDetailClient({
               </div>
             </div>
 
-            {/* Seller Information */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-slate-900 overflow-hidden border border-white/10 shadow-sm">
-                  {product.seller?.avatarUrl ? (
-                    <img
-                      src={product.seller.avatarUrl}
-                      alt={product.seller.firstName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-xs font-bold text-slate-950">
-                      {product.seller?.firstName?.[0] || "C"}
+            {/* Seller Information Card */}
+            <div className="pt-4 border-t border-white/10 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-cyan-950 border border-cyan-500/40 overflow-hidden shadow-md shrink-0">
+                    {product.seller?.avatarUrl ? (
+                      <img
+                        src={product.seller.avatarUrl}
+                        alt={product.seller.firstName || "Creador"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-sm font-bold text-slate-950">
+                        {product.seller?.firstName?.[0] || "C"}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase text-slate-400 block font-bold tracking-wider">
+                      Creador del Producto
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-white">
+                        {product.seller?.firstName} {product.seller?.lastName || ""}
+                      </span>
+                      {product.seller?.isVerifiedSeller && (
+                        <span title="Creador Verificado Falko" className="inline-flex items-center">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" />
+                        </span>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase text-slate-400 block font-bold">
-                    Creado por
-                  </span>
-                  <span className="text-xs font-bold text-white">
-                    {product.seller?.firstName} {product.seller?.lastName}
-                  </span>
-                </div>
+                <span className="text-xl" title={COUNTRIES[product.seller?.countryCode]?.name || "Internacional"}>
+                  {COUNTRIES[product.seller?.countryCode]?.flag || "🌐"}
+                </span>
               </div>
-              <span className="text-xl">
-                {COUNTRIES[product.seller?.countryCode]?.flag || "🌐"}
-              </span>
+              {product.seller?.bio && (
+                <p className="text-[11px] text-slate-400 leading-relaxed bg-slate-950/60 p-2.5 rounded-xl border border-white/5">
+                  {product.seller.bio}
+                </p>
+              )}
             </div>
           </div>
 

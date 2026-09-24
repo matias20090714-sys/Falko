@@ -163,8 +163,35 @@ export function EditProductClient({
 
   // Submission state
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const handleDeleteProduct = async () => {
+    setIsDeleting(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch(`/api/products?id=${initialProduct.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "No se pudo eliminar el producto.");
+      }
+      setSuccessMsg("¡Producto eliminado exitosamente! Redirigiendo a tus productos...");
+      setShowDeleteModal(false);
+      setTimeout(() => {
+        router.push("/seller");
+        router.refresh();
+      }, 1000);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al eliminar el producto.");
+      setShowDeleteModal(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleAddFile = () => {
     if (!newFileName.trim()) return;
@@ -291,6 +318,16 @@ export function EditProductClient({
             <ExternalLink className="w-3.5 h-3.5" />
             <span>Ver en Tienda</span>
           </Link>
+
+          <button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="btn-falcon-secondary text-xs py-2 px-3.5 flex items-center gap-1.5 text-rose-400 border-rose-500/30 hover:border-rose-500/70 hover:bg-rose-950/40"
+            title="Eliminar este producto permanentemente"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+            <span className="font-bold">Eliminar Producto</span>
+          </button>
         </div>
       </div>
 
@@ -336,6 +373,22 @@ export function EditProductClient({
                 placeholder="Ej: SaaS Boilerplate Pro con Next.js y Supabase"
                 className="input-falcon w-full text-sm"
               />
+            </div>
+
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 block">
+                Subtítulo / Biografía del Producto (Resumen breve)
+              </label>
+              <input
+                type="text"
+                value={shortDescription}
+                onChange={(e) => setShortDescription(e.target.value)}
+                placeholder="Ej: Una frase impactante o biografía resumida que describe tu producto en la tienda y marketplace"
+                className="input-falcon w-full text-sm"
+              />
+              <p className="text-[11px] text-slate-400">
+                Este texto funcionará como subtítulo y biografía destacada en la tienda del producto y en el catálogo.
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -530,19 +583,6 @@ export function EditProductClient({
                 <option value="21">21 Días de Garantía</option>
                 <option value="30">30 Días de Garantía (Recomendado)</option>
               </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 block">
-                Subtítulo / Resumen Breve
-              </label>
-              <input
-                type="text"
-                value={shortDescription}
-                onChange={(e) => setShortDescription(e.target.value)}
-                placeholder="Una frase impactante que resume tu recurso digital"
-                className="input-falcon w-full text-sm"
-              />
             </div>
 
             <div className="md:col-span-2 space-y-1.5">
@@ -1224,23 +1264,87 @@ export function EditProductClient({
         </div>
 
         {/* Action Buttons Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4">
-          <Link
-            href="/seller"
-            className="btn-falcon-secondary w-full sm:w-auto text-xs py-3 px-6"
-          >
-            Cancelar
-          </Link>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
           <button
-            type="submit"
-            disabled={isSaving}
-            className="btn-falcon-primary w-full sm:w-auto text-xs py-3 px-8 shadow-glow flex items-center justify-center gap-2 font-bold"
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="btn-falcon-secondary w-full sm:w-auto text-xs py-3 px-5 text-rose-400 border-rose-500/30 hover:border-rose-500/70 hover:bg-rose-950/40 flex items-center justify-center gap-2 font-bold"
           >
-            <Save className="w-4 h-4" />
-            <span>{isSaving ? "Guardando Cambios..." : "Guardar Cambios"}</span>
+            <Trash2 className="w-4 h-4 text-rose-400" />
+            <span>Eliminar Producto</span>
           </button>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <Link
+              href="/seller"
+              className="btn-falcon-secondary w-full sm:w-auto text-xs py-3 px-6 text-center"
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="btn-falcon-primary w-full sm:w-auto text-xs py-3 px-8 shadow-glow flex items-center justify-center gap-2 font-bold"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSaving ? "Guardando Cambios..." : "Guardar Cambios"}</span>
+            </button>
+          </div>
         </div>
       </form>
+
+      {/* Modal de confirmación para eliminar producto */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-rose-500/40 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-rose-400">
+                <Trash2 className="w-5 h-5" />
+                <h3 className="font-heading font-bold text-white text-base">
+                  ¿Eliminar este producto?
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-rose-950/30 border border-rose-500/30 rounded-2xl p-4 text-xs text-rose-200 space-y-2">
+              <p className="font-bold text-white text-sm">
+                {initialProduct.title}
+              </p>
+              <p className="text-slate-300">
+                Esta acción es <strong>irreversible</strong>. Se eliminará el producto de tu catálogo, de la tienda pública y del marketplace.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="btn-falcon-secondary text-xs py-2.5 px-4"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProduct}
+                disabled={isDeleting}
+                className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs py-2.5 px-5 rounded-xl shadow-lg flex items-center gap-2 transition-all disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{isDeleting ? "Eliminando..." : "Sí, Eliminar Definitivamente"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

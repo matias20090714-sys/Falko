@@ -366,21 +366,21 @@ export function MarketplaceClient({
                     </div>
 
                     {/* Footer: Seller & Price */}
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <div className="w-5 h-5 rounded-full bg-slate-800 overflow-hidden border border-white/10 shrink-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <div className="w-5 h-5 rounded-full bg-cyan-950 border border-cyan-500/30 overflow-hidden shrink-0">
                           {p.seller.avatarUrl ? (
-                            <img src={p.seller.avatarUrl} alt="" className="w-full h-full object-cover" />
+                            <img src={p.seller.avatarUrl} alt={p.seller.firstName || "Creador"} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full bg-cyan-800 flex items-center justify-center text-[9px] text-white font-bold">
-                              {p.seller.firstName[0]}
+                              {p.seller.firstName?.[0] || "U"}
                             </div>
                           )}
                         </div>
-                        <span className="text-[11px] text-slate-300 truncate font-semibold flex items-center gap-1">
-                          <span className="truncate">{p.seller.firstName}</span>
+                        <span className="text-[11px] text-slate-300 font-semibold flex items-center gap-1 min-w-0">
+                          <span className="truncate">{p.seller.firstName} {p.seller.lastName || ""}</span>
                           {p.seller.isVerifiedSeller && (
-                            <span title="Creador Verificado Falko" className="inline-flex items-center">
+                            <span title="Creador Verificado Falko" className="inline-flex items-center shrink-0">
                               <CheckCircle2 className="w-3 h-3 text-cyan-400 shrink-0 inline" />
                             </span>
                           )}
@@ -404,13 +404,13 @@ export function MarketplaceClient({
                       </div>
                     </div>
 
-                    {/* Action Buttons: Más Info + Afiliarse */}
-                    <div className={`grid ${p.affiliateEnabled ? "grid-cols-2" : "grid-cols-1"} gap-1.5 pt-1.5 border-t border-white/5`}>
+                    {/* Action Buttons: Más Info + Afiliarse (Full text visibility) */}
+                    <div className={`grid ${p.affiliateEnabled ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-2 border-t border-white/5`}>
                       <Link
                         href={`/product/${p.slug}`}
-                        className="btn-falcon-primary w-full justify-center text-[10px] sm:text-xs py-1.5 px-2 font-bold flex items-center gap-1 shadow-glow truncate"
+                        className="btn-falcon-primary w-full justify-center text-[11px] sm:text-xs py-2 px-2 font-bold flex items-center gap-1.5 shadow-glow whitespace-nowrap"
                       >
-                        <span className="truncate">Más Info</span>
+                        <span className="whitespace-nowrap">Más Info</span>
                         <ArrowRight className="w-3 h-3 shrink-0" />
                       </Link>
 
@@ -418,11 +418,11 @@ export function MarketplaceClient({
                         <button
                           type="button"
                           onClick={() => handleOpenAffiliateModal(p)}
-                          className="btn-falcon-secondary w-full text-[10px] sm:text-xs py-1.5 px-1.5 justify-center text-purple-300 border-purple-500/40 hover:border-purple-400 hover:text-white flex items-center gap-0.5 font-bold truncate"
+                          className="btn-falcon-secondary w-full text-[11px] sm:text-xs py-2 px-2 justify-center text-purple-300 border-purple-500/40 hover:border-purple-400 hover:text-white flex items-center gap-1 font-bold whitespace-nowrap"
                           title="Obtener enlace de afiliado y ganar comisión"
                         >
                           <Percent className="w-3 h-3 text-purple-400 shrink-0" />
-                          <span className="truncate">Afiliarse</span>
+                          <span className="whitespace-nowrap">Afiliarse</span>
                         </button>
                       )}
                     </div>

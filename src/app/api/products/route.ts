@@ -438,3 +438,61 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: "No autenticado." }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const productId = searchParams.get("id") || searchParams.get("productId");
+
+    if (!productId) {
+      return NextResponse.json({ success: false, error: "ID de producto requerido." }, { status: 400 });
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return NextResponse.json({ success: false, error: "Producto no encontrado." }, { status: 404 });
+    }
+
+    const isAdmin = Array.isArray(user.roles) && user.roles.includes("ADMIN");
+    if (product.sellerId !== user.id && !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Solo el creador del producto puede eliminarlo." },
+        { status: 403 }
+      );
+    }
+
+    // Cascade delete related records in a single transaction
+    await prisma.$transaction([
+      prisma.review.deleteMany({ where: { productId } }),
+      prisma.favorite.deleteMany({ where: { productId } }),
+      prisma.affiliateProduct.deleteMany({ where: { productId } }),
+      prisma.coupon.deleteMany({ where: { productId } }),
+      prisma.productImage.deleteMany({ where: { productId } }),
+      prisma.productFile.deleteMany({ where: { productId } }),
+      prisma.productLesson.deleteMany({ where: { module: { productId } } }),
+      prisma.productModule.deleteMany({ where: { productId } }),
+      prisma.subscription.deleteMany({ where: { productId } }),
+      prisma.orderItem.deleteMany({ where: { productId } }),
+      prisma.product.delete({ where: { id: productId } }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      message: "Producto eliminado permanentemente con éxito.",
+    });
+  } catch (error: any) {
+    console.error("Delete product error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Error al eliminar producto." },
+      { status: 500 }
+    );
+  }
+}
+

@@ -295,26 +295,18 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     const matchedCategory = categories.find((c) => c.slug === template.preset.categorySlug) || categories[0];
     setFormData((prev) => ({
       ...prev,
-      title: template.preset.title,
-      shortDescription: template.preset.shortDescription,
-      description: template.preset.description,
-      price: template.preset.price,
       categoryId: matchedCategory?.id || prev.categoryId,
       coverImageUrl: template.preset.coverUrl || prev.coverImageUrl,
-      demoUrl: (template.preset as any).demoUrl || prev.demoUrl,
-      videoUrl: (template.preset as any).videoUrl || prev.videoUrl,
-      accessUrl: (template.preset as any).accessUrl || prev.accessUrl,
-      accessInstructions: (template.preset as any).accessInstructions || prev.accessInstructions,
+      price: prev.price || template.preset.price,
     }));
 
     if (template.id === "course" && modules.length === 0) {
       setModules([
         {
           id: "mod-1",
-          title: "Módulo 1: Fundamentos y Bienvenida",
+          title: "Módulo 1: Introducción y Bienvenida",
           lessons: [
-            { id: "les-1", title: "1. Introducción al Programa", videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", durationMin: 8 },
-            { id: "les-2", title: "2. Preparación y Recursos Clave", videoUrl: "", durationMin: 12 },
+            { id: "les-1", title: "1. Lección Inicial", videoUrl: "", durationMin: 10 },
           ],
         },
       ]);
@@ -678,61 +670,37 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
               </div>
 
               <div className="space-y-5">
-                {/* AI Title Suggestions Bar */}
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-slate-300">
-                      Título Atractivo del Producto *
-                    </label>
-                    <span className="text-[11px] text-cyan-400 font-mono flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 animate-pulse" />
-                      Fórmulas de Alta Conversión
-                    </span>
-                  </div>
-
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Título del Producto *
+                  </label>
                   <input
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    placeholder="ej: Master Prompts para Creadores con Inteligencia Artificial"
+                    placeholder="Escribe el nombre o título de tu producto..."
                     className="input-falcon text-sm w-full py-2.5"
                     required
                   />
-
-                  {/* 1-Click Fast Suggestions */}
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {[
-                      "Mega Pack: Prompts & Plantillas de...",
-                      "Guía Definitiva: De Cero a Experto en...",
-                      "Masterclass Pro: Sistema Paso a Paso de...",
-                      "Plantilla Automatizada de Alto Rendimiento para...",
-                    ].map((sugg, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, title: sugg }))}
-                        className="text-[10px] bg-slate-900/90 text-slate-400 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 px-2 py-1 rounded-md transition-all truncate max-w-xs text-left"
-                      >
-                        ⚡ {sugg}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Subtítulo / Beneficio Principal *
+                    Subtítulo / Biografía del Producto (Resumen breve) *
                   </label>
                   <input
                     type="text"
                     name="shortDescription"
                     value={formData.shortDescription}
                     onChange={handleChange}
-                    placeholder="ej: El sistema probado para crear contenido viral y automatizar ventas en 10 minutos al día."
+                    placeholder="Escribe el subtítulo o biografía breve de tu producto..."
                     className="input-falcon text-xs w-full py-2.5"
                     required
                   />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Este texto funcionará como subtítulo y biografía destacada en la tienda y en el marketplace.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1416,6 +1384,24 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   placeholder="ej: SaaS Boilerplate Ultra"
                   className="input-falcon text-sm w-full py-2.5"
                 />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Subtítulo / Biografía del Producto (Resumen breve) *
+                </label>
+                <input
+                  type="text"
+                  name="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={handleChange}
+                  required
+                  placeholder="Escribe el subtítulo o biografía breve de tu producto..."
+                  className="input-falcon text-xs w-full py-2.5"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Este texto funcionará como subtítulo y biografía destacada en la tienda y en el marketplace.
+                </p>
               </div>
 
               <div>

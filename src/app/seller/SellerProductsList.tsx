@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/currency";
 import {
+  AlertTriangle,
   Check,
   CheckCircle2,
   Copy,
@@ -16,6 +17,7 @@ import {
   Sparkles,
   ToggleLeft,
   ToggleRight,
+  Trash2,
   Users,
   X,
   Zap,
@@ -44,6 +46,8 @@ interface SellerProductsListProps {
 export function SellerProductsList({ initialProducts }: SellerProductsListProps) {
   const [products, setProducts] = useState<ProductItem[]>(initialProducts);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [modalCommPct, setModalCommPct] = useState(30);
   const [modalApprovalMode, setModalApprovalMode] = useState("AUTO");
   const [modalEnabled, setModalEnabled] = useState(true);
@@ -54,6 +58,30 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 3500);
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`/api/products?id=${productToDelete.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setProducts((prev) => prev.filter((p) => p.id !== productToDelete.id));
+        showToast(`Producto "${productToDelete.title}" eliminado correctamente.`);
+        setProductToDelete(null);
+      } else {
+        alert(data.error || "No se pudo eliminar el producto.");
+      }
+    } catch {
+      alert("Error de conexión al intentar eliminar el producto.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleToggleAffiliate = async (product: ProductItem) => {
@@ -270,6 +298,17 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                   <ExternalLink className="w-3 h-3 text-slate-400" />
                   <span>Ver Tienda</span>
                 </Link>
+
+                {/* Delete Product Button */}
+                <button
+                  type="button"
+                  onClick={() => setProductToDelete(p)}
+                  className="p-1.5 px-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/70 border border-rose-500/30 hover:border-rose-500 text-rose-300 hover:text-rose-100 transition-all flex items-center gap-1 text-xs shrink-0 font-medium"
+                  title="Eliminar este producto permanentemente"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                  <span className="hidden sm:inline">Eliminar</span>
+                </button>
               </div>
             </div>
           );
@@ -430,6 +469,55 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: CONFIRMAR ELIMINACIÓN DE PRODUCTO                 */}
+      {/* ======================================================== */}
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-rose-500/40 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-400 pb-3 border-b border-white/10">
+              <div className="w-10 h-10 rounded-2xl bg-rose-950/80 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-white">¿Eliminar Producto?</h4>
+                <span className="text-[11px] text-slate-400">Esta acción es irreversible</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              ¿Estás seguro de que deseas eliminar permanentemente el producto{" "}
+              <strong className="text-white font-bold">"{productToDelete.title}"</strong>?
+              Se eliminarán sus enlaces de venta, archivos de bóveda y cupones asociados.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setProductToDelete(null)}
+                disabled={isDeleting}
+                className="btn-falcon-secondary text-xs py-2 px-4"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProduct}
+                disabled={isDeleting}
+                className="btn-falcon-danger text-xs py-2 px-5 font-bold flex items-center gap-1.5 shadow-glow"
+              >
+                {isDeleting ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>{isDeleting ? "Eliminando..." : "Sí, Eliminar Producto"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
