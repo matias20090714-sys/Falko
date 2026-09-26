@@ -432,208 +432,43 @@ function CheckoutContent() {
           <div className="glass-panel rounded-3xl p-6 border border-white/10 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-heading font-bold text-white">
-                2. Selecciona tu Método de Pago
+                2. Método de Pago Seguro
               </h3>
-              <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2.5 py-0.5 rounded-full font-mono font-bold">
-                Multi-Divisa & Cripto
+              <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2.5 py-0.5 rounded-full font-mono font-bold flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" /> Pasarela Verificada
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="space-y-3">
               {/* Mercado Pago */}
-              <label
-                onClick={() => setSelectedMethod("MERCADOPAGO")}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMethod === "MERCADOPAGO"
-                    ? "bg-cyan-950/50 border-cyan-500 shadow-glow"
-                    : "bg-slate-950/60 border-white/10 hover:border-white/20"
-                }`}
+              <div
+                className="p-4 rounded-2xl border bg-cyan-950/40 border-cyan-500/80 shadow-glow flex items-center justify-between"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center font-bold text-blue-400 text-xs font-mono">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-950 border border-blue-400/60 flex items-center justify-center font-black text-blue-400 text-sm font-mono shrink-0">
                     MP
                   </div>
                   <div>
-                    <strong className="text-white block">Mercado Pago</strong>
-                    <span className="text-[10px] text-slate-400">Tarjetas y Cuotas</span>
+                    <strong className="text-white text-sm font-bold block">
+                      Mercado Pago (Pasarela Oficial)
+                    </strong>
+                    <span className="text-xs text-slate-300">
+                      Tarjetas de Crédito, Débito, Efectivo y Saldo en Cuenta
+                    </span>
                   </div>
                 </div>
-                <div className="w-4 h-4 rounded-full border-2 border-cyan-400 flex items-center justify-center p-0.5">
-                  {selectedMethod === "MERCADOPAGO" && <div className="w-2 h-2 rounded-full bg-cyan-400" />}
+                <div className="w-5 h-5 rounded-full border-2 border-cyan-400 flex items-center justify-center p-0.5 shrink-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
                 </div>
-              </label>
-
-              {/* Crypto USDT / USDC */}
-              <label
-                onClick={() => setSelectedMethod("CRYPTO")}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMethod === "CRYPTO"
-                    ? "bg-purple-950/50 border-purple-500 shadow-glow"
-                    : "bg-slate-950/60 border-white/10 hover:border-white/20"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-purple-950 border border-purple-500/40 flex items-center justify-center font-bold text-purple-300 text-xs">
-                    <Coins className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <strong className="text-white block">Cripto (USDT / USDC)</strong>
-                    <span className="text-[10px] text-slate-400">Solana & Polygon (0% fee)</span>
-                  </div>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 border-purple-400 flex items-center justify-center p-0.5">
-                  {selectedMethod === "CRYPTO" && <div className="w-2 h-2 rounded-full bg-purple-400" />}
-                </div>
-              </label>
-
-              {/* PIX Brasil */}
-              <label
-                onClick={() => setSelectedMethod("PIX")}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMethod === "PIX"
-                    ? "bg-emerald-950/50 border-emerald-500 shadow-glow"
-                    : "bg-slate-950/60 border-white/10 hover:border-white/20"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-500/40 flex items-center justify-center font-bold text-emerald-400 text-xs font-mono">
-                    PIX
-                  </div>
-                  <div>
-                    <strong className="text-white block">PIX Brasil 🇧🇷</strong>
-                    <span className="text-[10px] text-slate-400">Aprovação Instantânea</span>
-                  </div>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 border-emerald-400 flex items-center justify-center p-0.5">
-                  {selectedMethod === "PIX" && <div className="w-2 h-2 rounded-full bg-emerald-400" />}
-                </div>
-              </label>
-
-              {/* SPEI México */}
-              <label
-                onClick={() => setSelectedMethod("SPEI")}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMethod === "SPEI"
-                    ? "bg-cyan-950/50 border-cyan-500 shadow-glow"
-                    : "bg-slate-950/60 border-white/10 hover:border-white/20"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-400 text-xs font-mono">
-                    SPEI
-                  </div>
-                  <div>
-                    <strong className="text-white block">SPEI México 🇲🇽</strong>
-                    <span className="text-[10px] text-slate-400">Transferencia CLABE</span>
-                  </div>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 border-cyan-400 flex items-center justify-center p-0.5">
-                  {selectedMethod === "SPEI" && <div className="w-2 h-2 rounded-full bg-cyan-400" />}
-                </div>
-              </label>
-
-              {/* PSE Colombia */}
-              <label
-                onClick={() => setSelectedMethod("PSE")}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMethod === "PSE"
-                    ? "bg-amber-950/50 border-amber-500 shadow-glow"
-                    : "bg-slate-950/60 border-white/10 hover:border-white/20"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-950 border border-amber-500/40 flex items-center justify-center font-bold text-amber-400 text-xs font-mono">
-                    PSE
-                  </div>
-                  <div>
-                    <strong className="text-white block">PSE Colombia 🇨🇴</strong>
-                    <span className="text-[10px] text-slate-400">Débito en Línea</span>
-                  </div>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 border-amber-400 flex items-center justify-center p-0.5">
-                  {selectedMethod === "PSE" && <div className="w-2 h-2 rounded-full bg-amber-400" />}
-                </div>
-              </label>
-
-              {/* BROU / Prex Uruguay */}
-              <label
-                onClick={() => setSelectedMethod("BROU_PREX")}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMethod === "BROU_PREX"
-                    ? "bg-cyan-950/50 border-cyan-500 shadow-glow"
-                    : "bg-slate-950/60 border-white/10 hover:border-white/20"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-slate-900 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-300 text-xs font-mono">
-                    UY
-                  </div>
-                  <div>
-                    <strong className="text-white block">Prex / BROU 🇺🇾</strong>
-                    <span className="text-[10px] text-slate-400">Transferencia Bancaria Local</span>
-                  </div>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 border-cyan-400 flex items-center justify-center p-0.5">
-                  {selectedMethod === "BROU_PREX" && <div className="w-2 h-2 rounded-full bg-cyan-400" />}
-                </div>
-              </label>
-            </div>
-
-            {/* Crypto Details Box when selected */}
-            {selectedMethod === "CRYPTO" && (
-              <div className="bg-purple-950/30 border border-purple-800/60 rounded-2xl p-4 space-y-3 mt-3 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
-                    <QrCode className="w-4 h-4" /> Billetera de Recepción Cripto FALKO
-                  </span>
-                  <div className="flex gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setCryptoNetwork("solana")}
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
-                        cryptoNetwork === "solana"
-                          ? "bg-purple-950 text-purple-300 border-2 border-purple-400 shadow-glow"
-                          : "bg-slate-900 text-slate-400 border-white/10 hover:text-white"
-                      }`}
-                    >
-                      Solana (USDC/USDT)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCryptoNetwork("polygon")}
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
-                        cryptoNetwork === "polygon"
-                          ? "bg-purple-950 text-purple-300 border-2 border-purple-400 shadow-glow"
-                          : "bg-slate-900 text-slate-400 border-white/10 hover:text-white"
-                      }`}
-                    >
-                      Polygon (USDT/USDC)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-slate-950/80 p-3 rounded-xl border border-white/10 flex items-center justify-between gap-2 text-xs">
-                  <span className="font-mono text-[11px] text-slate-300 truncate">
-                    {cryptoWallets[cryptoNetwork]}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(cryptoWallets[cryptoNetwork]);
-                      setCopiedCrypto(true);
-                      setTimeout(() => setCopiedCrypto(false), 2000);
-                    }}
-                    className="btn-falcon-primary text-[10px] py-1 px-2.5 shrink-0"
-                  >
-                    {copiedCrypto ? <Check className="w-3 h-3 text-black" /> : <Copy className="w-3 h-3 text-black" />}
-                    {copiedCrypto ? "Copiada" : "Copiar"}
-                  </button>
-                </div>
-                <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Envía exactamente el equivalente a <strong>{formatCurrency(finalTotal, "USD")}</strong>. La confirmación y entrega de tus archivos se activa automáticamente al confirmar la orden.
-                </p>
               </div>
-            )}
+
+              <div className="bg-slate-950/80 border border-white/10 p-3 rounded-xl flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1 font-semibold text-emerald-400">
+                  <Lock className="w-3.5 h-3.5" /> Encriptación SSL 256-bit
+                </span>
+                <span>Visa • Mastercard • Amex • Redpagos • Abitab • Oxxo</span>
+              </div>
+            </div>
           </div>
         </div>
 
