@@ -154,11 +154,11 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
 
 export function getPaymentProvider(providerName = process.env.PAYMENT_PROVIDER || "MERCADOPAGO"): PaymentProvider {
   switch (providerName.toUpperCase()) {
+    case "MOCK":
+      return new MockPaymentProvider();
     case "MERCADOPAGO":
     case "MERCADO_PAGO":
-      return new MercadoPagoPaymentProvider();
-    case "MOCK":
     default:
-      return new MockPaymentProvider();
+      return new MercadoPagoPaymentProvider();
   }
 }
