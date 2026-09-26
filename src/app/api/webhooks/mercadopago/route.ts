@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
           status: "CONFIRMED",
           payments: {
             updateMany: {
-              where: { transactionId: order.paymentProviderId },
+              where: { transactionId: order.paymentProviderId || paymentId },
               data: {
                 status: "CONFIRMED",
                 rawResponseJson: JSON.stringify(paymentData),
