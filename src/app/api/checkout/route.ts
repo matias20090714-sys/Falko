@@ -199,6 +199,8 @@ export async function POST(req: NextRequest) {
     const guaranteeReleaseDate = new Date();
     guaranteeReleaseDate.setDate(guaranteeReleaseDate.getDate() + product.guaranteeDays);
 
+    const initialStatus = paymentResult.status === "CONFIRMED" ? "CONFIRMED" : "PENDING";
+
     // 9. Persist Order in database
     const order = await prisma.order.create({
       data: {
@@ -219,7 +221,7 @@ export async function POST(req: NextRequest) {
         sellerEarningAmount: split.sellerEarningAmount,
         guaranteeDays: product.guaranteeDays,
         guaranteeReleaseDate,
-        status: "CONFIRMED",
+        status: initialStatus,
         paymentProvider: paymentProvider.name,
         paymentProviderId: paymentResult.transactionId,
         items: {
@@ -233,148 +235,156 @@ export async function POST(req: NextRequest) {
           create: {
             provider: paymentProvider.name,
             transactionId: paymentResult.transactionId,
-            status: "CONFIRMED",
+            status: initialStatus,
             rawResponseJson: JSON.stringify(paymentResult.rawResponse || {}),
           },
         },
       },
     });
 
-    // If product is a subscription, create a Subscription record
-    if (product.pricingType === "SUBSCRIPTION") {
-      const interval = product.billingInterval || "MONTHLY";
-      const nextBilling = new Date();
-      if (interval === "YEARLY") {
-        nextBilling.setFullYear(nextBilling.getFullYear() + 1);
-      } else if (interval === "QUARTERLY") {
-        nextBilling.setMonth(nextBilling.getMonth() + 3);
-      } else {
-        nextBilling.setMonth(nextBilling.getMonth() + 1);
+    // If payment is already confirmed (e.g. MOCK mode), process ledger and notifications immediately
+    if (initialStatus === "CONFIRMED") {
+      // If product is a subscription, create a Subscription record
+      if (product.pricingType === "SUBSCRIPTION") {
+        const interval = product.billingInterval || "MONTHLY";
+        const nextBilling = new Date();
+        if (interval === "YEARLY") {
+          nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+        } else if (interval === "QUARTERLY") {
+          nextBilling.setMonth(nextBilling.getMonth() + 3);
+        } else {
+          nextBilling.setMonth(nextBilling.getMonth() + 1);
+        }
+
+        await prisma.subscription.create({
+          data: {
+            userId: buyerUser.id,
+            productId: product.id,
+            orderId: order.id,
+            status: "ACTIVE",
+            billingInterval: interval,
+            amount: split.totalAmount,
+            currencyCode: split.currencyCode,
+            nextBillingDate: nextBilling,
+          },
+        });
       }
 
-      await prisma.subscription.create({
-        data: {
-          userId: buyerUser.id,
-          productId: product.id,
-          orderId: order.id,
-          status: "ACTIVE",
-          billingInterval: interval,
-          amount: split.totalAmount,
-          currencyCode: split.currencyCode,
-          nextBillingDate: nextBilling,
-        },
-      });
-    }
-
-    // 10. Process Immutable Double-Entry Ledger & Guarantee Holds
-    await processOrderLedger({
-      orderId: order.id,
-      sellerId: product.sellerId,
-      sellerAmount: split.sellerEarningAmount,
-      affiliateUserId,
-      affiliateAmount: split.affiliateCommissionAmount,
-      platformFeeAmount: split.platformFeeConverted,
-      currencyCode: split.currencyCode,
-      guaranteeDays: product.guaranteeDays,
-    });
-
-    // 11. Increment product sales count & affiliate conversion count
-    await prisma.product.update({
-      where: { id: product.id },
-      data: { salesCount: { increment: 1 } },
-    });
-
-    if (affiliateProduct) {
-      await prisma.affiliateProduct.update({
-        where: { id: affiliateProduct.id },
-        data: { conversionsCount: { increment: 1 } },
+      // 10. Process Immutable Double-Entry Ledger & Guarantee Holds
+      await processOrderLedger({
+        orderId: order.id,
+        sellerId: product.sellerId,
+        sellerAmount: split.sellerEarningAmount,
+        affiliateUserId,
+        affiliateAmount: split.affiliateCommissionAmount,
+        platformFeeAmount: split.platformFeeConverted,
+        currencyCode: split.currencyCode,
+        guaranteeDays: product.guaranteeDays,
       });
 
-      // Add sales volume USD to Affiliate ranking
-      await addSalesVolume(affiliateUserId!, split.salesVolumeUsd);
-    }
+      // 11. Increment product sales count & affiliate conversion count
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { salesCount: { increment: 1 } },
+      });
 
-    // Add sales volume USD to Seller ranking
-    await addSalesVolume(product.sellerId, split.salesVolumeUsd);
+      if (affiliateProduct) {
+        await prisma.affiliateProduct.update({
+          where: { id: affiliateProduct.id },
+          data: { conversionsCount: { increment: 1 } },
+        });
 
-    // 12. Create In-App Notification for Seller
-    await prisma.notification.create({
-      data: {
-        userId: product.sellerId,
-        title: "¡Nueva venta confirmada! 🎉",
-        message: `Has vendido "${product.title}" por ${split.sellerEarningAmount.toFixed(2)} ${split.currencyCode} netos (retenidos por garantía ${product.guaranteeDays}d).`,
-        type: "SALE",
-        linkUrl: "/seller",
-      },
-    });
+        // Add sales volume USD to Affiliate ranking
+        await addSalesVolume(affiliateUserId!, split.salesVolumeUsd);
+      }
 
-    if (affiliateUserId) {
+      // Add sales volume USD to Seller ranking
+      await addSalesVolume(product.sellerId, split.salesVolumeUsd);
+
+      // 12. Create In-App Notification for Seller
       await prisma.notification.create({
         data: {
-          userId: affiliateUserId,
-          title: "¡Comisión de afiliado generada! 💰",
-          message: `Has generado una comisión de ${split.affiliateCommissionAmount.toFixed(2)} ${split.currencyCode} promocionando "${product.title}".`,
-          type: "COMMISSION",
-          linkUrl: "/affiliate",
+          userId: product.sellerId,
+          title: "¡Nueva venta confirmada! 🎉",
+          message: `Has vendido "${product.title}" por ${split.sellerEarningAmount.toFixed(2)} ${split.currencyCode} netos (retenidos por garantía ${product.guaranteeDays}d).`,
+          type: "SALE",
+          linkUrl: "/seller",
         },
       });
+
+      if (affiliateUserId) {
+        await prisma.notification.create({
+          data: {
+            userId: affiliateUserId,
+            title: "¡Comisión de afiliado generada! 💰",
+            message: `Has generado una comisión de ${split.affiliateCommissionAmount.toFixed(2)} ${split.currencyCode} promocionando "${product.title}".`,
+            type: "COMMISSION",
+            linkUrl: "/affiliate",
+          },
+        });
+      }
+
+      // 13. Dispatch Real-time Webhooks to Seller's Integrations
+      triggerWebhooksForSeller({
+        sellerId: product.sellerId,
+        productId: product.id,
+        event: "order.completed",
+        payload: {
+          event: "order.completed",
+          timestamp: new Date().toISOString(),
+          data: {
+            order_id: order.id,
+            order_number: order.orderNumber,
+            product: {
+              id: product.id,
+              title: product.title,
+              slug: product.slug,
+              price: product.price,
+            },
+            buyer: {
+              id: buyerUser.id,
+              name: `${buyerUser.firstName} ${buyerUser.lastName}`,
+              email: buyerUser.email,
+              country: buyerUser.countryCode,
+            },
+            amounts: {
+              total: split.totalAmount,
+              base_price: product.price,
+              discount: discountAmount,
+              order_bump: orderBumpAmount,
+              seller_earning: split.sellerEarningAmount,
+              affiliate_commission: split.affiliateCommissionAmount,
+              currency: split.currencyCode,
+            },
+            coupon_applied: validCouponCode,
+            payment: {
+              provider: paymentProvider.name,
+              transaction_id: paymentResult.transactionId,
+              method: paymentMethod,
+              status: "CONFIRMED",
+            },
+            affiliate: affiliateProduct
+              ? {
+                  code: affiliateProduct.uniqueRefCode,
+                  commission: split.affiliateCommissionAmount,
+                }
+              : null,
+            created_at: order.createdAt.toISOString(),
+          },
+        },
+      }).catch((whErr) => console.error("Webhook dispatch async error:", whErr));
     }
 
-    // 13. Dispatch Real-time Webhooks to Seller's Integrations (Zapier, Make, CRM, ActiveCampaign)
-    triggerWebhooksForSeller({
-      sellerId: product.sellerId,
-      productId: product.id,
-      event: "order.completed",
-      payload: {
-        event: "order.completed",
-        timestamp: new Date().toISOString(),
-        data: {
-          order_id: order.id,
-          order_number: order.orderNumber,
-          product: {
-            id: product.id,
-            title: product.title,
-            slug: product.slug,
-            price: product.price,
-          },
-          buyer: {
-            id: buyerUser.id,
-            name: `${buyerUser.firstName} ${buyerUser.lastName}`,
-            email: buyerUser.email,
-            country: buyerUser.countryCode,
-          },
-          amounts: {
-            total: split.totalAmount,
-            base_price: product.price,
-            discount: discountAmount,
-            order_bump: orderBumpAmount,
-            seller_earning: split.sellerEarningAmount,
-            affiliate_commission: split.affiliateCommissionAmount,
-            currency: split.currencyCode,
-          },
-          coupon_applied: validCouponCode,
-          payment: {
-            provider: paymentProvider.name,
-            transaction_id: paymentResult.transactionId,
-            method: paymentMethod,
-            status: "CONFIRMED",
-          },
-          affiliate: affiliateProduct
-            ? {
-                code: affiliateProduct.uniqueRefCode,
-                commission: split.affiliateCommissionAmount,
-              }
-            : null,
-          created_at: order.createdAt.toISOString(),
-        },
-      },
-    }).catch((whErr) => console.error("Webhook dispatch async error:", whErr));
+    const finalRedirectUrl =
+      paymentResult.redirectUrl && paymentResult.redirectUrl.startsWith("http")
+        ? paymentResult.redirectUrl
+        : `/order/success?orderNumber=${order.orderNumber}`;
 
     return NextResponse.json({
       success: true,
       orderNumber: order.orderNumber,
       orderId: order.id,
-      redirectUrl: `/order/success?orderNumber=${order.orderNumber}`,
+      redirectUrl: finalRedirectUrl,
     });
   } catch (error: any) {
     console.error("Checkout error:", error);
