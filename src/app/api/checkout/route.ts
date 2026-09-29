@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
       customerFirstName = "",
       customerLastName = "",
       customerCountryCode = "UY",
+      shippingAddress = "",
+      shippingCity = "",
+      shippingState = "",
+      shippingZip = "",
+      shippingCountry = "",
+      shippingPhone = "",
     } = await req.json();
 
     let buyerUser = currentUser;
@@ -81,6 +87,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "El producto no está disponible para la compra." }, { status: 404 });
     }
 
+    // Physical product stock check
+    if (product.productType === "PHYSICAL" && product.stock !== null && product.stock <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Lo sentimos, este producto físico se encuentra temporalmente agotado." },
+        { status: 400 }
+      );
+    }
+
     // 2. Validate Coupon if provided
     let discountPct = 0;
     let validCouponCode = null;
@@ -116,7 +130,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Compute final base price factoring in Order Bump & Discounts
+    // 3. Compute final base price factoring in Order Bump, Discounts & Shipping
     let basePrice = product.price;
     let discountAmount = 0;
 
@@ -130,6 +144,9 @@ export async function POST(req: NextRequest) {
       orderBumpAmount = product.orderBumpPrice;
       basePrice += orderBumpAmount;
     }
+
+    const shippingFee = (product.productType === "PHYSICAL" && product.shippingFee) ? product.shippingFee : 0;
+    basePrice += shippingFee;
 
     // 4. Check for affiliate referral link
     let affiliateProduct = null;
@@ -222,6 +239,13 @@ export async function POST(req: NextRequest) {
         status: "CONFIRMED",
         paymentProvider: paymentProvider.name,
         paymentProviderId: paymentResult.transactionId,
+        shippingAddress: product.productType === "PHYSICAL" ? shippingAddress.trim() || null : null,
+        shippingCity: product.productType === "PHYSICAL" ? shippingCity.trim() || null : null,
+        shippingState: product.productType === "PHYSICAL" ? shippingState.trim() || null : null,
+        shippingZip: product.productType === "PHYSICAL" ? shippingZip.trim() || null : null,
+        shippingCountry: product.productType === "PHYSICAL" ? (shippingCountry || customerCountryCode) : null,
+        shippingPhone: product.productType === "PHYSICAL" ? shippingPhone.trim() || null : null,
+        shippingFee: product.productType === "PHYSICAL" ? (shippingFee || 0) : 0,
         items: {
           create: {
             productId: product.id,
@@ -278,10 +302,15 @@ export async function POST(req: NextRequest) {
       guaranteeDays: product.guaranteeDays,
     });
 
-    // 11. Increment product sales count & affiliate conversion count
+    // 11. Increment product sales count, decrement physical stock & affiliate conversion count
     await prisma.product.update({
       where: { id: product.id },
-      data: { salesCount: { increment: 1 } },
+      data: {
+        salesCount: { increment: 1 },
+        ...(product.productType === "PHYSICAL" && product.stock !== null && product.stock > 0
+          ? { stock: { decrement: 1 } }
+          : {}),
+      },
     });
 
     if (affiliateProduct) {

@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Filter,
   Lock,
+  Package,
   Percent,
   Search,
   Share2,
@@ -21,6 +22,7 @@ import {
   Star,
   Tag,
   TrendingUp,
+  Truck,
   UserPlus,
   X,
   Zap,
@@ -32,6 +34,7 @@ interface MarketplaceClientProps {
   initialCategory: string;
   initialSearch: string;
   initialSort: string;
+  initialType?: string;
 }
 
 export function MarketplaceClient({
@@ -40,6 +43,7 @@ export function MarketplaceClient({
   initialCategory,
   initialSearch,
   initialSort,
+  initialType = "",
 }: MarketplaceClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +51,7 @@ export function MarketplaceClient({
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSort, setSelectedSort] = useState(initialSort);
+  const [selectedType, setSelectedType] = useState(initialType);
   const [currency, setCurrency] = useState("USD");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -78,12 +83,14 @@ export function MarketplaceClient({
     return () => window.removeEventListener("currencyChange", handleCurrencyChange);
   }, []);
 
-  const handleApplyFilter = (newCategory?: string, newSort?: string) => {
+  const handleApplyFilter = (newCategory?: string, newSort?: string, newType?: string) => {
     const cat = newCategory !== undefined ? newCategory : selectedCategory;
     const srt = newSort !== undefined ? newSort : selectedSort;
+    const typ = newType !== undefined ? newType : selectedType;
 
     const params = new URLSearchParams();
     if (cat) params.set("category", cat);
+    if (typ) params.set("type", typ);
     if (search.trim()) params.set("search", search.trim());
     if (srt && srt !== "popular") params.set("sort", srt);
 
@@ -174,6 +181,57 @@ export function MarketplaceClient({
 
       {/* Search & Filtering Bar */}
       <div className="glass-panel p-4 rounded-2xl border border-white/10 space-y-4">
+        {/* Product Type Tabs: ALL vs DIGITAL vs PHYSICAL */}
+        <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedType("");
+              handleApplyFilter(undefined, undefined, "");
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              !selectedType
+                ? "bg-cyan-500 text-slate-950 shadow-glow font-black"
+                : "bg-slate-900/60 text-slate-400 hover:text-white border border-white/5"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Todos los Formatos</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedType("DIGITAL");
+              handleApplyFilter(undefined, undefined, "DIGITAL");
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              selectedType === "DIGITAL"
+                ? "bg-cyan-500 text-slate-950 shadow-glow font-black"
+                : "bg-slate-900/60 text-slate-400 hover:text-white border border-white/5"
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>⚡ Productos Digitales</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedType("PHYSICAL");
+              handleApplyFilter(undefined, undefined, "PHYSICAL");
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              selectedType === "PHYSICAL"
+                ? "bg-cyan-500 text-slate-950 shadow-glow font-black"
+                : "bg-slate-900/60 text-slate-400 hover:text-white border border-white/5"
+            }`}
+          >
+            <Package className="w-3.5 h-3.5" />
+            <span>📦 Productos Físicos</span>
+          </button>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-3">
           {/* Search Input */}
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
@@ -192,6 +250,7 @@ export function MarketplaceClient({
                   setSearch("");
                   const params = new URLSearchParams();
                   if (selectedCategory) params.set("category", selectedCategory);
+                  if (selectedType) params.set("type", selectedType);
                   if (selectedSort !== "popular") params.set("sort", selectedSort);
                   router.push(`/marketplace?${params.toString()}`);
                 }}
@@ -235,7 +294,7 @@ export function MarketplaceClient({
                 : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/5"
             }`}
           >
-            Todos los Productos
+            Todas las Categorías
           </button>
           {categories.map((cat) => (
             <button
@@ -262,25 +321,26 @@ export function MarketplaceClient({
           <ShoppingBag className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-base font-bold text-white mb-1">No se encontraron productos</h3>
           <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
-            Aún no se han publicado recursos en esta categoría. ¿Eres creador o desarrollador? ¡Publica tu producto digital ahora!
+            Aún no se han publicado productos con los filtros seleccionados. ¿Eres creador o vendedor? ¡Publica tu producto ahora!
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/seller/products/new"
               className="btn-falcon-primary text-xs py-2.5 px-6 shadow-glow"
             >
-              Publicar Producto Digital
+              Publicar Producto
             </Link>
-            {selectedCategory && (
+            {(selectedCategory || selectedType || search) && (
               <button
                 onClick={() => {
                   setSearch("");
                   setSelectedCategory("");
+                  setSelectedType("");
                   router.push("/marketplace");
                 }}
                 className="btn-falcon-secondary text-xs py-2.5 px-5"
               >
-                Ver Todas las Categorías
+                Limpiar Filtros
               </button>
             )}
           </div>
@@ -294,6 +354,8 @@ export function MarketplaceClient({
               ? Math.round(((p.compareAtPrice - p.price) / p.compareAtPrice) * 100)
               : 0;
 
+            const isPhysical = p.productType === "PHYSICAL";
+
             return (
               <div
                 key={p.id}
@@ -306,14 +368,32 @@ export function MarketplaceClient({
                     alt={p.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-2 left-2 flex items-center gap-1">
-                    <div className="bg-slate-950/85 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-md border border-white/10 shadow-sm truncate max-w-[120px]">
-                      {p.category.name}
-                    </div>
-                    {p.pricingType === "SUBSCRIPTION" && (
-                      <div className="bg-purple-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-purple-300 px-1.5 py-0.5 rounded-md border border-purple-800/80 flex items-center gap-0.5 shadow-sm">
-                        <span>Membresía</span>
+                  <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                    <div className="flex items-center gap-1">
+                      <div className="bg-slate-950/85 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-md border border-white/10 shadow-sm truncate max-w-[120px]">
+                        {p.category.name}
                       </div>
+                      {isPhysical ? (
+                        <div className="bg-amber-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-amber-300 px-1.5 py-0.5 rounded-md border border-amber-700/80 flex items-center gap-0.5 shadow-sm">
+                          <Package className="w-2.5 h-2.5" />
+                          <span>Físico</span>
+                        </div>
+                      ) : (
+                        <div className="bg-cyan-950/90 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-cyan-300 px-1.5 py-0.5 rounded-md border border-cyan-800/80 flex items-center gap-0.5 shadow-sm">
+                          <Zap className="w-2.5 h-2.5" />
+                          <span>Digital</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {isPhysical && p.stock !== null && (
+                      <span className={`text-[8px] sm:text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border shadow-sm ${
+                        p.stock > 0
+                          ? "bg-emerald-950/90 text-emerald-300 border-emerald-700"
+                          : "bg-rose-950/90 text-rose-300 border-rose-700"
+                      }`}>
+                        {p.stock > 0 ? `${p.stock} disponibles` : "Agotado"}
+                      </span>
                     )}
                   </div>
                   
@@ -360,8 +440,17 @@ export function MarketplaceClient({
                         <span className="text-slate-500 font-normal text-[10px]">({p.reviewsCount})</span>
                       </div>
                       <span className="text-emerald-400 text-[10px] sm:text-[11px] font-semibold flex items-center gap-0.5">
-                        <Zap className="w-2.5 h-2.5 text-cyan-400" />
-                        <span>Instantáneo</span>
+                        {isPhysical ? (
+                          <>
+                            <Truck className="w-2.5 h-2.5 text-amber-400" />
+                            <span>Envío Domicilio</span>
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-2.5 h-2.5 text-cyan-400" />
+                            <span>Entrega Inmediata</span>
+                          </>
+                        )}
                       </span>
                     </div>
 

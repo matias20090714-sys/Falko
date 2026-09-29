@@ -93,6 +93,11 @@ model Product {
   pricingType            String                @default("ONE_TIME") // ONE_TIME | SUBSCRIPTION
   billingInterval        String?               @default("MONTHLY") // MONTHLY | YEARLY | QUARTERLY
   trialDays              Int?                  @default(0)
+  productType            String                @default("DIGITAL") // DIGITAL | PHYSICAL
+  stock                  Int?                  @default(100)
+  shippingFee            Float?                @default(0.0)
+  estimatedDeliveryDays  String?
+  requiresShipping       Boolean               @default(false)
   guaranteeDays          Int                   @default(7) // Minimum 7
   storeTheme             String                @default("dark") // dark | light | vibrant
   upsellTitle            String?
@@ -233,6 +238,13 @@ model Order {
   orderBumpAmount           Float               @default(0.0)
   guaranteeDays             Int                 @default(7)
   guaranteeReleaseDate      DateTime
+  shippingAddress           String?
+  shippingCity              String?
+  shippingState             String?
+  shippingZip               String?
+  shippingCountry           String?
+  shippingPhone             String?
+  shippingFee               Float               @default(0.0)
   status                    String              @default("CONFIRMED") // PENDING | CONFIRMED | REFUNDED | FAILED
   paymentProvider           String              @default("MOCK")
   paymentProviderId         String?

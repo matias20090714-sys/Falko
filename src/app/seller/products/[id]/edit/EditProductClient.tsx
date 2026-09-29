@@ -22,6 +22,7 @@ import {
   Info,
   Link as LinkIcon,
   Lock,
+  Package,
   Percent,
   Plus,
   RefreshCw,
@@ -35,6 +36,7 @@ import {
   Flame,
   Tag,
   Trash2,
+  Truck,
   Upload,
   Video,
   X,
@@ -112,6 +114,24 @@ export function EditProductClient({
   const [guaranteeDays, setGuaranteeDays] = useState(initialProduct.guaranteeDays?.toString() || "7");
   const [status, setStatus] = useState(initialProduct.status || "APPROVED");
   const [storeTheme, setStoreTheme] = useState(initialProduct.storeTheme || "dark");
+
+  // Physical vs Digital product settings
+  const [productType, setProductType] = useState<"DIGITAL" | "PHYSICAL">(
+    initialProduct.productType || "DIGITAL"
+  );
+  const [stock, setStock] = useState(
+    initialProduct.stock !== null && initialProduct.stock !== undefined
+      ? initialProduct.stock.toString()
+      : "50"
+  );
+  const [shippingFee, setShippingFee] = useState(
+    initialProduct.shippingFee !== null && initialProduct.shippingFee !== undefined
+      ? initialProduct.shippingFee.toString()
+      : "0"
+  );
+  const [estimatedDeliveryDays, setEstimatedDeliveryDays] = useState(
+    initialProduct.estimatedDeliveryDays || "24 a 48 hs hábiles"
+  );
 
   // 1-Click Post-Purchase Upsell
   const [upsellTitle, setUpsellTitle] = useState(initialProduct.upsellTitle || "");
@@ -229,6 +249,11 @@ export function EditProductClient({
         title: title.trim(),
         shortDescription: shortDescription.trim() || null,
         description: description.trim(),
+        productType,
+        stock: productType === "PHYSICAL" ? (parseInt(stock) || 0) : null,
+        shippingFee: productType === "PHYSICAL" ? (parseFloat(shippingFee) || 0) : null,
+        estimatedDeliveryDays: productType === "PHYSICAL" ? estimatedDeliveryDays.trim() : null,
+        requiresShipping: productType === "PHYSICAL",
         price: parseFloat(price),
         compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
         pricingType,
@@ -421,6 +446,103 @@ export function EditProductClient({
                 <option value="DRAFT">Borrador (Oculto)</option>
                 <option value="ARCHIVED">Archivado</option>
               </select>
+            </div>
+
+            {/* Formato de Producto: Digital vs Físico */}
+            <div className="md:col-span-2 space-y-3 pt-2 pb-2 border-t border-white/5">
+              <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Formato de Entrega del Producto *</span>
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div
+                  onClick={() => setProductType("DIGITAL")}
+                  className={`cursor-pointer rounded-2xl p-3.5 border transition-all ${
+                    productType === "DIGITAL"
+                      ? "bg-cyan-950/40 border-cyan-400 shadow-glow"
+                      : "bg-slate-950/60 border-white/5 hover:border-white/20 opacity-80"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <strong className="text-xs text-white flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>⚡ Producto Digital</span>
+                    </strong>
+                    {productType === "DIGITAL" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Descarga directa de archivos o enlaces privados. Entrega inmediata tras el pago.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setProductType("PHYSICAL")}
+                  className={`cursor-pointer rounded-2xl p-3.5 border transition-all ${
+                    productType === "PHYSICAL"
+                      ? "bg-cyan-950/40 border-cyan-400 shadow-glow"
+                      : "bg-slate-950/60 border-white/5 hover:border-white/20 opacity-80"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <strong className="text-xs text-white flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>📦 Producto Físico con Envío</span>
+                    </strong>
+                    {productType === "PHYSICAL" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Artículos tangibles con control de stock y captura de dirección de envío en checkout.
+                  </p>
+                </div>
+              </div>
+
+              {productType === "PHYSICAL" && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-cyan-950/20 border border-cyan-500/30 rounded-2xl animate-in fade-in duration-150">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-cyan-300 block">
+                      Stock Disponible (Unidades):
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={stock}
+                      onChange={(e) => setStock(e.target.value)}
+                      className="input-falcon w-full text-xs font-mono"
+                    />
+                    <span className="text-[10px] text-slate-500">Se decrementa automáticamente</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-cyan-300 block">
+                      Costo de Envío (USD):
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={shippingFee}
+                      onChange={(e) => setShippingFee(e.target.value)}
+                      className="input-falcon w-full text-xs font-mono"
+                    />
+                    <span className="text-[10px] text-emerald-400">0 para Envío Gratis</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-cyan-300 block">
+                      Tiempo Estimado de Entrega:
+                    </label>
+                    <input
+                      type="text"
+                      value={estimatedDeliveryDays}
+                      onChange={(e) => setEstimatedDeliveryDays(e.target.value)}
+                      placeholder="24 a 48 hs hábiles"
+                      className="input-falcon w-full text-xs"
+                    />
+                    <span className="text-[10px] text-slate-500">ej: 24 a 48 hs hábiles</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Pricing Model Selector: One-Time vs Subscription */}

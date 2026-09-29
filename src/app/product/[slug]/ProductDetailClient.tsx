@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
   Lock,
   MessageSquare,
+  Package,
   Percent,
   Play,
   RefreshCw,
@@ -30,6 +31,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Truck,
   User,
   X,
   Zap,
@@ -58,6 +60,9 @@ export function ProductDetailClient({
   const [copiedLink, setCopiedLink] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const isPhysical = product.productType === "PHYSICAL";
+  const isOutOfStock = isPhysical && product.stock !== null && product.stock <= 0;
 
   // Gallery and Media view state
   const allImages = [
@@ -252,10 +257,21 @@ export function ProductDetailClient({
             <ShieldCheck className="w-4 h-4 shrink-0" />
             <span className="font-bold">Garantía {product.guaranteeDays} Días Protegida</span>
           </div>
-          <div className="flex items-center justify-center gap-2 text-cyan-300">
-            <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span className="font-bold">Entrega Inmediata al Pagar</span>
-          </div>
+          {isPhysical ? (
+            <div className="flex items-center justify-center gap-2 text-amber-300">
+              <Truck className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold">
+                {product.shippingFee && product.shippingFee > 0
+                  ? `Envío: $${product.shippingFee} USD`
+                  : "Envío Gratis a Domicilio"}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-cyan-300">
+              <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="font-bold">Entrega Inmediata al Pagar</span>
+            </div>
+          )}
           <div className="flex items-center justify-center gap-2 text-purple-300">
             <Lock className="w-4 h-4 text-purple-400 shrink-0" />
             <span className="font-bold">Cifrado Bancario SSL</span>
@@ -291,7 +307,11 @@ export function ProductDetailClient({
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-slate-300 bg-slate-950/60 px-3.5 py-1.5 rounded-xl border border-white/5">
             <Lock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span>Compra Directa Segura • Sin Contraseñas Requeridas • Entrega Inmediata</span>
+            <span>
+              {isPhysical
+                ? "Compra Directa Segura • Envío a Domicilio Asegurado • Garantía Oficial"
+                : "Compra Directa Segura • Sin Contraseñas Requeridas • Entrega Inmediata"}
+            </span>
           </div>
 
           <QrCodeModal 
@@ -359,7 +379,7 @@ export function ProductDetailClient({
                   className="w-full h-full object-cover transition-all duration-300"
                 />
                 <div className="absolute top-4 left-4 bg-slate-950/85 backdrop-blur-md text-xs font-bold text-cyan-300 px-3 py-1 rounded-xl border border-white/10 shadow-lg">
-                  {product.category?.name || "Recurso Digital"}
+                  {product.category?.name || "Recurso"}
                 </div>
               </div>
             )}
@@ -392,8 +412,30 @@ export function ProductDetailClient({
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
-                {product.category?.name || "Recurso Digital"}
+                {product.category?.name || "Recurso"}
               </span>
+
+              {isPhysical ? (
+                <span className="text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-glow">
+                  <Package className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Producto Físico</span>
+                </span>
+              ) : (
+                <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
+                  ⚡ Recurso Digital
+                </span>
+              )}
+
+              {isPhysical && product.stock !== null && (
+                <span className={`text-xs font-bold font-mono px-3 py-1 rounded-full border shadow-sm ${
+                  product.stock > 0
+                    ? "bg-emerald-950/90 text-emerald-300 border-emerald-700"
+                    : "bg-rose-950/90 text-rose-300 border-rose-700"
+                }`}>
+                  {product.stock > 0 ? `📦 ${product.stock} disponibles` : "🚫 Agotado"}
+                </span>
+              )}
+
               <span className="text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Producto Verificado</span>
@@ -648,9 +690,13 @@ export function ProductDetailClient({
                 <div className="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-500/40 text-emerald-300 font-black text-sm flex items-center justify-center">
                   3
                 </div>
-                <h4 className="text-xs sm:text-sm font-bold text-white">Acceso Inmediato & Vitalicio</h4>
+                <h4 className="text-xs sm:text-sm font-bold text-white">
+                  {isPhysical ? "Despacho & Envío Seguro" : "Acceso Inmediato & Vitalicio"}
+                </h4>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Obtén tus enlaces y descargas al instante en tu Bóveda Privada de por vida.
+                  {isPhysical
+                    ? "Recibe tu paquete con guía de seguimiento y entrega protegida en tu domicilio."
+                    : "Obtén tus enlaces y descargas al instante en tu Bóveda Privada de por vida."}
                 </p>
               </div>
             </div>
@@ -872,6 +918,41 @@ export function ProductDetailClient({
               )}
             </div>
 
+            {/* Physical Logistics & Stock Card */}
+            {isPhysical && (
+              <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-300 flex items-center gap-1.5 font-medium">
+                    <Truck className="w-4 h-4 text-cyan-400" />
+                    <span>Costo de Envío:</span>
+                  </span>
+                  <span className="font-bold text-white">
+                    {product.shippingFee && product.shippingFee > 0
+                      ? formatCurrency(convertCurrency(product.shippingFee, product.currencyCode, currency), currency)
+                      : "¡Envío Gratis!"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-white/5">
+                  <span className="text-slate-400">Entrega Estimada:</span>
+                  <span className="text-cyan-300 font-semibold">
+                    {product.estimatedDeliveryDays ? `${product.estimatedDeliveryDays} días hábiles` : "3-7 días hábiles"}
+                  </span>
+                </div>
+                {product.stock !== null && (
+                  <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-white/5">
+                    <span className="text-slate-400">Disponibilidad:</span>
+                    {isOutOfStock ? (
+                      <span className="text-rose-400 font-bold">🚫 Agotado</span>
+                    ) : (
+                      <span className="text-emerald-400 font-bold">
+                        📦 {product.stock} {product.stock === 1 ? "unidad" : "unidades"} en stock
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Purchase CTA */}
             {isSeller ? (
               <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-center text-xs text-slate-300 space-y-2">
@@ -885,7 +966,7 @@ export function ProductDetailClient({
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-            ) : hasPurchased ? (
+            ) : hasPurchased && !isPhysical ? (
               <div className="space-y-2.5">
                 <div className="bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs p-3.5 rounded-2xl text-center font-bold">
                   ✓ Tienes acceso activo a este producto
@@ -897,6 +978,19 @@ export function ProductDetailClient({
                   Acceder a mis Descargas / Membresías
                 </Link>
               </div>
+            ) : isOutOfStock ? (
+              <div className="space-y-2">
+                <button
+                  disabled
+                  className="btn-falcon-primary w-full text-center justify-center text-sm py-3.5 opacity-50 cursor-not-allowed bg-slate-800 border-slate-700 text-slate-400 flex items-center gap-2"
+                >
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  <span>Producto Agotado</span>
+                </button>
+                <p className="text-[11px] text-slate-500 text-center">
+                  El vendedor repondrá el inventario próximamente.
+                </p>
+              </div>
             ) : (
               <div className="space-y-3.5">
                 <Link
@@ -907,6 +1001,8 @@ export function ProductDetailClient({
                   <span>
                     {product.pricingType === "SUBSCRIPTION"
                       ? `Suscribirme (${formatCurrency(convertedPrice, currency)}${product.billingInterval === "YEARLY" ? "/año" : "/mes"})`
+                      : isPhysical
+                      ? "Comprar y Recibir Pedido"
                       : "Comprar con Garantía Protegida"}
                   </span>
                   <ArrowRight className="w-4 h-4" />
@@ -914,7 +1010,11 @@ export function ProductDetailClient({
 
                 <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Pago Seguro cifrado con entrega inmediata</span>
+                  <span>
+                    {isPhysical
+                      ? "Pago Seguro cifrado con despacho garantizado"
+                      : "Pago Seguro cifrado con entrega inmediata"}
+                  </span>
                 </p>
               </div>
             )}
@@ -1028,18 +1128,29 @@ export function ProductDetailClient({
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-t border-cyan-500/30 p-3.5 shadow-2xl safe-bottom">
         <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
           <div>
-            <span className="text-[10px] text-slate-400 block">Precio Digital</span>
+            <span className="text-[10px] text-slate-400 block">
+              {isPhysical ? "Precio del Producto" : "Precio Digital"}
+            </span>
             <span className="text-base font-black text-cyan-400">
               {formatCurrency(convertedPrice, currency)}
             </span>
           </div>
-          <Link
-            href={checkoutUrl}
-            className="btn-falcon-primary py-2.5 px-6 text-xs font-bold shadow-glow flex items-center gap-1.5"
-          >
-            <Zap className="w-3.5 h-3.5" />
-            <span>Comprar Ahora</span>
-          </Link>
+          {isOutOfStock ? (
+            <button
+              disabled
+              className="btn-falcon-primary py-2.5 px-4 text-xs font-bold opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 flex items-center gap-1.5"
+            >
+              <span>Agotado</span>
+            </button>
+          ) : (
+            <Link
+              href={checkoutUrl}
+              className="btn-falcon-primary py-2.5 px-6 text-xs font-bold shadow-glow flex items-center gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>{isPhysical ? "Comprar Producto" : "Comprar Ahora"}</span>
+            </Link>
+          )}
         </div>
       </div>
 

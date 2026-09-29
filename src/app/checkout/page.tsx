@@ -15,12 +15,16 @@ import {
   CreditCard,
   Globe,
   Lock,
+  MapPin,
+  Package,
   Percent,
+  Phone,
   PlusCircle,
   QrCode,
   ShieldCheck,
   Sparkles,
   Tag,
+  Truck,
   Wallet,
   X,
   Zap,
@@ -56,6 +60,13 @@ function CheckoutContent() {
   const [guestFirstName, setGuestFirstName] = useState("");
   const [guestLastName, setGuestLastName] = useState("");
   const [guestCountryCode, setGuestCountryCode] = useState("UY");
+
+  // Physical shipping address state
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [shippingCity, setShippingCity] = useState("");
+  const [shippingState, setShippingState] = useState("");
+  const [shippingZip, setShippingZip] = useState("");
+  const [shippingPhone, setShippingPhone] = useState("");
 
   // Countdown Timer: 14:59 minutes
   const [timeLeft, setTimeLeft] = useState(14 * 60 + 59);
@@ -182,6 +193,25 @@ function CheckoutContent() {
       }
     }
 
+    if (product?.productType === "PHYSICAL") {
+      if (product.stock !== null && product.stock <= 0) {
+        setError("Lo sentimos, este producto físico se encuentra temporalmente agotado.");
+        return;
+      }
+      if (!shippingAddress.trim()) {
+        setError("Por favor ingresa la dirección de entrega de tu domicilio.");
+        return;
+      }
+      if (!shippingCity.trim()) {
+        setError("Por favor ingresa la ciudad de entrega.");
+        return;
+      }
+      if (!shippingPhone.trim()) {
+        setError("Por favor ingresa un número de teléfono para coordinar la entrega del paquete.");
+        return;
+      }
+    }
+
     setProcessing(true);
     setError("");
 
@@ -204,6 +234,12 @@ function CheckoutContent() {
             ? currentUser.lastName
             : (guestFirstName.trim().split(" ").slice(1).join(" ") || ""),
           customerCountryCode: currentUser ? currentUser.countryCode : guestCountryCode,
+          shippingAddress: product?.productType === "PHYSICAL" ? shippingAddress.trim() : "",
+          shippingCity: product?.productType === "PHYSICAL" ? shippingCity.trim() : "",
+          shippingState: product?.productType === "PHYSICAL" ? shippingState.trim() : "",
+          shippingZip: product?.productType === "PHYSICAL" ? shippingZip.trim() : "",
+          shippingCountry: product?.productType === "PHYSICAL" ? (currentUser ? currentUser.countryCode : guestCountryCode) : "",
+          shippingPhone: product?.productType === "PHYSICAL" ? shippingPhone.trim() : "",
         }),
       });
 
@@ -245,6 +281,9 @@ function CheckoutContent() {
   }
 
   // Financial Calculations
+  const isPhysical = product.productType === "PHYSICAL";
+  const isOutOfStock = isPhysical && product.stock !== null && product.stock <= 0;
+
   const baseProductConverted = convertCurrency(product.price, product.currencyCode, currency);
   let discountConverted = 0;
   if (appliedCoupon) {
@@ -256,7 +295,11 @@ function CheckoutContent() {
     bumpConverted = convertCurrency(product.orderBumpPrice, product.currencyCode, currency);
   }
 
-  const finalTotal = Math.max(1, baseProductConverted - discountConverted + bumpConverted);
+  const shippingConverted = isPhysical && product.shippingFee
+    ? convertCurrency(product.shippingFee, product.currencyCode, currency)
+    : 0;
+
+  const finalTotal = Math.max(1, baseProductConverted - discountConverted + bumpConverted + shippingConverted);
 
   // Crypto addresses
   const cryptoWallets = {
@@ -391,6 +434,109 @@ function CheckoutContent() {
             )}
           </div>
 
+          {/* 📦 PHYSICAL PRODUCT SHIPPING ADDRESS FORM */}
+          {isPhysical && (
+            <div className="glass-panel rounded-3xl p-6 border border-cyan-500/30 bg-gradient-to-br from-cyan-950/20 to-slate-950 shadow-xl space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-400 flex items-center justify-center">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-heading font-bold text-white">
+                      2. Dirección de Envío a Domicilio
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Indica dónde deseas recibir tu paquete físico.
+                    </p>
+                  </div>
+                </div>
+                {product.estimatedDeliveryDays && (
+                  <span className="text-[10px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-700/60 px-2.5 py-1 rounded-full">
+                    ⏱️ {product.estimatedDeliveryDays}
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-3.5">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1 mb-1">
+                    <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Calle, Número, Piso y Departamento <span className="text-cyan-400">*</span></span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="ej: Av. 18 de Julio 1234, Apto 502"
+                    value={shippingAddress}
+                    onChange={(e) => setShippingAddress(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                      Ciudad / Localidad <span className="text-cyan-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="ej: Montevideo"
+                      value={shippingCity}
+                      onChange={(e) => setShippingCity(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                      Departamento / Estado
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ej: Montevideo"
+                      value={shippingState}
+                      onChange={(e) => setShippingState(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                      Código Postal
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ej: 11200"
+                      value={shippingZip}
+                      onChange={(e) => setShippingZip(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Teléfono / Celular de Contacto (Para el repartidor) <span className="text-cyan-400">*</span></span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="ej: +598 99 123 456"
+                    value={shippingPhone}
+                    onChange={(e) => setShippingPhone(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs text-white font-mono"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    El repartidor o correo postal te llamará a este número al momento de la entrega.
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ORDER BUMP (Venta Adicional 1-Click) */}
           {product.orderBumpTitle && (
             <div
@@ -432,7 +578,7 @@ function CheckoutContent() {
           <div className="glass-panel rounded-3xl p-6 border border-white/10 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-heading font-bold text-white">
-                2. Selecciona tu Método de Pago
+                {isPhysical ? "3." : "2."} Selecciona tu Método de Pago
               </h3>
               <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2.5 py-0.5 rounded-full font-mono font-bold">
                 Multi-Divisa & Cripto
@@ -646,16 +792,32 @@ function CheckoutContent() {
 
             {/* Product Mini Card */}
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-14 h-14 rounded-2xl bg-slate-900 overflow-hidden border border-white/10 shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-slate-900 overflow-hidden border border-white/10 shrink-0 relative">
                 <img src={product.coverImageUrl} alt={product.title} className="w-full h-full object-cover" />
+                {isPhysical && (
+                  <span className="absolute bottom-0 inset-x-0 bg-cyan-950/90 text-cyan-300 text-[8px] font-bold text-center py-0.5 border-t border-cyan-500/40">
+                    📦 FÍSICO
+                  </span>
+                )}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="text-xs font-bold text-white block line-clamp-2">
                   {product.title}
                 </span>
-                <span className="text-[10px] text-cyan-400 font-semibold block mt-0.5">
-                  {product.category?.name}
-                </span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] text-cyan-400 font-semibold">
+                    {product.category?.name}
+                  </span>
+                  {isPhysical && product.stock !== null && (
+                    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                      product.stock > 0
+                        ? "bg-emerald-950 text-emerald-300 border-emerald-800"
+                        : "bg-rose-950 text-rose-300 border-rose-800"
+                    }`}>
+                      {product.stock > 0 ? `${product.stock} en stock` : "Agotado"}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -735,6 +897,18 @@ function CheckoutContent() {
                 </div>
               )}
 
+              {isPhysical && (
+                <div className="flex justify-between text-cyan-400">
+                  <span className="flex items-center gap-1">
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>Envío a Domicilio</span>
+                  </span>
+                  <span className="font-mono font-bold">
+                    {shippingConverted > 0 ? formatCurrency(shippingConverted, currency) : "¡GRATIS!"}
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between text-emerald-400">
                 <span>Tarifa de Plataforma</span>
                 <span className="font-mono">Incluida</span>
@@ -751,16 +925,28 @@ function CheckoutContent() {
             {/* Pay Button */}
             <button
               onClick={handleCompleteOrder}
-              disabled={processing}
-              className="w-full btn-falcon-primary py-3.5 text-sm font-bold justify-center shadow-glow disabled:opacity-50 cursor-pointer"
+              disabled={processing || isOutOfStock}
+              className={`w-full py-3.5 text-sm font-bold justify-center shadow-glow disabled:opacity-50 cursor-pointer flex items-center gap-2 rounded-2xl ${
+                isOutOfStock
+                  ? "bg-slate-800 text-slate-500 border border-white/10 cursor-not-allowed"
+                  : "btn-falcon-primary"
+              }`}
             >
               <Zap className="w-4 h-4" />
-              {processing ? "Confirmando Orden Segura..." : `Completar Pago (${formatCurrency(finalTotal, currency)})`}
+              {isOutOfStock
+                ? "Producto Físico Agotado"
+                : processing
+                ? "Confirmando Orden..."
+                : isPhysical
+                ? `Confirmar Pedido & Envío (${formatCurrency(finalTotal, currency)})`
+                : `Completar Pago (${formatCurrency(finalTotal, currency)})`}
             </button>
 
             <p className="text-[10px] text-slate-400 text-center mt-3 flex items-center justify-center gap-1">
               <Lock className="w-3 h-3 text-cyan-400" />
-              Descarga digital instantánea disponible tras confirmación
+              {isPhysical
+                ? "Envío asegurado con seguimiento y garantía protegida"
+                : "Descarga digital instantánea disponible tras confirmación"}
             </p>
           </div>
         </div>
@@ -777,11 +963,19 @@ function CheckoutContent() {
           </div>
           <button
             onClick={handleCompleteOrder}
-            disabled={processing}
+            disabled={processing || isOutOfStock}
             className="btn-falcon-primary py-2.5 px-5 text-xs font-bold shadow-glow disabled:opacity-50 flex items-center gap-1.5"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>{processing ? "Procesando..." : "Completar Pago"}</span>
+            <span>
+              {isOutOfStock
+                ? "Agotado"
+                : processing
+                ? "Procesando..."
+                : isPhysical
+                ? "Pedir y Enviar"
+                : "Completar Pago"}
+            </span>
           </button>
         </div>
       </div>

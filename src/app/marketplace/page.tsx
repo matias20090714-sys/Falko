@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function MarketplacePage({
   searchParams,
 }: {
-  searchParams: { category?: string; search?: string; sort?: string };
+  searchParams: { category?: string; search?: string; sort?: string; type?: string };
 }) {
   let categories = FALLBACK_CATEGORIES;
   let products: any[] = [];
@@ -29,6 +29,9 @@ export default async function MarketplacePage({
     const dbProducts = await prisma.product.findMany({
       where: {
         status: "APPROVED",
+        ...(searchParams.type === "PHYSICAL" || searchParams.type === "DIGITAL"
+          ? { productType: searchParams.type }
+          : {}),
         ...(searchParams.category
           ? {
               category: {
@@ -81,10 +84,10 @@ export default async function MarketplacePage({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-heading font-black text-white">
-          Marketplace de Productos Digitales
+          Marketplace FALKO
         </h1>
         <p className="text-slate-400 text-sm mt-2">
-          Descubre herramientas de software, agentes de IA, plantillas probadas y sistemas de negocio con garantía protegida.
+          Descubre productos digitales, cursos, software, y productos físicos con envío garantizado.
         </p>
       </div>
 
@@ -95,6 +98,7 @@ export default async function MarketplacePage({
           initialCategory={searchParams.category || ""}
           initialSearch={searchParams.search || ""}
           initialSort={searchParams.sort || "popular"}
+          initialType={searchParams.type || ""}
         />
       </Suspense>
     </div>

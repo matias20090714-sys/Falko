@@ -62,6 +62,10 @@ export async function POST(req: NextRequest) {
       pricingType = "ONE_TIME",
       billingInterval = "MONTHLY",
       trialDays = 0,
+      productType = "DIGITAL",
+      stock = 100,
+      shippingFee = 0,
+      estimatedDeliveryDays,
       categoryId,
       guaranteeDays = 7,
       storeTheme = "dark",
@@ -97,6 +101,10 @@ export async function POST(req: NextRequest) {
     if (!title || !description || !price || !categoryId) {
       return NextResponse.json({ success: false, error: "Completa los campos obligatorios." }, { status: 400 });
     }
+
+    const isPhysical = productType === "PHYSICAL";
+    const validatedStock = isPhysical ? Math.max(0, parseInt(stock?.toString() || "0") || 0) : null;
+    const validatedShippingFee = isPhysical ? Math.max(0, parseFloat(shippingFee?.toString() || "0") || 0) : 0;
 
     // Server-side validation: Guarantee minimum 7 days
     const validatedGuarantee = Math.max(7, parseInt(guaranteeDays) || 7);
@@ -136,6 +144,11 @@ export async function POST(req: NextRequest) {
         pricingType: pricingType || "ONE_TIME",
         billingInterval: pricingType === "SUBSCRIPTION" ? (billingInterval || "MONTHLY") : "MONTHLY",
         trialDays: parseInt(trialDays?.toString() || "0") || 0,
+        productType: isPhysical ? "PHYSICAL" : "DIGITAL",
+        stock: validatedStock,
+        shippingFee: validatedShippingFee,
+        estimatedDeliveryDays: isPhysical ? (estimatedDeliveryDays || "24-48 hs hábiles") : null,
+        requiresShipping: isPhysical,
         categoryId,
         guaranteeDays: validatedGuarantee,
         storeTheme: storeTheme || "dark",
@@ -253,6 +266,10 @@ export async function PUT(req: NextRequest) {
       pricingType,
       billingInterval,
       trialDays,
+      productType,
+      stock,
+      shippingFee,
+      estimatedDeliveryDays,
       categoryId,
       guaranteeDays = 7,
       storeTheme,
@@ -308,6 +325,18 @@ export async function PUT(req: NextRequest) {
     if (pricingType !== undefined) updateData.pricingType = pricingType || "ONE_TIME";
     if (billingInterval !== undefined) updateData.billingInterval = billingInterval || "MONTHLY";
     if (trialDays !== undefined) updateData.trialDays = parseInt(trialDays?.toString() || "0") || 0;
+    if (productType !== undefined) {
+      const isPhysical = productType === "PHYSICAL";
+      updateData.productType = isPhysical ? "PHYSICAL" : "DIGITAL";
+      updateData.requiresShipping = isPhysical;
+      if (stock !== undefined) updateData.stock = isPhysical ? Math.max(0, parseInt(stock?.toString() || "0") || 0) : null;
+      if (shippingFee !== undefined) updateData.shippingFee = isPhysical ? Math.max(0, parseFloat(shippingFee?.toString() || "0") || 0) : 0;
+      if (estimatedDeliveryDays !== undefined) updateData.estimatedDeliveryDays = isPhysical ? estimatedDeliveryDays : null;
+    } else {
+      if (stock !== undefined) updateData.stock = Math.max(0, parseInt(stock?.toString() || "0") || 0);
+      if (shippingFee !== undefined) updateData.shippingFee = Math.max(0, parseFloat(shippingFee?.toString() || "0") || 0);
+      if (estimatedDeliveryDays !== undefined) updateData.estimatedDeliveryDays = estimatedDeliveryDays;
+    }
     if (storeTheme !== undefined) updateData.storeTheme = storeTheme || "dark";
     if (upsellTitle !== undefined) updateData.upsellTitle = upsellTitle || null;
     if (upsellDescription !== undefined) updateData.upsellDescription = upsellDescription || null;

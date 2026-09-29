@@ -27,6 +27,7 @@ import {
   Link as LinkIcon,
   Lock,
   MessageSquare,
+  Package,
   Percent,
   Play,
   Plus,
@@ -37,6 +38,7 @@ import {
   Tag,
   Target,
   Trash2,
+  Truck,
   Upload,
   Video,
   Wand2,
@@ -190,6 +192,48 @@ const PRODUCT_TEMPLATES = [
       description: "### ¿Qué obtienes como miembro VIP?\n\n- Canal privado de Telegram para resolución de dudas 24/7.\n- 2 Sesiones grupales en vivo por Zoom cada mes.\n- Biblioteca con grabaciones de todas las mentorías anteriores.",
       accessUrl: "https://t.me/+falko_vip_private_access",
       accessInstructions: "Al confirmar tu compra, haz clic en el botón de acceso para unirte al canal privado.",
+      productType: "DIGITAL" as const,
+      stock: "0",
+      shippingFee: "0",
+      estimatedDeliveryDays: "",
+    },
+  },
+  {
+    id: "physical-merch",
+    icon: Package,
+    title: "Producto Físico / Merch / Indumentaria",
+    badge: "📦 Envío a Domicilio",
+    desc: "Ropa, zapatillas, accesorios o merchandising con control de stock y despacho.",
+    preset: {
+      title: "Remera Premium Oversize FALKO Edición Creador",
+      shortDescription: "100% Algodón peinado de alto gramaje con estampado de máxima durabilidad y corte moderno.",
+      price: "39.00",
+      categorySlug: "negocios-finanzas",
+      coverUrl: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
+      description: "### Especificaciones del Producto Físico\n\n- Material: 100% Algodón peinado 24/1 suave al tacto.\n- Corte: Oversize confort fit unisex.\n- Talles: S, M, L, XL, XXL disponibles.\n- Empaque: Caja protectora de diseño exclusivo con stickers de regalo.\n- Envío: Despacho asegurado con seguimiento online en tiempo real.",
+      productType: "PHYSICAL" as const,
+      stock: "50",
+      shippingFee: "0",
+      estimatedDeliveryDays: "24 a 48 hs hábiles",
+    },
+  },
+  {
+    id: "physical-hardware",
+    icon: Truck,
+    title: "Hardware / Electrónica / Gadgets",
+    badge: "📦 Físico Tech",
+    desc: "Dispositivos, herramientas físicas, periféricos o artículos tecnológicos.",
+    preset: {
+      title: "Controlador Físico MacroPad RGB para Creadores & Devs",
+      shortDescription: "Teclado mecánico macro de 9 teclas y 2 perillas giratorias de aluminio programables vía USB.",
+      price: "79.00",
+      categorySlug: "desarrollo-software",
+      coverUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80",
+      description: "### Contenido de la Caja\n\n- 1x MacroPad Pro con switches mecánicos hot-swap.\n- 1x Cable USB-C trenzado de 1.8 metros.\n- 1x Extractor de switches y teclas de repuesto.\n- 1x Manual de instrucciones y garantía de 12 meses.",
+      productType: "PHYSICAL" as const,
+      stock: "25",
+      shippingFee: "9.00",
+      estimatedDeliveryDays: "2 a 4 días hábiles",
     },
   },
 ];
@@ -208,6 +252,10 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     title: "",
     shortDescription: "",
     description: "",
+    productType: "DIGITAL" as "DIGITAL" | "PHYSICAL",
+    stock: "50",
+    shippingFee: "0",
+    estimatedDeliveryDays: "24 a 48 hs hábiles",
     price: "37.00",
     compareAtPrice: "",
     pricingType: "ONE_TIME",
@@ -295,6 +343,13 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     const matchedCategory = categories.find((c) => c.slug === template.preset.categorySlug) || categories[0];
     setFormData((prev) => ({
       ...prev,
+      title: template.preset.title || prev.title,
+      shortDescription: template.preset.shortDescription || prev.shortDescription,
+      description: template.preset.description || prev.description,
+      productType: (template.preset as any).productType || "DIGITAL",
+      stock: (template.preset as any).stock || prev.stock,
+      shippingFee: (template.preset as any).shippingFee || prev.shippingFee,
+      estimatedDeliveryDays: (template.preset as any).estimatedDeliveryDays || prev.estimatedDeliveryDays,
       categoryId: matchedCategory?.id || prev.categoryId,
       coverImageUrl: template.preset.coverUrl || prev.coverImageUrl,
       price: prev.price || template.preset.price,
@@ -416,6 +471,11 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
         title: formData.title,
         shortDescription: formData.shortDescription,
         description: formData.description || formData.shortDescription,
+        productType: formData.productType,
+        stock: formData.productType === "PHYSICAL" ? (parseInt(formData.stock.toString()) || 0) : null,
+        shippingFee: formData.productType === "PHYSICAL" ? (parseFloat(formData.shippingFee.toString()) || 0) : null,
+        estimatedDeliveryDays: formData.productType === "PHYSICAL" ? (formData.estimatedDeliveryDays.trim() || "24 a 48 hs hábiles") : null,
+        requiresShipping: formData.productType === "PHYSICAL",
         price: numPrice,
         compareAtPrice: formData.compareAtPrice ? parseFloat(formData.compareAtPrice) : null,
         pricingType: formData.pricingType || "ONE_TIME",
@@ -703,6 +763,124 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   </p>
                 </div>
 
+                {/* SELECTOR DIGITAL VS FÍSICO */}
+                <div className="bg-slate-950/70 p-4 sm:p-5 rounded-2xl border border-white/10 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-white mb-0.5">
+                      Formato del Producto *
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      Elige si vendes un recurso digital entregable de inmediato o un artículo físico que requiere envío.
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, productType: "DIGITAL" }))}
+                      className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                        formData.productType === "DIGITAL"
+                          ? "bg-cyan-950/80 border-cyan-400 text-white shadow-glow ring-2 ring-cyan-500/30 font-bold"
+                          : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold flex items-center gap-2 text-cyan-300">
+                          <Zap className="w-4 h-4 text-cyan-400" />
+                          ⚡ Producto Digital
+                        </span>
+                        {formData.productType === "DIGITAL" && (
+                          <span className="w-4 h-4 rounded-full bg-cyan-400 text-slate-950 font-black text-[10px] flex items-center justify-center">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-normal leading-relaxed">
+                        Cursos, Software, Ebooks, Prompts IA o enlaces privados. Entrega automática e inmediata.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, productType: "PHYSICAL" }))}
+                      className={`p-4 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                        formData.productType === "PHYSICAL"
+                          ? "bg-cyan-950/80 border-cyan-400 text-white shadow-glow ring-2 ring-cyan-500/30 font-bold"
+                          : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold flex items-center gap-2 text-cyan-300">
+                          <Package className="w-4 h-4 text-cyan-400" />
+                          📦 Producto Físico
+                        </span>
+                        {formData.productType === "PHYSICAL" && (
+                          <span className="w-4 h-4 rounded-full bg-cyan-400 text-slate-950 font-black text-[10px] flex items-center justify-center">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-normal leading-relaxed">
+                        Indumentaria, merch, hardware, libros impresos con control de stock y captura de dirección de envío.
+                      </p>
+                    </button>
+                  </div>
+
+                  {/* Physical Extra Settings */}
+                  {formData.productType === "PHYSICAL" && (
+                    <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in duration-150">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Stock Disponible (Unidades) *
+                        </label>
+                        <input
+                          type="number"
+                          name="stock"
+                          min="0"
+                          value={formData.stock}
+                          onChange={handleChange}
+                          placeholder="50"
+                          required
+                          className="input-falcon text-xs w-full py-2 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500">Se descuenta con cada venta</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Costo de Envío (USD)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          name="shippingFee"
+                          value={formData.shippingFee}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          className="input-falcon text-xs w-full py-2 font-mono"
+                        />
+                        <span className="text-[10px] text-emerald-400 font-medium">Pon 0 para Envío Gratis</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Tiempo Estimado de Entrega
+                        </label>
+                        <input
+                          type="text"
+                          name="estimatedDeliveryDays"
+                          value={formData.estimatedDeliveryDays}
+                          onChange={handleChange}
+                          placeholder="24 a 48 hs hábiles"
+                          className="input-falcon text-xs w-full py-2"
+                        />
+                        <span className="text-[10px] text-slate-500">ej. 24 a 48 hs hábiles</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -904,81 +1082,120 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                     </div>
                   </div>
 
-                  {/* Delivery Mode Selection: Files or URL Link */}
+                  {/* Delivery Mode Selection: Physical Logistics OR Digital Files/Link */}
                   <div className="space-y-4">
                     <label className="block text-xs font-semibold text-slate-300">
-                      ¿Cómo recibirá el producto tu cliente tras pagar?
+                      {formData.productType === "PHYSICAL"
+                        ? "📦 Logística de Entrega y Envío al Comprador"
+                        : "⚡ ¿Cómo recibirá el producto tu cliente tras pagar?"}
                     </label>
 
-                    {/* Option A: Digital Files */}
-                    <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white flex items-center gap-2">
-                          <FolderOpen className="w-4 h-4 text-cyan-400" />
-                          Archivos Digitales Descargables (PDF, ZIP, Videos, etc.)
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploadingFile}
-                          className="btn-falcon-primary text-[11px] py-1 px-3 shadow-glow flex items-center gap-1"
-                        >
-                          <Plus className="w-3 h-3" />
-                          <span>{uploadingFile ? "Subiendo..." : "Agregar Archivo"}</span>
-                        </button>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          onChange={handleDeliverableFileUpload}
-                          className="hidden"
-                        />
-                      </div>
-
-                      {digitalFiles.length > 0 ? (
-                        <div className="space-y-2">
-                          {digitalFiles.map((file) => (
-                            <div
-                              key={file.id}
-                              className="bg-slate-900/80 p-3 rounded-xl border border-white/5 flex items-center justify-between text-xs"
-                            >
-                              <div className="flex items-center gap-2.5 truncate">
-                                <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
-                                <span className="text-white font-medium truncate">{file.fileName}</span>
-                                <span className="text-[10px] text-slate-500 font-mono shrink-0">
-                                  ({(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB)
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFile(file.id)}
-                                className="text-slate-500 hover:text-rose-400 p-1"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ))}
+                    {formData.productType === "PHYSICAL" ? (
+                      <div className="bg-gradient-to-br from-cyan-950/40 via-slate-900/60 to-slate-950 p-5 rounded-2xl border border-cyan-500/30 space-y-3.5 shadow-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-400 flex items-center justify-center shrink-0">
+                            <Truck className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs sm:text-sm font-bold text-white">
+                              Captura Automática de Dirección de Envío en Checkout
+                            </h4>
+                            <span className="text-[11px] text-slate-400">
+                              Falko se encarga de solicitar los datos de despacho al comprador durante el pago.
+                            </span>
+                          </div>
                         </div>
-                      ) : (
-                        <p className="text-[11px] text-slate-500 italic">No hay archivos cargados aún.</p>
-                      )}
-                    </div>
 
-                    {/* Option B: Direct Link or Community Access */}
-                    <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-3">
-                      <span className="text-xs font-bold text-white flex items-center gap-2">
-                        <LinkIcon className="w-4 h-4 text-purple-400" />
-                        O Enlace Privado de Acceso (Notion, Drive, Canal VIP, Discord)
-                      </span>
-                      <input
-                        type="url"
-                        name="accessUrl"
-                        value={formData.accessUrl}
-                        onChange={handleChange}
-                        placeholder="https://t.me/+canal_vip o https://notion.so/mi-plantilla"
-                        className="input-falcon text-xs w-full py-2"
-                      />
-                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                          <div className="bg-slate-950/80 p-3 rounded-xl border border-white/5 space-y-1">
+                            <span className="text-slate-400 font-bold block text-[10px] uppercase">Stock Disponible:</span>
+                            <span className="text-white font-mono font-bold">{formData.stock || "0"} unidades</span>
+                          </div>
+                          <div className="bg-slate-950/80 p-3 rounded-xl border border-white/5 space-y-1">
+                            <span className="text-slate-400 font-bold block text-[10px] uppercase">Costo de Envío:</span>
+                            <span className="text-emerald-400 font-mono font-bold">
+                              {parseFloat(formData.shippingFee || "0") > 0 ? `$${parseFloat(formData.shippingFee).toFixed(2)} USD` : "¡Envío Gratis!"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+                          💡 <strong>¿Cómo funciona?</strong> Cuando un comprador paga tu producto físico, recibirás una notificación con su nombre, calle, ciudad, código postal y teléfono para que despaches el paquete con tu empresa de encomiendas preferida.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Option A: Digital Files */}
+                        <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-white flex items-center gap-2">
+                              <FolderOpen className="w-4 h-4 text-cyan-400" />
+                              Archivos Digitales Descargables (PDF, ZIP, Videos, etc.)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={uploadingFile}
+                              className="btn-falcon-primary text-[11px] py-1 px-3 shadow-glow flex items-center gap-1"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>{uploadingFile ? "Subiendo..." : "Agregar Archivo"}</span>
+                            </button>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              multiple
+                              onChange={handleDeliverableFileUpload}
+                              className="hidden"
+                            />
+                          </div>
+
+                          {digitalFiles.length > 0 ? (
+                            <div className="space-y-2">
+                              {digitalFiles.map((file) => (
+                                <div
+                                  key={file.id}
+                                  className="bg-slate-900/80 p-3 rounded-xl border border-white/5 flex items-center justify-between text-xs"
+                                >
+                                  <div className="flex items-center gap-2.5 truncate">
+                                    <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
+                                    <span className="text-white font-medium truncate">{file.fileName}</span>
+                                    <span className="text-[10px] text-slate-500 font-mono shrink-0">
+                                      ({(file.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB)
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveFile(file.id)}
+                                    className="text-slate-500 hover:text-rose-400 p-1"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-slate-500 italic">No hay archivos cargados aún.</p>
+                          )}
+                        </div>
+
+                        {/* Option B: Direct Link or Community Access */}
+                        <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5 space-y-3">
+                          <span className="text-xs font-bold text-white flex items-center gap-2">
+                            <LinkIcon className="w-4 h-4 text-purple-400" />
+                            O Enlace Privado de Acceso (Notion, Drive, Canal VIP, Discord)
+                          </span>
+                          <input
+                            type="url"
+                            name="accessUrl"
+                            value={formData.accessUrl}
+                            onChange={handleChange}
+                            placeholder="https://t.me/+canal_vip o https://notion.so/mi-plantilla"
+                            className="input-falcon text-xs w-full py-2"
+                          />
+                        </div>
+                      </>
+                    )}
 
                     {/* Option C: Sales Page Type & External Web Choice */}
                     <div className="space-y-4 pt-4 border-t border-white/10">
@@ -1436,6 +1653,85 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   <option value={14}>14 días</option>
                   <option value={30}>30 días</option>
                 </select>
+              </div>
+
+              {/* Formato Pro */}
+              <div className="sm:col-span-2 bg-slate-950/80 p-4 rounded-2xl border border-white/5 space-y-3">
+                <label className="block text-xs font-bold text-white">
+                  Formato de Entrega:
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, productType: "DIGITAL" }))}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                      formData.productType === "DIGITAL"
+                        ? "bg-cyan-950 border-cyan-400 text-cyan-300 shadow-glow"
+                        : "bg-slate-900 border-white/5 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Zap className="w-4 h-4 text-cyan-400" />
+                    <span>⚡ Producto Digital</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, productType: "PHYSICAL" }))}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                      formData.productType === "PHYSICAL"
+                        ? "bg-cyan-950 border-cyan-400 text-cyan-300 shadow-glow"
+                        : "bg-slate-900 border-white/5 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Package className="w-4 h-4 text-cyan-400" />
+                    <span>📦 Producto Físico</span>
+                  </button>
+                </div>
+
+                {formData.productType === "PHYSICAL" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                        Stock Disponible *
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        name="stock"
+                        value={formData.stock}
+                        onChange={handleChange}
+                        className="input-falcon text-xs w-full py-2 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                        Costo de Envío (USD)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="shippingFee"
+                        value={formData.shippingFee}
+                        onChange={handleChange}
+                        className="input-falcon text-xs w-full py-2 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                        Tiempo de Entrega
+                      </label>
+                      <input
+                        type="text"
+                        name="estimatedDeliveryDays"
+                        value={formData.estimatedDeliveryDays}
+                        onChange={handleChange}
+                        placeholder="24 a 48 hs hábiles"
+                        className="input-falcon text-xs w-full py-2"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
