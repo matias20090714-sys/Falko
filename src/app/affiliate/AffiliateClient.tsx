@@ -93,10 +93,19 @@ export function AffiliateClient({
                 </div>
 
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-sm text-white truncate max-w-[280px]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-bold text-sm text-white truncate max-w-[260px]">
                       {item.product.title}
                     </h4>
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                        item.product.productType === "PHYSICAL"
+                          ? "bg-amber-950/80 text-amber-300 border-amber-600/60"
+                          : "bg-cyan-950/80 text-cyan-300 border-cyan-600/60"
+                      }`}
+                    >
+                      {item.product.productType === "PHYSICAL" ? "📦 Físico" : "⚡ Digital"}
+                    </span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                         item.status === "APPROVED"

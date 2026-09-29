@@ -1077,6 +1077,75 @@ export function ProductDetailClient({
             </div>
           </div>
 
+          {/* Affiliate Program Card (Physical & Digital) */}
+          {product.affiliateEnabled && !isSeller && (
+            <div className="glass-panel rounded-3xl p-5 border border-purple-500/30 space-y-3 bg-purple-950/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-purple-900/60 border border-purple-500/40 flex items-center justify-center text-purple-300">
+                    <Percent className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Programa de Afiliados</h4>
+                    <p className="text-[10px] text-purple-300 font-mono font-bold">
+                      {product.affiliateCommissionPct}% de Comisión ({formatCurrency(convertedAffiliateEst, currency)}/venta)
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-purple-950 text-purple-300 border border-purple-700/60 px-2 py-0.5 rounded-full font-bold">
+                  {isPhysical ? "📦 Físico" : "⚡ Digital"}
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                {isPhysical
+                  ? "Promociona este producto físico y recibe comisiones directas en tu billetera por cada paquete entregado."
+                  : "Promueve este producto digital y obtén comisiones automáticas con acreditación en tu cuenta."}
+              </p>
+
+              {affiliateRecord?.status === "APPROVED" ? (
+                <div className="space-y-2 pt-1">
+                  <span className="text-[10px] text-emerald-400 font-bold block">
+                    ✓ Tu enlace de afiliado está activo:
+                  </span>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${typeof window !== "undefined" ? window.location.origin : "https://falko.io"}/product/${product.slug}?ref=${affiliateRecord.uniqueRefCode}`}
+                      className="bg-slate-950 border border-purple-500/40 rounded-xl px-2.5 py-1.5 text-xs text-slate-300 w-full font-mono text-[10px] truncate select-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleCopyAffiliateLink}
+                      className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl px-3 py-1.5 text-xs font-bold shrink-0 transition-colors flex items-center gap-1 shadow-glow"
+                    >
+                      {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedLink ? "¡Copiado!" : "Copiar"}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : affiliateRecord?.status === "PENDING" ? (
+                <div className="bg-amber-950/60 border border-amber-800 text-amber-300 text-xs p-3 rounded-xl font-medium text-center">
+                  ⏳ Solicitud de afiliación enviada. El creador la revisará en breve.
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={generateAffiliateLink}
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-glow flex items-center justify-center gap-1.5"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Afiliarme y Obtener Enlace</span>
+                </button>
+              )}
+
+              {statusMessage && !affiliateRecord && (
+                <p className="text-[10px] text-center text-purple-300 animate-pulse">{statusMessage}</p>
+              )}
+            </div>
+          )}
+
           {/* Direct WhatsApp Pre-sale Questions Card */}
           <WhatsAppChatButton
             sellerPhone={product.seller?.phone || (isSeller ? currentUser?.phone : null)}
