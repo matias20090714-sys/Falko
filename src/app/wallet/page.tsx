@@ -63,9 +63,14 @@ export default async function WalletPage() {
           </div>
 
           <div className="flex gap-2">
-            <Link href="/withdrawals" className="btn-falcon-primary text-xs py-2 px-4 shadow-glow">
+            <Link
+              href="/withdrawals"
+              className="btn-falcon-primary text-xs py-2.5 px-4 shadow-glow flex items-center gap-1.5 font-bold"
+            >
               <DollarSign className="w-3.5 h-3.5" />
-              Solicitar Retiro de Fondos
+              <span>
+                Retirar Saldo Disponible ({formatCurrency(wallet?.availableBalance || 0, wallet?.currencyCode || "USD")})
+              </span>
             </Link>
           </div>
         </div>

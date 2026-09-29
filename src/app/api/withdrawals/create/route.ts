@@ -12,19 +12,21 @@ export async function POST(req: NextRequest) {
 
     const { amount, methodType, accountDetails } = await req.json();
 
-    const numAmount = parseFloat(amount);
-    if (!numAmount || numAmount <= 0) {
-      return NextResponse.json({ success: false, error: "Ingresa un monto válido para retirar." }, { status: 400 });
+    const rawAmount = parseFloat(amount);
+    if (isNaN(rawAmount) || rawAmount <= 0) {
+      return NextResponse.json({ success: false, error: "Ingresa un monto válido mayor a 0 para retirar." }, { status: 400 });
     }
 
+    const numAmount = parseFloat(rawAmount.toFixed(2));
     const wallet = await getUserWallet(user.id);
+    const available = parseFloat((wallet.availableBalance || 0).toFixed(2));
 
-    // Rule 21: El usuario solamente puede retirar available_balance. NUNCA pending_balance.
-    if (numAmount > wallet.availableBalance) {
+    // Rule 21: El usuario solamente puede retirar available_balance. NUNCA pending_balance. Ni un centavo más.
+    if (numAmount > available) {
       return NextResponse.json(
         {
           success: false,
-          error: `Fondos insuficientes. Solo puedes retirar tu saldo disponible ($${wallet.availableBalance.toFixed(2)} ${wallet.currencyCode}). Tu saldo pendiente está protegido por garantía.`,
+          error: `Solo puedes retirar tu saldo disponible actual ($${available.toFixed(2)} ${wallet.currencyCode}). No es posible solicitar ni un centavo más. Tu saldo pendiente ($${wallet.pendingBalance.toFixed(2)} ${wallet.currencyCode}) está protegido por garantía.`,
         },
         { status: 400 }
       );
@@ -33,9 +35,9 @@ export async function POST(req: NextRequest) {
     // Process withdrawal in atomic transaction
     return await prisma.$transaction(async (tx) => {
       // 1. Deduct from available balance
-      const newAvailable = parseFloat((wallet.availableBalance - numAmount).toFixed(2));
-      const newWithdrawn = parseFloat((wallet.withdrawnBalance + numAmount).toFixed(2));
-      const newTotal = parseFloat((wallet.totalBalance - numAmount).toFixed(2));
+      const newAvailable = Math.max(0, parseFloat((available - numAmount).toFixed(2)));
+      const newWithdrawn = parseFloat(((wallet.withdrawnBalance || 0) + numAmount).toFixed(2));
+      const newTotal = Math.max(0, parseFloat(((wallet.totalBalance || 0) - numAmount).toFixed(2)));
 
       await tx.wallet.update({
         where: { id: wallet.id },

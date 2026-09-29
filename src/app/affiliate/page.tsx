@@ -137,12 +137,14 @@ export default async function AffiliateDashboardPage() {
 
         {/* Metrics Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="glass-panel rounded-2xl p-5 border border-slate-800">
-            <span className="text-xs text-slate-400 block mb-1">Comisión Disponible (Retirable)</span>
+          <div className="glass-panel rounded-2xl p-5 border border-emerald-500/30 bg-emerald-950/10">
+            <span className="text-xs text-emerald-300 font-bold block mb-1">Comisión Disponible (Retirable)</span>
             <div className="text-2xl font-black font-mono text-emerald-400">
               {formatCurrency(wallet?.availableBalance || 0, wallet?.currencyCode || "USD")}
             </div>
-            <span className="text-[10px] text-slate-500 block mt-1">Listo para transferir a tu banco</span>
+            <Link href="/withdrawals" className="text-[11px] text-emerald-400 hover:underline block mt-1 font-bold">
+              Solicitar Retiro →
+            </Link>
           </div>
 
           <div className="glass-panel rounded-2xl p-5 border border-slate-800">
