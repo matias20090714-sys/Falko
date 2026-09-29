@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CURRENCY_RATES, formatCurrency } from "@/lib/currency";
 import { getVideoEmbedUrl } from "@/lib/media";
+import { processAndCompressImage } from "@/lib/image-upload";
 import {
   ArrowLeft,
   ArrowRight,
@@ -240,6 +241,65 @@ export function EditProductClient({
   const [metaPixelId, setMetaPixelId] = useState(initialProduct.metaPixelId || "");
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState(initialProduct.googleAnalyticsId || "");
   const [tiktokPixelId, setTiktokPixelId] = useState(initialProduct.tiktokPixelId || "");
+
+  // Local file / gallery image pickers
+  const coverFileInputRef = useRef<HTMLInputElement | null>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+
+  const handleCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingCover(true);
+    try {
+      const res = await processAndCompressImage(file, 1600, 0.88);
+      setCoverImageUrl(res.url);
+    } catch (err: any) {
+      alert(err.message || "Error al procesar la imagen de portada.");
+    } finally {
+      setIsUploadingCover(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleBannerFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBanner(true);
+    try {
+      const res = await processAndCompressImage(file, 1920, 0.85);
+      setBannerImageUrl(res.url);
+    } catch (err: any) {
+      alert(err.message || "Error al procesar el banner.");
+    } finally {
+      setIsUploadingBanner(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleGalleryFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setIsUploadingGallery(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        const res = await processAndCompressImage(file, 1400, 0.85);
+        uploadedUrls.push(res.url);
+      }
+      setGalleryImages((prev) => [...prev, ...uploadedUrls]);
+    } catch (err: any) {
+      alert(err.message || "Error al procesar las fotos de la galería.");
+    } finally {
+      setIsUploadingGallery(false);
+      if (e.target) e.target.value = "";
+    }
+  };
 
   // Submission state
   const [isSaving, setIsSaving] = useState(false);
@@ -1085,16 +1145,47 @@ export function EditProductClient({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs text-slate-300 block">
-                    URL de Banner Panorámico (Fondo Hero)
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-slate-300 block">
+                      Banner Panorámico (Fondo Hero)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      disabled={isUploadingBanner}
+                      className="text-[11px] bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-300 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition-all"
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>{isUploadingBanner ? "Subiendo..." : "📁 Subir desde Archivos / Galería"}</span>
+                    </button>
+                    <input
+                      ref={bannerFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleBannerFileChange}
+                    />
+                  </div>
                   <input
                     type="url"
                     value={bannerImageUrl}
                     onChange={(e) => setBannerImageUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/photo-... o sube desde tus archivos"
                     className="input-falcon text-xs"
                   />
+                  {bannerImageUrl && (
+                    <div className="relative rounded-xl overflow-hidden h-20 border border-white/10 bg-slate-900">
+                      <img src={bannerImageUrl} alt="Banner" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setBannerImageUrl("")}
+                        className="absolute top-1.5 right-1.5 bg-rose-600/90 text-white p-1 rounded-lg text-xs hover:bg-rose-500"
+                        title="Quitar banner"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     <span className="text-[10px] text-slate-500 self-center mr-1">Presets:</span>
                     {BANNER_PRESETS.map((bp, i) => (
@@ -1196,12 +1287,33 @@ export function EditProductClient({
 
             {/* D. GALERÍA MULTI-FOTOS DEL PRODUCTO */}
             <div className="space-y-4 pt-4 border-t border-white/10">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-white flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-cyan-400" />
-                  <span>D. Galería de Fotos Adicionales ({galleryImages.length})</span>
-                </label>
-                <span className="text-[10px] text-slate-400">Permite a los clientes ver detalles, ángulos o capturas</span>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <label className="text-xs font-bold text-white flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-cyan-400" />
+                    <span>D. Galería de Fotos del Producto ({galleryImages.length})</span>
+                  </label>
+                  <p className="text-[10px] text-slate-400">Permite a los clientes ver detalles, ángulos o capturas</p>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => galleryFileInputRef.current?.click()}
+                    disabled={isUploadingGallery}
+                    className="btn-falcon-primary text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold shadow-glow"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{isUploadingGallery ? "Procesando fotos..." : "📁 Importar de Galería / Archivos"}</span>
+                  </button>
+                  <input
+                    ref={galleryFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleGalleryFilesChange}
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2">
@@ -1209,7 +1321,7 @@ export function EditProductClient({
                   type="url"
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="https://ejemplo.com/foto-detalle.jpg"
+                  placeholder="O pega una URL directa de imagen externa (https://...)"
                   className="input-falcon text-xs flex-1"
                 />
                 <button
@@ -1220,10 +1332,10 @@ export function EditProductClient({
                       setNewImageUrl("");
                     }
                   }}
-                  className="btn-falcon-primary text-xs py-2 px-4 flex items-center gap-1.5 shrink-0 font-bold"
+                  className="btn-falcon-secondary text-xs py-2 px-3.5 flex items-center gap-1.5 shrink-0 font-bold"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Agregar Foto</span>
+                  <span>Añadir URL</span>
                 </button>
               </div>
 
@@ -1400,14 +1512,32 @@ export function EditProductClient({
 
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-300 block">
-                    URL de Imagen de Portada Principal
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-slate-300 block">
+                      Imagen de Portada Principal
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => coverFileInputRef.current?.click()}
+                      disabled={isUploadingCover}
+                      className="text-[11px] bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition-all shadow-glow"
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>{isUploadingCover ? "Subiendo..." : "📁 Subir desde Archivos / Galería"}</span>
+                    </button>
+                    <input
+                      ref={coverFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCoverFileChange}
+                    />
+                  </div>
                   <input
                     type="url"
                     value={coverImageUrl}
                     onChange={(e) => setCoverImageUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="https://images.unsplash.com/... o sube tu imagen desde tu dispositivo"
                     className="input-falcon text-xs"
                   />
                 </div>

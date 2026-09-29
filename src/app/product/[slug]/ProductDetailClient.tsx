@@ -225,14 +225,43 @@ export function ProductDetailClient({
       : "Pago Seguro cifrado con entrega inmediata"
   );
 
+  const isLightStore = backgroundColor === "#f8fafc" || backgroundColor === "#ffffff" || backgroundColor?.toLowerCase().startsWith("#f");
+
   return (
-    <div className="space-y-8 pb-12">
+    <div
+      className="space-y-8 pb-16 min-h-screen relative transition-colors duration-500"
+      style={{
+        backgroundColor: backgroundColor,
+        color: isLightStore ? "#0f172a" : "#f8fafc",
+      }}
+    >
+      {/* Ambient Radial Mesh tuned to the Product's Primary & Secondary Colors */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-25 transition-all duration-700"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 0%, ${primaryColor} 0%, transparent 55%),
+            radial-gradient(circle at 90% 20%, ${secondaryColor} 0%, transparent 40%),
+            radial-gradient(circle at 10% 60%, ${primaryColor} 0%, transparent 40%)
+          `,
+        }}
+      />
+
       {/* Standalone Store Top Bar */}
-      <header className="sticky top-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
+      <header
+        className="sticky top-0 z-40 backdrop-blur-2xl border-b shadow-2xl transition-colors duration-300"
+        style={{
+          backgroundColor: `${backgroundColor}f5`,
+          borderColor: `${primaryColor}30`,
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Creator Profile Brand */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-10 h-10 rounded-2xl bg-slate-900 overflow-hidden border border-cyan-500/40 shrink-0 shadow-md">
+            <div
+              className="w-10 h-10 rounded-2xl bg-slate-900 overflow-hidden border shrink-0 shadow-md transition-colors"
+              style={{ borderColor: `${primaryColor}50` }}
+            >
               {product.seller?.avatarUrl ? (
                 <img
                   src={product.seller.avatarUrl}
@@ -240,24 +269,27 @@ export function ProductDetailClient({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-xs font-bold text-slate-950">
+                <div
+                  className="w-full h-full flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                  style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                >
                   {product.seller?.firstName?.[0] || "C"}
                 </div>
               )}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs sm:text-sm font-bold text-white">
+                <span className={`text-xs sm:text-sm font-bold ${isLightStore ? "text-slate-900" : "text-white"}`}>
                   {product.seller?.firstName} {product.seller?.lastName || ""}
                 </span>
                 <span className="text-xs">{COUNTRIES[product.seller?.countryCode]?.flag || "🌐"}</span>
                 {product.seller?.isVerifiedSeller && (
                   <span title="Creador Verificado Falko">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 inline shrink-0" style={{ color: primaryColor }} />
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+              <span className="text-[10px] font-semibold flex items-center gap-1 text-emerald-400">
                 <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
                 Tienda Oficial Verificada
               </span>
@@ -286,9 +318,14 @@ export function ProductDetailClient({
 
             <Link
               href={checkoutUrl}
-              className="btn-falcon-primary text-xs py-2 px-4 font-bold shadow-glow flex items-center gap-1.5"
+              className="text-xs py-2 px-4 font-bold rounded-xl shadow-lg flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                color: "#ffffff",
+                boxShadow: `0 0 20px ${primaryColor}50`,
+              }}
             >
-              <Zap className="w-3.5 h-3.5" />
+              <Zap className="w-3.5 h-3.5 fill-white" />
               <span className="hidden sm:inline">Comprar Ahora — </span>
               <span>{formatCurrency(convertedPrice, currency)}</span>
             </Link>
@@ -299,14 +336,22 @@ export function ProductDetailClient({
       {/* Top Banner Image if defined */}
       {product.bannerImageUrl && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full h-44 sm:h-64 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-            <img src={product.bannerImageUrl} alt="" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+          <div
+            className="relative w-full h-48 sm:h-72 rounded-3xl overflow-hidden border shadow-2xl transition-colors"
+            style={{ borderColor: `${primaryColor}40` }}
+          >
+            <img src={product.bannerImageUrl} alt={product.title} className="w-full h-full object-cover" />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(to top, ${backgroundColor} 0%, ${backgroundColor}60 30%, transparent 100%)`,
+              }}
+            />
           </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10">
         {/* Top Conversion Trust Bar */}
         <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-3 sm:p-3.5 backdrop-blur-xl grid grid-cols-2 md:grid-cols-4 gap-2.5 text-center text-xs shadow-lg">
           <div className="flex items-center justify-center gap-2 text-emerald-400">
@@ -451,11 +496,15 @@ export function ProductDetailClient({
                       setSelectedImage(imgUrl);
                       setActiveMediaTab("image");
                     }}
-                    className={`relative w-20 aspect-video rounded-xl overflow-hidden shrink-0 border transition-all ${
+                    className={`relative w-20 aspect-video rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
                       selectedImage === imgUrl && activeMediaTab === "image"
-                        ? "border-cyan-400 ring-2 ring-cyan-500/40 scale-105 shadow-glow"
-                        : "border-white/10 opacity-70 hover:opacity-100"
+                        ? "scale-105 shadow-md"
+                        : "opacity-70 hover:opacity-100 border-white/10"
                     }`}
+                    style={{
+                      borderColor: selectedImage === imgUrl && activeMediaTab === "image" ? primaryColor : undefined,
+                      boxShadow: selectedImage === imgUrl && activeMediaTab === "image" ? `0 0 15px ${primaryColor}70` : undefined,
+                    }}
                   >
                     <img src={imgUrl} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
@@ -470,18 +519,25 @@ export function ProductDetailClient({
               {/* Custom Badge if provided */}
               {product.customBadgeText && (
                 <span
-                  className="text-xs font-black px-3.5 py-1 rounded-full border shadow-glow animate-pulse"
+                  className="text-xs font-black px-3.5 py-1 rounded-full border shadow-lg animate-pulse"
                   style={{
                     backgroundColor: `${primaryColor}25`,
                     borderColor: `${primaryColor}70`,
-                    color: "#ffffff",
+                    color: primaryColor,
                   }}
                 >
                   ✨ {product.customBadgeText}
                 </span>
               )}
 
-              <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
+              <span
+                className="text-xs font-bold border px-3 py-1 rounded-full shadow-sm"
+                style={{
+                  backgroundColor: `${primaryColor}15`,
+                  borderColor: `${primaryColor}40`,
+                  color: primaryColor,
+                }}
+              >
                 {product.category?.name || "Recurso"}
               </span>
 
@@ -491,7 +547,14 @@ export function ProductDetailClient({
                   <span>Producto Físico</span>
                 </span>
               ) : (
-                <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
+                <span
+                  className="text-xs font-bold border px-3 py-1 rounded-full"
+                  style={{
+                    backgroundColor: `${primaryColor}15`,
+                    borderColor: `${primaryColor}30`,
+                    color: primaryColor,
+                  }}
+                >
                   ⚡ Recurso Digital
                 </span>
               )}
@@ -512,8 +575,17 @@ export function ProductDetailClient({
               </span>
 
               {/* Creator Pill Badge */}
-              <div className="inline-flex items-center gap-2 bg-slate-900/90 border border-cyan-500/30 px-3 py-1 rounded-full text-xs">
-                <div className="w-4 h-4 rounded-full bg-cyan-950 border border-cyan-500/50 overflow-hidden shrink-0">
+              <div
+                className="inline-flex items-center gap-2 border px-3 py-1 rounded-full text-xs shadow-sm"
+                style={{
+                  backgroundColor: `${backgroundColor}95`,
+                  borderColor: `${primaryColor}35`,
+                }}
+              >
+                <div
+                  className="w-4 h-4 rounded-full overflow-hidden shrink-0 border"
+                  style={{ borderColor: primaryColor }}
+                >
                   {product.seller?.avatarUrl ? (
                     <img
                       src={product.seller.avatarUrl}
@@ -521,40 +593,49 @@ export function ProductDetailClient({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[8px] text-cyan-300 font-bold">
+                    <div
+                      className="w-full h-full flex items-center justify-center text-[8px] font-bold text-white"
+                      style={{ backgroundColor: primaryColor }}
+                    >
                       {product.seller?.firstName?.[0] || "C"}
                     </div>
                   )}
                 </div>
                 <span className="text-slate-400">Por:</span>
-                <span className="font-bold text-white">
+                <span className={`font-bold ${isLightStore ? "text-slate-900" : "text-white"}`}>
                   {product.seller?.firstName} {product.seller?.lastName || ""}
                 </span>
                 <span className="text-xs">{COUNTRIES[product.seller?.countryCode]?.flag || ""}</span>
                 {product.seller?.isVerifiedSeller && (
                   <span title="Creador Verificado Falko" className="inline-flex items-center">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 inline shrink-0" style={{ color: primaryColor }} />
                   </span>
                 )}
               </div>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white leading-[1.15] tracking-tight">
+            <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-heading font-black leading-[1.15] tracking-tight ${isLightStore ? "text-slate-900" : "text-white"}`}>
               {product.title}
             </h1>
 
             {product.shortDescription && (
-              <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal bg-slate-950/40 p-4 rounded-2xl border border-white/5">
+              <p className={`text-base sm:text-lg leading-relaxed font-normal p-4 rounded-2xl border border-white/5 ${isLightStore ? "bg-white/90 text-slate-700" : "bg-slate-950/40 text-slate-300"}`}>
                 {product.shortDescription}
               </p>
             )}
 
             {/* Key Benefits & Features Card (if seller provided highlights) */}
             {parsedHighlights.length > 0 && (
-              <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 space-y-3 bg-gradient-to-br from-slate-950/80 to-slate-900/50">
+              <div
+                className="glass-panel rounded-3xl p-5 sm:p-6 border space-y-3"
+                style={{
+                  borderColor: `${primaryColor}35`,
+                  boxShadow: `0 8px 30px ${primaryColor}12`,
+                }}
+              >
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4" style={{ color: primaryColor }} />
+                  <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: primaryColor }}>
                     Puntos Clave & Beneficios Destacados
                   </h3>
                 </div>
@@ -562,10 +643,11 @@ export function ProductDetailClient({
                   {parsedHighlights.map((highlight, hIdx) => (
                     <div
                       key={hIdx}
-                      className="flex items-start gap-2.5 bg-slate-950/60 p-3 rounded-xl border border-white/5"
+                      className="flex items-start gap-2.5 p-3 rounded-xl border border-white/5 shadow-sm"
+                      style={{ backgroundColor: `${backgroundColor}99` }}
                     >
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span className="text-xs text-slate-200 font-medium leading-relaxed">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: primaryColor }} />
+                      <span className={`text-xs font-medium leading-relaxed ${isLightStore ? "text-slate-800" : "text-slate-200"}`}>
                         {highlight}
                       </span>
                     </div>
@@ -948,7 +1030,14 @@ export function ProductDetailClient({
         {/* Right Sticky Column: Purchase Box & Affiliate Actions */}
         <div className="space-y-6">
           {/* Purchase Card */}
-          <div className="glass-panel rounded-3xl p-6 sm:p-7 border border-cyan-500/30 sticky top-20 shadow-glow space-y-6">
+          <div
+            className="glass-panel rounded-3xl p-6 sm:p-7 border sticky top-20 shadow-2xl space-y-6 transition-all duration-300"
+            style={{
+              borderColor: `${primaryColor}45`,
+              boxShadow: `0 12px 40px ${primaryColor}20`,
+              backgroundColor: `${backgroundColor}f5`,
+            }}
+          >
             {/* Guarantee Tag */}
             <div className="bg-emerald-950/60 border border-emerald-500/40 rounded-2xl p-3.5 flex items-center gap-3 text-emerald-300 text-xs">
               <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" />
@@ -972,11 +1061,11 @@ export function ProductDetailClient({
               </div>
 
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-4xl font-black text-white font-heading">
+                <span className={`text-4xl font-black font-heading ${isLightStore ? "text-slate-900" : "text-white"}`}>
                   {formatCurrency(convertedPrice, currency)}
                 </span>
                 {product.pricingType === "SUBSCRIPTION" && (
-                  <span className="text-sm text-purple-300 font-bold font-mono">
+                  <span className="text-sm font-bold font-mono" style={{ color: primaryColor }}>
                     {product.billingInterval === "YEARLY" ? "/ año" : product.billingInterval === "QUARTERLY" ? "/ trim" : "/ mes"}
                   </span>
                 )}
@@ -1090,7 +1179,12 @@ export function ProductDetailClient({
               <div className="space-y-3.5">
                 <Link
                   href={checkoutUrl}
-                  className="btn-falcon-primary w-full text-center justify-center text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
+                  className="w-full text-center justify-center text-sm py-3.5 rounded-2xl font-bold flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                  style={{
+                    background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    color: "#ffffff",
+                    boxShadow: `0 8px 24px ${primaryColor}50`
+                  }}
                 >
                   <Zap className="w-4 h-4" />
                   <span>{customCtaText}</span>
@@ -1279,27 +1373,38 @@ export function ProductDetailClient({
       />
 
       {/* Mobile Sticky Bottom CTA */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070e]/95 backdrop-blur-2xl border-t border-cyan-500/30 p-3.5 shadow-2xl safe-bottom">
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-2xl border-t p-3.5 shadow-2xl safe-bottom"
+        style={{
+          backgroundColor: isLightStore ? "rgba(255, 255, 255, 0.95)" : "rgba(8, 12, 22, 0.95)",
+          borderColor: `${primaryColor}40`
+        }}
+      >
         <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
           <div>
-            <span className="text-[10px] text-slate-400 block">
+            <span className={`text-[10px] block ${isLightStore ? "text-slate-500" : "text-slate-400"}`}>
               {isPhysical ? "Precio del Producto" : "Precio Digital"}
             </span>
-            <span className="text-base font-black text-cyan-400">
+            <span className="text-base font-black" style={{ color: primaryColor }}>
               {formatCurrency(convertedPrice, currency)}
             </span>
           </div>
           {isOutOfStock ? (
             <button
               disabled
-              className="btn-falcon-primary py-2.5 px-4 text-xs font-bold opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 flex items-center gap-1.5"
+              className="py-2.5 px-4 text-xs font-bold opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 rounded-xl flex items-center gap-1.5"
             >
               <span>Agotado</span>
             </button>
           ) : (
             <Link
               href={checkoutUrl}
-              className="btn-falcon-primary py-2.5 px-6 text-xs font-bold shadow-glow flex items-center gap-1.5"
+              className="py-2.5 px-6 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-transform active:scale-95 shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                color: "#ffffff",
+                boxShadow: `0 4px 16px ${primaryColor}50`
+              }}
             >
               <Zap className="w-3.5 h-3.5" />
               <span>{isPhysical ? "Comprar Producto" : "Comprar Ahora"}</span>

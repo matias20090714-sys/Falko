@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CURRENCY_RATES, computeFinancialSplit, formatCurrency } from "@/lib/currency";
 import { getVideoEmbedUrl } from "@/lib/media";
+import { processAndCompressImage } from "@/lib/image-upload";
 import {
   Activity,
   ArrowRight,
@@ -326,6 +327,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
 
   // Upload States
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -334,6 +336,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
   const [error, setError] = useState("");
 
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -409,17 +412,50 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
 
     setUploadingCover(true);
     try {
-      const uploaded = await uploadFileToServer(file, "image");
-      setFormData((prev) => ({ ...prev, coverImageUrl: uploaded.url }));
+      const res = await processAndCompressImage(file, 1600, 0.88);
+      setFormData((prev) => ({ ...prev, coverImageUrl: res.url }));
     } catch (err: any) {
-      // Fallback base64
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData((prev) => ({ ...prev, coverImageUrl: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      alert(err.message || "Error al procesar la imagen de portada.");
     } finally {
       setUploadingCover(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingBanner(true);
+    try {
+      const res = await processAndCompressImage(file, 1920, 0.85);
+      setFormData((prev) => ({ ...prev, bannerImageUrl: res.url }));
+    } catch (err: any) {
+      alert(err.message || "Error al procesar el banner.");
+    } finally {
+      setUploadingBanner(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+
+    setUploadingGallery(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        const res = await processAndCompressImage(file, 1400, 0.85);
+        uploadedUrls.push(res.url);
+      }
+      setGalleryImages((prev) => [...prev, ...uploadedUrls]);
+    } catch (err: any) {
+      alert(err.message || "Error al procesar las fotos de la galería.");
+    } finally {
+      setUploadingGallery(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -1575,18 +1611,48 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
 
                         {/* Banner & Badge */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                          <div className="space-y-1">
-                            <label className="text-[11px] font-semibold text-slate-300">Banner de Cabecera (Hero URL):</label>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[11px] font-semibold text-slate-300">Banner de Cabecera (Hero):</label>
+                              <button
+                                type="button"
+                                onClick={() => bannerInputRef.current?.click()}
+                                disabled={uploadingBanner}
+                                className="text-[10px] bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-300 px-2 py-0.5 rounded-lg font-bold flex items-center gap-1 transition-all"
+                              >
+                                <Upload className="w-3 h-3" />
+                                <span>{uploadingBanner ? "Subiendo..." : "📁 Subir de Galería"}</span>
+                              </button>
+                              <input
+                                ref={bannerInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleBannerUpload}
+                              />
+                            </div>
                             <input
                               type="url"
                               name="bannerImageUrl"
                               value={formData.bannerImageUrl}
                               onChange={handleChange}
-                              placeholder="https://images.unsplash.com/..."
+                              placeholder="https://images.unsplash.com/... o sube tu archivo"
                               className="input-falcon text-xs w-full py-1.5"
                             />
+                            {formData.bannerImageUrl && (
+                              <div className="relative rounded-xl overflow-hidden h-14 border border-white/10 bg-slate-900">
+                                <img src={formData.bannerImageUrl} alt="Banner" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData((prev) => ({ ...prev, bannerImageUrl: "" }))}
+                                  className="absolute top-1 right-1 bg-rose-600 text-white p-0.5 rounded text-[10px]"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <div className="space-y-1">
+                          <div className="space-y-1.5">
                             <label className="text-[11px] font-semibold text-slate-300">Insignia / Badge de Oferta:</label>
                             <input
                               type="text"
@@ -1623,6 +1689,72 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                               className="input-falcon text-xs w-full py-1.5"
                             />
                           </div>
+                        </div>
+
+                        {/* Gallery Photos Section */}
+                        <div className="space-y-2 pt-2 border-t border-white/5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] font-bold text-slate-200 flex items-center gap-1.5">
+                              <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>Galería de Fotos del Producto ({galleryImages.length}):</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => galleryInputRef.current?.click()}
+                              disabled={uploadingGallery}
+                              className="btn-falcon-primary text-[10px] py-1 px-2.5 flex items-center gap-1 font-bold"
+                            >
+                              <Upload className="w-3 h-3" />
+                              <span>{uploadingGallery ? "Subiendo fotos..." : "📁 Importar de Galería"}</span>
+                            </button>
+                            <input
+                              ref={galleryInputRef}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              onChange={handleGalleryUpload}
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <input
+                              type="url"
+                              value={customImageUrl}
+                              onChange={(e) => setCustomImageUrl(e.target.value)}
+                              placeholder="O añade URL directa de imagen..."
+                              className="input-falcon text-xs flex-1 py-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (customImageUrl.trim()) {
+                                  setGalleryImages([...galleryImages, customImageUrl.trim()]);
+                                  setCustomImageUrl("");
+                                }
+                              }}
+                              className="btn-falcon-secondary text-[11px] py-1 px-3"
+                            >
+                              + Añadir
+                            </button>
+                          </div>
+
+                          {galleryImages.length > 0 && (
+                            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-1">
+                              {galleryImages.map((img, idx) => (
+                                <div key={idx} className="relative group rounded-lg overflow-hidden aspect-square border border-white/10 bg-slate-900">
+                                  <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                                  <button
+                                    type="button"
+                                    onClick={() => setGalleryImages(galleryImages.filter((_, i) => i !== idx))}
+                                    className="absolute top-1 right-1 bg-rose-600 text-white p-0.5 rounded text-[10px]"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Highlights Manager */}
