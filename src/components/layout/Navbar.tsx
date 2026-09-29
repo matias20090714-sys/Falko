@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FalconLogo } from "./FalconLogo";
+import { ThemeToggle } from "./ThemeToggle";
 import { COUNTRIES, CURRENCY_RATES } from "@/lib/currency";
 import {
   Bell,
@@ -138,6 +139,9 @@ export function Navbar({ initialUser }: NavbarProps) {
 
           {/* Right Controls: Currency, Quick Actions, Auth */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Dark/Light Mode Theme Toggle */}
+            <ThemeToggle />
+
             {/* Currency Selector */}
             <div className="relative">
               <button
@@ -335,8 +339,9 @@ export function Navbar({ initialUser }: NavbarProps) {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button & Theme toggle */}
           <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white"
@@ -350,6 +355,11 @@ export function Navbar({ initialUser }: NavbarProps) {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-slate-950/95 backdrop-blur-2xl border-b border-white/10 px-4 pt-3 pb-6 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-white/5">
+            <span className="text-xs text-slate-400 font-semibold">Tema visual:</span>
+            <ThemeToggle showLabel />
+          </div>
+
           <div className="space-y-1">
             {navLinks.map((link) => (
               <Link

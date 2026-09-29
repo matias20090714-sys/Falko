@@ -97,6 +97,24 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="FALKO" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="FALKO" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('falko_theme');
+                  if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                  } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="bg-[#05070e] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
         <Navbar initialUser={currentUser} />

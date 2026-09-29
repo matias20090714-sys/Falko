@@ -397,37 +397,272 @@ select option:focus {
   color: #ffffff;
 }
 
-/* Mobile & Touch Optimizations */
-@layer utilities {
-  .safe-top {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  .touch-momentum {
-    -webkit-overflow-scrolling: touch;
-  }
+/* ======================================================== */
+/* LIGHT MODE: SOLAR FALCON / CYBER PEARL PALETTE           */
+/* ======================================================== */
+html.light,
+html:not(.dark) {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: rgba(203, 213, 225, 0.8);
+  --accent: #0284c7;
+  --accent-secondary: #2563eb;
+  --accent-purple: #7c3aed;
+  --accent-glow: rgba(2, 132, 199, 0.2);
 }
 
-/* Disable blue tap highlight & eliminate 300ms click delay on mobile */
-* {
-  -webkit-tap-highlight-color: transparent;
+html.light body {
+  background-color: #f8fafc !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 90% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 10% 60%, rgba(2, 132, 199, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 70% 90%, rgba(245, 158, 11, 0.05) 0%, transparent 40%) !important;
+  color: #0f172a !important;
 }
 
-button, a, input, select, textarea {
-  touch-action: manipulation;
+html.light .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.05) 1px, transparent 1px) !important;
 }
 
-/* Responsive Touch Target sizing for mobile buttons & inputs */
-@media (max-width: 640px) {
-  input, select, textarea {
-    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
-  }
-  
-  /* Ensure smooth scrolling across all scrollable containers */
-  .overflow-x-auto, .overflow-y-auto {
-    -webkit-overflow-scrolling: touch;
-  }
+/* Glass Panels in Light Mode */
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(203, 213, 225, 0.75) !important;
+  box-shadow: 
+    0 10px 30px -10px rgba(15, 23, 42, 0.08),
+    0 1px 3px 0 rgba(15, 23, 42, 0.05) !important;
+  color: #0f172a !important;
 }
+
+html.light .glass-panel-glow {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(2, 132, 199, 0.45) !important;
+  box-shadow: 
+    0 0 30px -5px rgba(2, 132, 199, 0.22),
+    0 15px 35px -10px rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+html.light .glass-panel-hover:hover {
+  background: #ffffff !important;
+  border-color: rgba(2, 132, 199, 0.6) !important;
+  box-shadow: 
+    0 15px 35px -10px rgba(2, 132, 199, 0.25),
+    0 20px 40px -12px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Universal Inputs & Selects in Light Mode */
+html.light .input-falcon,
+html.light .glass-input {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 1px 2px 0 rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .input-falcon::placeholder,
+html.light .glass-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light .input-falcon:focus,
+html.light .glass-input:focus {
+  border-color: #0284c7 !important;
+  background: #ffffff !important;
+  box-shadow: 
+    0 0 0 3px rgba(2, 132, 199, 0.18),
+    0 0 20px rgba(2, 132, 199, 0.15) !important;
+}
+
+html.light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html.light select option:hover,
+html.light select option:checked,
+html.light select option:focus {
+  background-color: #f1f5f9 !important;
+  color: #0284c7 !important;
+}
+
+/* Gradient Text for Light Mode */
+html.light .gradient-text-falcon {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4f46e5 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.light .gradient-text-gold {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 60%, #92400e 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.light .gradient-text-purple {
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 60%, #4338ca 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.light .gradient-text-emerald {
+  background: linear-gradient(135deg, #059669 0%, #047857 60%, #065f46 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Secondary Buttons in Light Mode */
+html.light .btn-falcon-secondary {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06) !important;
+}
+
+html.light .btn-falcon-secondary:hover {
+  background: #ffffff !important;
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18) !important;
+}
+
+/* Light mode overrides for general text & backgrounds */
+html.light nav {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 4px 20px -5px rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light footer {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-\[\#05070e\] {
+  background-color: #f8fafc !important;
+}
+
+html.light .bg-slate-950 {
+  background-color: #ffffff !important;
+}
+
+html.light .bg-slate-900 {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .bg-slate-900\/90,
+html.light .bg-slate-900\/80,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-950\/80,
+html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/50,
+html.light .bg-slate-950\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.light .text-white {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748b !important;
+}
+
+html.light .border-white\/10,
+html.light .border-white\/5,
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/20 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-cyan-950,
+html.light .bg-cyan-950\/70,
+html.light .bg-cyan-950\/60,
+html.light .bg-cyan-950\/50,
+html.light .bg-cyan-950\/40,
+html.light .bg-cyan-950\/30,
+html.light .bg-cyan-950\/20 {
+  background-color: #e0f2fe !important;
+}
+
+html.light .text-cyan-300,
+html.light .text-cyan-400 {
+  color: #0284c7 !important;
+}
+
+html.light .border-cyan-500\/30,
+html.light .border-cyan-500\/40 {
+  border-color: #38bdf8 !important;
+}
+
+html.light .bg-purple-950,
+html.light .bg-purple-950\/50,
+html.light .bg-purple-950\/40,
+html.light .bg-purple-950\/30,
+html.light .bg-purple-950\/20 {
+  background-color: #f3e8ff !important;
+}
+
+html.light .text-purple-300,
+html.light .text-purple-400 {
+  color: #7c3aed !important;
+}
+
+html.light .bg-emerald-950,
+html.light .bg-emerald-950\/50,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/20 {
+  background-color: #d1fae5 !important;
+}
+
+html.light .text-emerald-300,
+html.light .text-emerald-400 {
+  color: #059669 !important;
+}
+
+html.light .bg-amber-950,
+html.light .bg-amber-950\/50,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/30,
+html.light .bg-amber-950\/20 {
+  background-color: #fef3c7 !important;
+}
+
+html.light .text-amber-300,
+html.light .text-amber-400 {
+  color: #d97706 !important;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-color: #f8fafc !important;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #0284c7 !important;
+}
+
 

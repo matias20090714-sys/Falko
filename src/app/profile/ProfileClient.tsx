@@ -20,6 +20,9 @@ import {
   FileText,
   Upload,
   RefreshCw,
+  Sun,
+  Moon,
+  Palette,
 } from "lucide-react";
 import { COUNTRIES, CURRENCY_RATES } from "@/lib/currency";
 
@@ -61,6 +64,28 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [avatarUrl, setAvatarUrl] = useState(initialUser.avatarUrl || "");
   const [countryCode, setCountryCode] = useState(initialUser.countryCode || "US");
   const [preferredCurrency, setPreferredCurrency] = useState(initialUser.preferredCurrency || "USD");
+
+  // Visual Theme Preference
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("falko_theme") as "dark" | "light") || "dark";
+    }
+    return "dark";
+  });
+
+  const handleThemeChange = (newTheme: "dark" | "light") => {
+    setTheme(newTheme);
+    const root = document.documentElement;
+    if (newTheme === "light") {
+      root.classList.remove("dark");
+      root.classList.add("light");
+    } else {
+      root.classList.remove("light");
+      root.classList.add("dark");
+    }
+    localStorage.setItem("falko_theme", newTheme);
+    window.dispatchEvent(new CustomEvent("falkoThemeChange", { detail: newTheme }));
+  };
 
   // Security Form States
   const [currentPassword, setCurrentPassword] = useState("");
@@ -519,6 +544,82 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                   ))}
                 </select>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Visual Theme & Appearance Preferences */}
+        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <Palette className="w-5 h-5 text-cyan-400" />
+              <div>
+                <h2 className="text-base font-bold text-white">Tema Visual de la Plataforma</h2>
+                <p className="text-xs text-slate-400">Elige la experiencia visual preferida para tu navegación en FALKO</p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-3 py-1 rounded-full">
+              {theme === "dark" ? "🌙 Cyber Dark" : "☀️ Solar Falcon"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Dark Mode Card */}
+            <div
+              onClick={() => handleThemeChange("dark")}
+              className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+                theme === "dark"
+                  ? "bg-slate-900 border-cyan-400 ring-2 ring-cyan-500/30 shadow-glow"
+                  : "bg-slate-950 border-white/5 hover:border-white/20 opacity-70 hover:opacity-100"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                    <Moon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Modo Oscuro (Cyber Dark)</h3>
+                    <span className="text-[10px] text-cyan-300 font-mono">Recomendado para la noche</span>
+                  </div>
+                </div>
+                {theme === "dark" && (
+                  <span className="text-xs text-cyan-400 font-bold">✓ Activo</span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Estilo cinematográfico con fondo negro profundo, brillos de neón cian, púrpura y alto contraste que reduce el cansancio visual.
+              </p>
+            </div>
+
+            {/* Light Mode Card */}
+            <div
+              onClick={() => handleThemeChange("light")}
+              className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+                theme === "light"
+                  ? "bg-white text-slate-900 border-sky-500 ring-2 ring-sky-500/30 shadow-lg"
+                  : "bg-slate-950 border-white/5 hover:border-white/20 opacity-70 hover:opacity-100"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-500">
+                    <Sun className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className={`text-sm font-bold ${theme === "light" ? "text-slate-900" : "text-white"}`}>
+                      Modo Claro (Solar Falcon)
+                    </h3>
+                    <span className="text-[10px] text-amber-500 font-mono">Ultra nitidez y claridad</span>
+                  </div>
+                </div>
+                {theme === "light" && (
+                  <span className="text-xs text-sky-600 font-bold">✓ Activo</span>
+                )}
+              </div>
+              <p className={`text-xs leading-relaxed ${theme === "light" ? "text-slate-600" : "text-slate-400"}`}>
+                Fondo perla porcelana de máxima legibilidad con acentos solares, degradados en azul eléctrico y estética limpia de alta gama.
+              </p>
             </div>
           </div>
         </div>
