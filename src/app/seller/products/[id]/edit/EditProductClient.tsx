@@ -18,6 +18,7 @@ import {
   FileText,
   Film,
   Globe,
+  HelpCircle,
   Image as ImageIcon,
   Info,
   Link as LinkIcon,
@@ -176,6 +177,48 @@ export function EditProductClient({
   );
   const [affiliateSwipeUrl, setAffiliateSwipeUrl] = useState(initialProduct.affiliateSwipeUrl || "");
 
+  // Store Visual Customization & Branding
+  const [primaryColor, setPrimaryColor] = useState(initialProduct.primaryColor || "#06b6d4");
+  const [secondaryColor, setSecondaryColor] = useState(initialProduct.secondaryColor || "#3b82f6");
+  const [backgroundColor, setBackgroundColor] = useState(initialProduct.backgroundColor || "#030712");
+  const [bannerImageUrl, setBannerImageUrl] = useState(initialProduct.bannerImageUrl || "");
+  const [customBadgeText, setCustomBadgeText] = useState(initialProduct.customBadgeText || "");
+  const [ctaButtonText, setCtaButtonText] = useState(initialProduct.ctaButtonText || "");
+  const [ctaSubtext, setCtaSubtext] = useState(initialProduct.ctaSubtext || "");
+
+  // Highlights / Features list
+  const [highlights, setHighlights] = useState<string[]>(() => {
+    if (!initialProduct.customHighlights) return [];
+    if (Array.isArray(initialProduct.customHighlights)) return initialProduct.customHighlights;
+    try {
+      const parsed = JSON.parse(initialProduct.customHighlights);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return initialProduct.customHighlights.split("\n").map((s: string) => s.trim()).filter(Boolean);
+    }
+  });
+  const [newHighlight, setNewHighlight] = useState("");
+
+  // Gallery Photos
+  const [galleryImages, setGalleryImages] = useState<string[]>(
+    initialProduct.images?.map((img: any) => img.imageUrl || img) || []
+  );
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  // Custom FAQs list
+  const [customFaqs, setCustomFaqs] = useState<{ q: string; a: string }[]>(() => {
+    if (!initialProduct.customFaqsJson) return [];
+    if (Array.isArray(initialProduct.customFaqsJson)) return initialProduct.customFaqsJson;
+    try {
+      const parsed = JSON.parse(initialProduct.customFaqsJson);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newFaqQ, setNewFaqQ] = useState("");
+  const [newFaqA, setNewFaqA] = useState("");
+
   // Marketing Tracking Pixels
   const [metaPixelId, setMetaPixelId] = useState(initialProduct.metaPixelId || "");
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState(initialProduct.googleAnalyticsId || "");
@@ -264,6 +307,16 @@ export function EditProductClient({
         guaranteeDays: parseInt(guaranteeDays) || 7,
         status,
         storeTheme,
+        primaryColor,
+        secondaryColor,
+        backgroundColor,
+        bannerImageUrl: bannerImageUrl.trim() || null,
+        customBadgeText: customBadgeText.trim() || null,
+        ctaButtonText: ctaButtonText.trim() || null,
+        ctaSubtext: ctaSubtext.trim() || null,
+        customHighlights: highlights.length > 0 ? JSON.stringify(highlights) : null,
+        customFaqsJson: customFaqs.length > 0 ? JSON.stringify(customFaqs) : null,
+        images: galleryImages,
         upsellTitle: upsellTitle.trim() || null,
         upsellDescription: upsellDescription.trim() || null,
         upsellPrice: upsellPrice ? parseFloat(upsellPrice) : null,
@@ -897,82 +950,359 @@ export function EditProductClient({
                   </div>
                 </div>
 
-                {/* Falko Store Theme Selector */}
+                {/* Falko Store Visual Designer */}
                 {salesPageMode === "falko" && (
-                  <div className="bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-cyan-500/30 space-y-3 animate-in fade-in-50">
-                    <div className="flex items-center justify-between">
+                  <div className="bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-cyan-500/30 space-y-6 animate-in fade-in-50">
+                    <div className="flex items-center justify-between pb-3 border-b border-white/5">
                       <label className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Tema Visual de la Tienda FALKO</span>
+                        <Sparkles className="w-4 h-4 text-cyan-400" />
+                        <span className="text-sm font-heading">Diseñador Visual de tu Tienda</span>
                       </label>
-                      <span className="text-[11px] text-cyan-400 font-medium">Personaliza el diseño visual</span>
+                      <span className="text-[11px] text-cyan-400 font-medium">Personaliza colores, textos, banner y fotos</span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {/* Dark Cyber */}
-                      <button
-                        type="button"
-                        onClick={() => setStoreTheme("dark")}
-                        className={`p-3.5 rounded-xl border text-left transition-all ${
-                          storeTheme === "dark"
-                            ? "bg-slate-900 border-cyan-400 shadow-glow ring-2 ring-cyan-500/30"
-                            : "bg-slate-950 border-white/10 hover:border-white/20 opacity-80"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <Moon className="w-4 h-4 text-cyan-400" />
-                            <span className="text-xs font-bold text-white">Cyber Dark</span>
-                          </div>
-                          {storeTheme === "dark" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                        </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          Fondo oscuro profundo con reflejos neón cian. Máximo impacto visual.
-                        </p>
-                      </button>
 
-                      {/* Light Clean */}
-                      <button
-                        type="button"
-                        onClick={() => setStoreTheme("light")}
-                        className={`p-3.5 rounded-xl border text-left transition-all ${
-                          storeTheme === "light"
-                            ? "bg-slate-900 border-amber-300 shadow-glow ring-2 ring-amber-400/30"
-                            : "bg-slate-950 border-white/10 hover:border-white/20 opacity-80"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <Sun className="w-4 h-4 text-amber-300" />
-                            <span className="text-xs font-bold text-white">Clean Light</span>
-                          </div>
-                          {storeTheme === "light" && <Check className="w-3.5 h-3.5 text-amber-300" />}
-                        </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          Fondo claro y tipografía de alta lectura. Ideal para ebooks, cursos y guías.
-                        </p>
-                      </button>
+                    {/* 1. Presets de Color */}
+                    <div className="space-y-2.5">
+                      <span className="text-xs font-bold text-slate-200 block">
+                        Paleta de Colores & Estilo:
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {[
+                          { name: "Cyber Cyan", p: "#06b6d4", s: "#3b82f6", bg: "#030712", label: "💎 Cyber Cyan" },
+                          { name: "Royal Purple", p: "#8b5cf6", s: "#ec4899", bg: "#050510", label: "👑 Royal Purple" },
+                          { name: "Emerald Fintech", p: "#10b981", s: "#059669", bg: "#020e09", label: "🌿 Emerald" },
+                          { name: "Sunset Amber", p: "#f59e0b", s: "#ef4444", bg: "#0f0803", label: "🔥 Sunset Glow" },
+                          { name: "Neon Rose", p: "#ec4899", s: "#f43f5e", bg: "#0f030a", label: "🌸 Neon Rose" },
+                          { name: "Obsidian Gold", p: "#eab308", s: "#ca8a04", bg: "#080808", label: "⚡ Obsidian Gold" },
+                          { name: "Clean Light", p: "#0284c7", s: "#0f172a", bg: "#f8fafc", label: "☀️ Clean Light" },
+                        ].map((theme) => (
+                          <button
+                            key={theme.name}
+                            type="button"
+                            onClick={() => {
+                              setPrimaryColor(theme.p);
+                              setSecondaryColor(theme.s);
+                              setBackgroundColor(theme.bg);
+                            }}
+                            className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between ${
+                              primaryColor === theme.p
+                                ? "bg-slate-900 border-cyan-400 shadow-glow ring-2 ring-cyan-500/30 text-white font-bold"
+                                : "bg-slate-950 border-white/10 hover:border-white/20 text-slate-400"
+                            }`}
+                          >
+                            <span className="text-xs">{theme.label}</span>
+                            <div className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: theme.p }} />
+                          </button>
+                        ))}
+                      </div>
 
-                      {/* Vibrant Sunset */}
-                      <button
-                        type="button"
-                        onClick={() => setStoreTheme("vibrant")}
-                        className={`p-3.5 rounded-xl border text-left transition-all ${
-                          storeTheme === "vibrant"
-                            ? "bg-slate-900 border-fuchsia-400 shadow-glow ring-2 ring-fuchsia-500/30"
-                            : "bg-slate-950 border-white/10 hover:border-white/20 opacity-80"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <Flame className="w-4 h-4 text-fuchsia-400" />
-                            <span className="text-xs font-bold text-white">Sunset Glow</span>
+                      {/* Custom Hex Color Pickers */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: primaryColor }} />
+                            <span>Color Principal:</span>
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={primaryColor}
+                              onChange={(e) => setPrimaryColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                            />
+                            <input
+                              type="text"
+                              value={primaryColor}
+                              onChange={(e) => setPrimaryColor(e.target.value)}
+                              className="input-falcon text-xs font-mono py-1.5"
+                            />
                           </div>
-                          {storeTheme === "vibrant" && <Check className="w-3.5 h-3.5 text-fuchsia-400" />}
                         </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                          Acentos púrpura, magenta y oro cálido. Enfoque moderno y premium.
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: secondaryColor }} />
+                            <span>Color Secundario:</span>
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={secondaryColor}
+                              onChange={(e) => setSecondaryColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                            />
+                            <input
+                              type="text"
+                              value={secondaryColor}
+                              onChange={(e) => setSecondaryColor(e.target.value)}
+                              className="input-falcon text-xs font-mono py-1.5"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: backgroundColor }} />
+                            <span>Color de Fondo:</span>
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={backgroundColor}
+                              onChange={(e) => setBackgroundColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                            />
+                            <input
+                              type="text"
+                              value={backgroundColor}
+                              onChange={(e) => setBackgroundColor(e.target.value)}
+                              className="input-falcon text-xs font-mono py-1.5"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. Banner de Encabezado & Insignia de Oferta */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Banner de Cabecera (Hero Banner URL)</span>
+                        </label>
+                        <input
+                          type="url"
+                          value={bannerImageUrl}
+                          onChange={(e) => setBannerImageUrl(e.target.value)}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          className="input-falcon text-xs"
+                        />
+                        <p className="text-[10px] text-slate-400">
+                          Imagen panorámica que aparece como fondo detrás de la cabecera del producto.
                         </p>
-                      </button>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Insignia Destacada / Badge de Oferta</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={customBadgeText}
+                          onChange={(e) => setCustomBadgeText(e.target.value)}
+                          placeholder="Ej: 🔥 Más Vendido • 50% OFF Lanzamiento"
+                          className="input-falcon text-xs"
+                        />
+                        <p className="text-[10px] text-slate-400">
+                          Etiqueta de alta conversión que resalta en la parte superior del título.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 3. Textos del Botón de Compra y Seguridad */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Texto del Botón de Compra (CTA)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={ctaButtonText}
+                          onChange={(e) => setCtaButtonText(e.target.value)}
+                          placeholder={productType === "PHYSICAL" ? "Comprar y Recibir Pedido" : "Comprar con Garantía Protegida"}
+                          className="input-falcon text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Subtexto de Confianza / Garantía</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={ctaSubtext}
+                          onChange={(e) => setCtaSubtext(e.target.value)}
+                          placeholder="Pago Seguro cifrado con entrega inmediata"
+                          className="input-falcon text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 4. Galería de Múltiples Fotos del Producto */}
+                    <div className="space-y-2.5 pt-2 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+                          <span>Galería de Fotos Adicionales ({galleryImages.length})</span>
+                        </label>
+                        <span className="text-[10px] text-slate-400">Vistas de ángulos, detalles o capturas</span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={newImageUrl}
+                          onChange={(e) => setNewImageUrl(e.target.value)}
+                          placeholder="https://ejemplo.com/foto-detalle.jpg"
+                          className="input-falcon text-xs flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (newImageUrl.trim()) {
+                              setGalleryImages([...galleryImages, newImageUrl.trim()]);
+                              setNewImageUrl("");
+                            }
+                          }}
+                          className="btn-falcon-primary text-xs py-1.5 px-3 font-bold"
+                        >
+                          + Agregar Foto
+                        </button>
+                      </div>
+
+                      {galleryImages.length > 0 && (
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
+                          {galleryImages.map((img, idx) => (
+                            <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group">
+                              <img src={img} alt="" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setGalleryImages(galleryImages.filter((_, i) => i !== idx))}
+                                className="absolute top-1 right-1 bg-rose-600 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity text-[9px]"
+                                title="Eliminar foto"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 5. Puntos Clave & Beneficios Destacados */}
+                    <div className="space-y-2.5 pt-2 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Beneficios & Puntos Clave ({highlights.length})</span>
+                        </label>
+                        <span className="text-[10px] text-slate-400">Viñetas destacadas en la tienda</span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newHighlight}
+                          onChange={(e) => setNewHighlight(e.target.value)}
+                          placeholder="Ej: Envío gratis a todo el país • Garantía 12 meses"
+                          className="input-falcon text-xs flex-1"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (newHighlight.trim()) {
+                                setHighlights([...highlights, newHighlight.trim()]);
+                                setNewHighlight("");
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (newHighlight.trim()) {
+                              setHighlights([...highlights, newHighlight.trim()]);
+                              setNewHighlight("");
+                            }
+                          }}
+                          className="btn-falcon-primary text-xs py-1.5 px-3 font-bold"
+                        >
+                          + Agregar
+                        </button>
+                      </div>
+
+                      {highlights.length > 0 && (
+                        <div className="space-y-1.5 pt-1">
+                          {highlights.map((h, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-slate-900/90 px-3 py-1.5 rounded-xl border border-white/5 text-xs text-slate-200">
+                              <span className="flex items-center gap-2">
+                                <span className="text-emerald-400 font-bold">✓</span>
+                                <span>{h}</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setHighlights(highlights.filter((_, i) => i !== idx))}
+                                className="text-slate-400 hover:text-rose-400 text-xs px-1"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 6. Preguntas Frecuentes Personalizadas */}
+                    <div className="space-y-2.5 pt-2 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Preguntas Frecuentes Personalizadas ({customFaqs.length})</span>
+                        </label>
+                        <span className="text-[10px] text-slate-400">Responde dudas comunes de tus compradores</span>
+                      </div>
+
+                      <div className="space-y-2 bg-slate-900/70 p-3 rounded-xl border border-white/5">
+                        <input
+                          type="text"
+                          value={newFaqQ}
+                          onChange={(e) => setNewFaqQ(e.target.value)}
+                          placeholder="Pregunta (ej: ¿Cómo coordinan la entrega en mi ciudad?)"
+                          className="input-falcon text-xs w-full"
+                        />
+                        <textarea
+                          rows={2}
+                          value={newFaqA}
+                          onChange={(e) => setNewFaqA(e.target.value)}
+                          placeholder="Respuesta detallada para tus clientes..."
+                          className="input-falcon text-xs w-full"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (newFaqQ.trim() && newFaqA.trim()) {
+                              setCustomFaqs([...customFaqs, { q: newFaqQ.trim(), a: newFaqA.trim() }]);
+                              setNewFaqQ("");
+                              setNewFaqA("");
+                            }
+                          }}
+                          className="btn-falcon-primary text-xs py-1 px-3 font-bold"
+                        >
+                          + Guardar Pregunta Frecuente
+                        </button>
+                      </div>
+
+                      {customFaqs.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                          {customFaqs.map((faq, idx) => (
+                            <div key={idx} className="bg-slate-900/90 p-3 rounded-xl border border-white/5 text-xs space-y-1">
+                              <div className="flex items-center justify-between font-bold text-cyan-300">
+                                <span>P: {faq.q}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setCustomFaqs(customFaqs.filter((_, i) => i !== idx))}
+                                  className="text-slate-400 hover:text-rose-400"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <p className="text-slate-300 text-[11px] leading-relaxed">R: {faq.a}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

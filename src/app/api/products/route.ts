@@ -69,6 +69,15 @@ export async function POST(req: NextRequest) {
       categoryId,
       guaranteeDays = 7,
       storeTheme = "dark",
+      primaryColor = "#06b6d4",
+      secondaryColor = "#3b82f6",
+      backgroundColor = "#030712",
+      bannerImageUrl,
+      customBadgeText,
+      ctaButtonText,
+      ctaSubtext,
+      customHighlights,
+      customFaqsJson,
       upsellTitle,
       upsellDescription,
       upsellPrice,
@@ -152,6 +161,15 @@ export async function POST(req: NextRequest) {
         categoryId,
         guaranteeDays: validatedGuarantee,
         storeTheme: storeTheme || "dark",
+        primaryColor: primaryColor || "#06b6d4",
+        secondaryColor: secondaryColor || "#3b82f6",
+        backgroundColor: backgroundColor || "#030712",
+        bannerImageUrl: bannerImageUrl || null,
+        customBadgeText: customBadgeText || null,
+        ctaButtonText: ctaButtonText || null,
+        ctaSubtext: ctaSubtext || null,
+        customHighlights: customHighlights ? (typeof customHighlights === "string" ? customHighlights : JSON.stringify(customHighlights)) : null,
+        customFaqsJson: customFaqsJson ? (typeof customFaqsJson === "string" ? customFaqsJson : JSON.stringify(customFaqsJson)) : null,
         upsellTitle: upsellTitle || null,
         upsellDescription: upsellDescription || null,
         upsellPrice: upsellPrice ? parseFloat(upsellPrice) : null,
@@ -338,6 +356,19 @@ export async function PUT(req: NextRequest) {
       if (estimatedDeliveryDays !== undefined) updateData.estimatedDeliveryDays = estimatedDeliveryDays;
     }
     if (storeTheme !== undefined) updateData.storeTheme = storeTheme || "dark";
+    if (body.primaryColor !== undefined) updateData.primaryColor = body.primaryColor || "#06b6d4";
+    if (body.secondaryColor !== undefined) updateData.secondaryColor = body.secondaryColor || "#3b82f6";
+    if (body.backgroundColor !== undefined) updateData.backgroundColor = body.backgroundColor || "#030712";
+    if (body.bannerImageUrl !== undefined) updateData.bannerImageUrl = body.bannerImageUrl || null;
+    if (body.customBadgeText !== undefined) updateData.customBadgeText = body.customBadgeText || null;
+    if (body.ctaButtonText !== undefined) updateData.ctaButtonText = body.ctaButtonText || null;
+    if (body.ctaSubtext !== undefined) updateData.ctaSubtext = body.ctaSubtext || null;
+    if (body.customHighlights !== undefined) {
+      updateData.customHighlights = body.customHighlights ? (typeof body.customHighlights === "string" ? body.customHighlights : JSON.stringify(body.customHighlights)) : null;
+    }
+    if (body.customFaqsJson !== undefined) {
+      updateData.customFaqsJson = body.customFaqsJson ? (typeof body.customFaqsJson === "string" ? body.customFaqsJson : JSON.stringify(body.customFaqsJson)) : null;
+    }
     if (upsellTitle !== undefined) updateData.upsellTitle = upsellTitle || null;
     if (upsellDescription !== undefined) updateData.upsellDescription = upsellDescription || null;
     if (upsellPrice !== undefined) updateData.upsellPrice = upsellPrice ? parseFloat(upsellPrice) : null;
@@ -364,6 +395,23 @@ export async function PUT(req: NextRequest) {
     if (tiktokPixelId !== undefined) updateData.tiktokPixelId = tiktokPixelId || null;
     if (affiliateSwipeUrl !== undefined) updateData.affiliateSwipeUrl = affiliateSwipeUrl || null;
     if (status) updateData.status = status;
+
+    // Handle images update if provided
+    if (Array.isArray(body.images)) {
+      await prisma.productImage.deleteMany({
+        where: { productId: id },
+      });
+
+      if (body.images.length > 0) {
+        await prisma.productImage.createMany({
+          data: body.images.map((img: any, idx: number) => ({
+            productId: id,
+            imageUrl: typeof img === "string" ? img : img.imageUrl,
+            sortOrder: idx,
+          })),
+        });
+      }
+    }
 
     // Handle files update if provided
     if (Array.isArray(files)) {

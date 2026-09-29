@@ -99,7 +99,16 @@ model Product {
   estimatedDeliveryDays  String?
   requiresShipping       Boolean               @default(false)
   guaranteeDays          Int                   @default(7) // Minimum 7
-  storeTheme             String                @default("dark") // dark | light | vibrant
+  storeTheme             String                @default("dark") // dark | light | vibrant | custom
+  primaryColor           String?               @default("#06b6d4") // Cyan default
+  secondaryColor         String?               @default("#3b82f6") // Blue default
+  backgroundColor        String?               @default("#030712") // Deep Midnight default
+  bannerImageUrl         String?
+  customBadgeText        String?
+  ctaButtonText          String?
+  ctaSubtext             String?
+  customHighlights       String?               // JSON array string of bullet points
+  customFaqsJson         String?               // JSON array string of custom FAQs
   upsellTitle            String?
   upsellDescription      String?
   upsellPrice            Float?

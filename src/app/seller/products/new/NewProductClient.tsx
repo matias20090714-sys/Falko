@@ -265,6 +265,13 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     categoryId: categories[0]?.id || "",
     guaranteeDays: 7,
     storeTheme: "dark",
+    primaryColor: "#06b6d4",
+    secondaryColor: "#3b82f6",
+    backgroundColor: "#030712",
+    bannerImageUrl: "",
+    customBadgeText: "",
+    ctaButtonText: "",
+    ctaSubtext: "",
     affiliateEnabled: true,
     affiliateCommissionPct: 30,
     affiliateApprovalMode: "AUTO",
@@ -290,6 +297,15 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     // Affiliate Swipe
     affiliateSwipeUrl: "",
   });
+
+  // Highlights / Features list
+  const [highlights, setHighlights] = useState<string[]>([]);
+  const [newHighlight, setNewHighlight] = useState("");
+
+  // Custom FAQs list
+  const [customFaqs, setCustomFaqs] = useState<{ q: string; a: string }[]>([]);
+  const [newFaqQ, setNewFaqQ] = useState("");
+  const [newFaqA, setNewFaqA] = useState("");
 
   // Digital Files (Default empty so only seller's real files exist)
   const [digitalFiles, setDigitalFiles] = useState<UploadedFileItem[]>([]);
@@ -485,6 +501,15 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
         categoryId: formData.categoryId,
         guaranteeDays: parseInt(formData.guaranteeDays.toString()) || 7,
         storeTheme: formData.storeTheme || "dark",
+        primaryColor: formData.primaryColor || "#06b6d4",
+        secondaryColor: formData.secondaryColor || "#3b82f6",
+        backgroundColor: formData.backgroundColor || "#030712",
+        bannerImageUrl: formData.bannerImageUrl.trim() || null,
+        customBadgeText: formData.customBadgeText.trim() || null,
+        ctaButtonText: formData.ctaButtonText.trim() || null,
+        ctaSubtext: formData.ctaSubtext.trim() || null,
+        customHighlights: highlights.length > 0 ? JSON.stringify(highlights) : null,
+        customFaqsJson: customFaqs.length > 0 ? JSON.stringify(customFaqs) : null,
         upsellTitle: formData.upsellTitle.trim() || null,
         upsellDescription: formData.upsellDescription.trim() || null,
         upsellPrice: formData.upsellPrice ? parseFloat(formData.upsellPrice) : null,
@@ -1508,6 +1533,145 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                           </span>
                         </div>
                       )}
+                      {/* Visual Store Customizer Accordion */}
+                      <div className="bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-cyan-500/30 space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                          <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <Sparkles className="w-4 h-4 text-cyan-400" />
+                            <span>Diseñador Visual de tu Tienda</span>
+                          </label>
+                          <span className="text-[10px] text-cyan-400 font-semibold">Personalización Total</span>
+                        </div>
+
+                        {/* Paletas de Color */}
+                        <div className="space-y-2">
+                          <span className="text-[11px] font-semibold text-slate-300 block">Estilo & Paleta de Color:</span>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[
+                              { name: "Cyber Cyan", p: "#06b6d4", s: "#3b82f6", bg: "#030712", label: "💎 Cyber Cyan" },
+                              { name: "Royal Purple", p: "#8b5cf6", s: "#ec4899", bg: "#050510", label: "👑 Royal Purple" },
+                              { name: "Emerald Fintech", p: "#10b981", s: "#059669", bg: "#020e09", label: "🌿 Emerald" },
+                              { name: "Sunset Amber", p: "#f59e0b", s: "#ef4444", bg: "#0f0803", label: "🔥 Sunset Glow" },
+                              { name: "Neon Rose", p: "#ec4899", s: "#f43f5e", bg: "#0f030a", label: "🌸 Neon Rose" },
+                              { name: "Obsidian Gold", p: "#eab308", s: "#ca8a04", bg: "#080808", label: "⚡ Obsidian Gold" },
+                              { name: "Clean Light", p: "#0284c7", s: "#0f172a", bg: "#f8fafc", label: "☀️ Clean Light" },
+                            ].map((t) => (
+                              <button
+                                key={t.name}
+                                type="button"
+                                onClick={() => setFormData((prev) => ({ ...prev, primaryColor: t.p, secondaryColor: t.s, backgroundColor: t.bg }))}
+                                className={`p-2 rounded-xl border text-left transition-all flex items-center justify-between text-xs ${
+                                  formData.primaryColor === t.p
+                                    ? "bg-slate-900 border-cyan-400 shadow-glow text-white font-bold"
+                                    : "bg-slate-950 border-white/10 text-slate-400 hover:text-white"
+                                }`}
+                              >
+                                <span>{t.label}</span>
+                                <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.p }} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Banner & Badge */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-300">Banner de Cabecera (Hero URL):</label>
+                            <input
+                              type="url"
+                              name="bannerImageUrl"
+                              value={formData.bannerImageUrl}
+                              onChange={handleChange}
+                              placeholder="https://images.unsplash.com/..."
+                              className="input-falcon text-xs w-full py-1.5"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-300">Insignia / Badge de Oferta:</label>
+                            <input
+                              type="text"
+                              name="customBadgeText"
+                              value={formData.customBadgeText}
+                              onChange={handleChange}
+                              placeholder="Ej: 🔥 Más Vendido • 50% OFF"
+                              className="input-falcon text-xs w-full py-1.5"
+                            />
+                          </div>
+                        </div>
+
+                        {/* CTA Text & Subtext */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-300">Texto Botón de Compra (CTA):</label>
+                            <input
+                              type="text"
+                              name="ctaButtonText"
+                              value={formData.ctaButtonText}
+                              onChange={handleChange}
+                              placeholder={formData.productType === "PHYSICAL" ? "Comprar y Recibir Pedido" : "Comprar con Garantía Protegida"}
+                              className="input-falcon text-xs w-full py-1.5"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-300">Subtexto de Garantía:</label>
+                            <input
+                              type="text"
+                              name="ctaSubtext"
+                              value={formData.ctaSubtext}
+                              onChange={handleChange}
+                              placeholder="Pago Seguro cifrado con entrega inmediata"
+                              className="input-falcon text-xs w-full py-1.5"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Highlights Manager */}
+                        <div className="space-y-2 pt-2 border-t border-white/5">
+                          <label className="text-[11px] font-bold text-slate-200 block">
+                            Puntos Clave & Beneficios ({highlights.length}):
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newHighlight}
+                              onChange={(e) => setNewHighlight(e.target.value)}
+                              placeholder="Ej: Envío gratis 24hs • Material 100% garantizado"
+                              className="input-falcon text-xs flex-1 py-1.5"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  if (newHighlight.trim()) {
+                                    setHighlights([...highlights, newHighlight.trim()]);
+                                    setNewHighlight("");
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (newHighlight.trim()) {
+                                  setHighlights([...highlights, newHighlight.trim()]);
+                                  setNewHighlight("");
+                                }
+                              }}
+                              className="btn-falcon-primary text-xs py-1.5 px-3 font-bold"
+                            >
+                              + Agregar
+                            </button>
+                          </div>
+                          {highlights.length > 0 && (
+                            <div className="space-y-1 pt-1">
+                              {highlights.map((h, i) => (
+                                <div key={i} className="flex items-center justify-between bg-slate-900 px-3 py-1 rounded-lg text-xs text-slate-300">
+                                  <span>✓ {h}</span>
+                                  <button type="button" onClick={() => setHighlights(highlights.filter((_, idx) => idx !== i))} className="text-slate-500 hover:text-rose-400">✕</button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

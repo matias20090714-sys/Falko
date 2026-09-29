@@ -117,6 +117,22 @@ export function ProductDetailClient({
   const affiliateEarningsEst = (product.price * product.affiliateCommissionPct) / 100;
   const convertedAffiliateEst = convertCurrency(affiliateEarningsEst, product.currencyCode, currency);
 
+  // Custom Theme & Copy Settings
+  const primaryColor = product.primaryColor || "#06b6d4";
+  const secondaryColor = product.secondaryColor || "#3b82f6";
+  const backgroundColor = product.backgroundColor || "#030712";
+
+  const parsedHighlights: string[] = React.useMemo(() => {
+    if (!product.customHighlights) return [];
+    if (Array.isArray(product.customHighlights)) return product.customHighlights;
+    try {
+      const parsed = JSON.parse(product.customHighlights);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return product.customHighlights.split("\n").map((s: string) => s.trim()).filter(Boolean);
+    }
+  }, [product.customHighlights]);
+
   // Generate or obtain affiliate link
   const generateAffiliateLink = async () => {
     if (!currentUser) {
@@ -159,25 +175,55 @@ export function ProductDetailClient({
     refCodeParam ? `&ref=${refCodeParam}` : ""
   }`;
 
-  // Product FAQs
-  const productFaqs = [
+  // Product FAQs (Default fallback + Custom FAQs)
+  const defaultFaqs = [
     {
       q: "¿Cómo y cuándo recibo acceso al producto?",
-      a: "El acceso es inmediato y automático. En cuanto tu pago es procesado (con tarjeta, Mercado Pago, PIX, SPEI o USDT), serás redirigido a tu bóveda personal con los enlaces de acceso privados o archivos descargables. También recibirás un correo de confirmación.",
+      a: isPhysical
+        ? "El pedido es despachado de forma segura a tu dirección registrada con número de seguimiento y notificación por correo."
+        : "El acceso es inmediato y automático. En cuanto tu pago es procesado, serás redirigido a tu bóveda personal con tus enlaces de acceso o archivos descargables.",
     },
     {
       q: `¿Cómo funciona la garantía protegida de ${product.guaranteeDays} días?`,
-      a: `Tu dinero está completamente protegido en garantía por FALKO durante ${product.guaranteeDays} días. Si el producto no cumple con lo prometido en la descripción, puedes solicitar un reembolso directo desde tu panel sin preguntas complicadas.`,
+      a: `Tu dinero está completamente protegido en garantía por FALKO durante ${product.guaranteeDays} días. Si el producto no cumple con lo prometido en la descripción, puedes solicitar un reembolso directo desde tu panel.`,
     },
     {
       q: "¿Qué medios de pago están disponibles?",
-      a: "Aceptamos tarjetas de crédito/débito internacionales (Visa, Mastercard), Mercado Pago, Criptomonedas USDT (en redes Solana y Polygon con 0% comisión de red) y métodos locales según tu país como PIX en Brasil, SPEI en México o PSE en Colombia.",
+      a: "Aceptamos tarjetas de crédito/débito internacionales, Mercado Pago, Criptomonedas USDT (Solana/Polygon 0% fee) y métodos locales según tu país (PIX, SPEI, PSE).",
     },
     {
       q: "¿Es un pago único o tiene mensualidades?",
-      a: "Es un pago único y definitivo. No existen cobros recurrentes ni membresías ocultas a menos que el producto especifique explícitamente lo contrario en su descripción.",
+      a: product.pricingType === "SUBSCRIPTION"
+        ? `Es una membresía con facturación recurrente (${product.billingInterval === "YEARLY" ? "anual" : "mensual"}) cancelable en cualquier momento.`
+        : "Es un pago único y definitivo sin cobros adicionales ni suscripciones ocultas.",
     },
   ];
+
+  const parsedFaqs = React.useMemo(() => {
+    if (product.customFaqsJson) {
+      try {
+        const parsed = typeof product.customFaqsJson === "string" ? JSON.parse(product.customFaqsJson) : product.customFaqsJson;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch {}
+    }
+    return defaultFaqs;
+  }, [product.customFaqsJson, product.guaranteeDays, isPhysical, product.pricingType, product.billingInterval]);
+
+  const customCtaText = product.ctaButtonText || (
+    product.pricingType === "SUBSCRIPTION"
+      ? `Suscribirme (${formatCurrency(convertedPrice, currency)}${product.billingInterval === "YEARLY" ? "/año" : "/mes"})`
+      : isPhysical
+      ? "Comprar y Recibir Pedido"
+      : "Comprar con Garantía Protegida"
+  );
+
+  const customCtaSubtext = product.ctaSubtext || (
+    isPhysical
+      ? "Pago Seguro cifrado con despacho garantizado"
+      : "Pago Seguro cifrado con entrega inmediata"
+  );
 
   return (
     <div className="space-y-8 pb-12">
@@ -249,6 +295,16 @@ export function ProductDetailClient({
           </div>
         </div>
       </header>
+
+      {/* Top Banner Image if defined */}
+      {product.bannerImageUrl && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative w-full h-44 sm:h-64 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+            <img src={product.bannerImageUrl} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Top Conversion Trust Bar */}
@@ -411,6 +467,20 @@ export function ProductDetailClient({
           {/* Title & Metadata */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
+              {/* Custom Badge if provided */}
+              {product.customBadgeText && (
+                <span
+                  className="text-xs font-black px-3.5 py-1 rounded-full border shadow-glow animate-pulse"
+                  style={{
+                    backgroundColor: `${primaryColor}25`,
+                    borderColor: `${primaryColor}70`,
+                    color: "#ffffff",
+                  }}
+                >
+                  ✨ {product.customBadgeText}
+                </span>
+              )}
+
               <span className="text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full shadow-glow">
                 {product.category?.name || "Recurso"}
               </span>
@@ -463,7 +533,7 @@ export function ProductDetailClient({
                 <span className="text-xs">{COUNTRIES[product.seller?.countryCode]?.flag || ""}</span>
                 {product.seller?.isVerifiedSeller && (
                   <span title="Creador Verificado Falko" className="inline-flex items-center">
-                    <CheckCircle2 className="w-3 h-3 text-cyan-400 inline shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" />
                   </span>
                 )}
               </div>
@@ -477,6 +547,31 @@ export function ProductDetailClient({
               <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal bg-slate-950/40 p-4 rounded-2xl border border-white/5">
                 {product.shortDescription}
               </p>
+            )}
+
+            {/* Key Benefits & Features Card (if seller provided highlights) */}
+            {parsedHighlights.length > 0 && (
+              <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 space-y-3 bg-gradient-to-br from-slate-950/80 to-slate-900/50">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    Puntos Clave & Beneficios Destacados
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  {parsedHighlights.map((highlight, hIdx) => (
+                    <div
+                      key={hIdx}
+                      className="flex items-start gap-2.5 bg-slate-950/60 p-3 rounded-xl border border-white/5"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span className="text-xs text-slate-200 font-medium leading-relaxed">
+                        {highlight}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-300">
@@ -734,7 +829,7 @@ export function ProductDetailClient({
             </div>
 
             <div className="space-y-3">
-              {productFaqs.map((faq, idx) => {
+              {parsedFaqs.map((faq: any, idx: number) => {
                 const isOpen = openFaq === idx;
                 return (
                   <div
@@ -998,23 +1093,13 @@ export function ProductDetailClient({
                   className="btn-falcon-primary w-full text-center justify-center text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
-                  <span>
-                    {product.pricingType === "SUBSCRIPTION"
-                      ? `Suscribirme (${formatCurrency(convertedPrice, currency)}${product.billingInterval === "YEARLY" ? "/año" : "/mes"})`
-                      : isPhysical
-                      ? "Comprar y Recibir Pedido"
-                      : "Comprar con Garantía Protegida"}
-                  </span>
+                  <span>{customCtaText}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
                 <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>
-                    {isPhysical
-                      ? "Pago Seguro cifrado con despacho garantizado"
-                      : "Pago Seguro cifrado con entrega inmediata"}
-                  </span>
+                  <span>{customCtaSubtext}</span>
                 </p>
               </div>
             )}
