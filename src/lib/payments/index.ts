@@ -4,28 +4,19 @@ export class MockPaymentProvider implements PaymentProvider {
   name = "MOCK";
 
   async createPayment(req: PaymentIntentRequest): Promise<PaymentIntentResponse> {
-    const transactionId = `MOCK_TXN_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
     return {
-      success: true,
-      transactionId,
+      success: false,
+      transactionId: "",
       provider: "MOCK",
-      status: "CONFIRMED",
-      redirectUrl: `${req.returnUrl}?payment_id=${transactionId}&status=success`,
-      clientSecret: `mock_secret_${transactionId}`,
-      rawResponse: {
-        mode: "sandbox_simulation",
-        timestamp: new Date().toISOString(),
-        note: "Simulated instant payment fulfillment for FALKO testing.",
-      },
+      status: "FAILED",
+      errorMessage: "Las compras de prueba están permanentemente deshabilitadas. Solo se procesan compras reales con Mercado Pago.",
     };
   }
 
   async confirmPayment(transactionId: string): Promise<{ success: boolean; status: string; orderId?: string }> {
     return {
-      success: true,
-      status: "CONFIRMED",
-      orderId: transactionId,
+      success: false,
+      status: "FAILED",
     };
   }
 
@@ -35,15 +26,15 @@ export class MockPaymentProvider implements PaymentProvider {
     currency: string
   ): Promise<{ success: boolean; refundId?: string; error?: string }> {
     return {
-      success: true,
-      refundId: `MOCK_REF_${Date.now()}`,
+      success: false,
+      error: "Reembolso no disponible en modo simulado",
     };
   }
 
   async getPaymentStatus(transactionId: string): Promise<{ status: string; paid: boolean }> {
     return {
-      status: "CONFIRMED",
-      paid: true,
+      status: "FAILED",
+      paid: false,
     };
   }
 }
@@ -52,7 +43,9 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
   name = "MERCADOPAGO";
 
   async createPayment(req: PaymentIntentRequest): Promise<PaymentIntentResponse> {
-    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const token =
+      process.env.MERCADOPAGO_ACCESS_TOKEN ||
+      "APP_USR-6259061397586-091418-4453cf8384c0d811a4bce4854a1a7f63-132459287";
     if (!token) {
       return {
         success: false,
