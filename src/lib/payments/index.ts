@@ -154,9 +154,12 @@ export function getPaymentProvider(providerName = process.env.PAYMENT_PROVIDER |
   switch (providerName.toUpperCase()) {
     case "MERCADOPAGO":
     case "MERCADO_PAGO":
-      return new MercadoPagoPaymentProvider();
-    case "MOCK":
+    case "PIX":
+    case "SPEI":
+    case "PSE":
+    case "BROU_PREX":
+    case "CARD":
     default:
-      return new MockPaymentProvider();
+      return new MercadoPagoPaymentProvider();
   }
 }

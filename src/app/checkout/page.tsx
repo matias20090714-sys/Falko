@@ -212,6 +212,11 @@ function CheckoutContent() {
       }
     }
 
+    if (selectedMethod === "CRYPTO") {
+      setError("Para completar tu pago en Cripto (USDT/USDC), realiza la transferencia a la dirección de billetera que aparece en pantalla y envía el hash/comprobante de la transacción para su acreditación.");
+      return;
+    }
+
     setProcessing(true);
     setError("");
 
