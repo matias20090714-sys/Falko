@@ -106,9 +106,14 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
 
       if (!res.ok || !data.id) {
         console.error("Mercado Pago Preference Error:", data);
-        // Fallback to simulated payment if sandbox account has currency limitations
-        const fallback = new MockPaymentProvider();
-        return await fallback.createPayment(req);
+        const errorDetail = data.message || (data.cause && data.cause[0] ? data.cause[0].description : "Error al inicializar la pasarela de Mercado Pago.");
+        return {
+          success: false,
+          transactionId: "",
+          provider: "MERCADOPAGO",
+          status: "FAILED",
+          errorMessage: `Mercado Pago: ${errorDetail}`,
+        };
       }
 
       return {
@@ -122,9 +127,13 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
       };
     } catch (err: any) {
       console.error("Mercado Pago connection error:", err);
-      // Fallback gracefully
-      const fallback = new MockPaymentProvider();
-      return await fallback.createPayment(req);
+      return {
+        success: false,
+        transactionId: "",
+        provider: "MERCADOPAGO",
+        status: "FAILED",
+        errorMessage: err.message || "Error al conectar con los servidores de Mercado Pago.",
+      };
     }
   }
 
