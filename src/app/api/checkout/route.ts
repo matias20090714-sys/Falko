@@ -403,7 +403,7 @@ export async function POST(req: NextRequest) {
       success: true,
       orderNumber: order.orderNumber,
       orderId: order.id,
-      redirectUrl: `/order/success?orderNumber=${order.orderNumber}`,
+      redirectUrl: paymentResult.redirectUrl || `/order/success?orderNumber=${order.orderNumber}`,
     });
   } catch (error: any) {
     console.error("Checkout error:", error);
