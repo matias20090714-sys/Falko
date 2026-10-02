@@ -8,6 +8,7 @@ import { Metadata } from "next";
 import { FALLBACK_PRODUCTS } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {
