@@ -2,17 +2,18 @@ import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { processOrderLedger } from "@/lib/ledger";
-import { CheckCircle2, Download, ExternalLink, FileText, Clock, Mail, ShieldCheck, Sparkles, Zap, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileText, Clock, Mail, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 export default async function OrderSuccessPage({
   searchParams,
 }: {
-  searchParams: { orderNumber?: string; email?: string; payment_id?: string; status?: string };
+  searchParams: { orderNumber?: string; email?: string; payment_id?: string; collection_id?: string; status?: string };
 }) {
   const orderNumber = searchParams.orderNumber;
   const queryEmail = searchParams.email;
-  const paymentIdParam = searchParams.payment_id;
+  // Mercado Pago passes real numeric payment ID in payment_id or collection_id
+  const realPaymentId = searchParams.payment_id || searchParams.collection_id;
 
   let order: any = null;
   if (orderNumber) {
@@ -42,31 +43,31 @@ export default async function OrderSuccessPage({
     }
   }
 
-  // If order is PENDING, attempt live verification with Mercado Pago API before granting access
-  if (order && order.status === "PENDING") {
+  // Strictly require a real numeric payment ID from Mercado Pago redirect (never use preference ID)
+  if (order && order.status === "PENDING" && realPaymentId && /^\d+$/.test(realPaymentId.trim())) {
     const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
-    const checkPaymentId = order.paymentProviderId || paymentIdParam;
 
-    if (token && checkPaymentId && !checkPaymentId.startsWith("temp_")) {
+    if (token) {
       try {
-        const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${checkPaymentId}`, {
+        const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${realPaymentId.trim()}`, {
           headers: { Authorization: `Bearer ${token.trim()}` },
           cache: "no-store",
         });
 
         if (mpRes.ok) {
           const mpData = await mpRes.json();
-          if (mpData.status === "approved") {
-            // Confirm Order and process ledger
+          // Verify payment status is approved and matches this order number
+          if (mpData.status === "approved" && (mpData.external_reference === orderNumber || mpData.external_reference === order.orderNumber)) {
             const affiliateUserId = order.affiliateProduct?.affiliateProfile?.userId || null;
             await prisma.order.update({
               where: { id: order.id },
               data: {
                 status: "CONFIRMED",
+                paymentProviderId: String(mpData.id),
                 payments: {
                   updateMany: {
                     where: { orderId: order.id },
-                    data: { status: "CONFIRMED", rawResponseJson: JSON.stringify(mpData) },
+                    data: { status: "CONFIRMED", transactionId: String(mpData.id), rawResponseJson: JSON.stringify(mpData) },
                   },
                 },
               },
@@ -260,51 +261,6 @@ export default async function OrderSuccessPage({
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* 1-Click Post-Purchase Upsell (OTO) Offer */}
-        {purchasedProduct?.upsellTitle && purchasedProduct?.upsellPrice && (
-          <div className="bg-gradient-to-br from-amber-950/60 via-slate-950 to-purple-950/40 border-2 border-amber-500/50 rounded-2xl p-5 text-left space-y-3.5 shadow-2xl relative overflow-hidden animate-in fade-in-50">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2 py-0.5 rounded-md">
-                ⚡ Oferta Exclusiva Post-Compra (Solo por esta sesión)
-              </span>
-              <span className="text-xs font-mono font-bold text-amber-300">
-                ${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD
-              </span>
-            </div>
-
-            <div>
-              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                <span>{purchasedProduct.upsellTitle}</span>
-              </h3>
-              {purchasedProduct.upsellDescription && (
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  {purchasedProduct.upsellDescription}
-                </p>
-              )}
-            </div>
-
-            {purchasedProduct.upsellFileUrl ? (
-              <a
-                href={purchasedProduct.upsellFileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-falcon-primary w-full text-center justify-center text-xs py-3 font-bold flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:opacity-90 shadow-glow"
-              >
-                <Zap className="w-4 h-4 text-slate-950" />
-                <span>Añadir Oferta con 1-Clic (${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD)</span>
-              </a>
-            ) : (
-              <Link
-                href={`/checkout?product=${purchasedProduct.slug}&upsell=1`}
-                className="btn-falcon-primary w-full text-center justify-center text-xs py-3 font-bold flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:opacity-90 shadow-glow"
-              >
-                <Zap className="w-4 h-4 text-slate-950" />
-                <span>Añadir Oferta con 1-Clic (${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD)</span>
-              </Link>
             )}
           </div>
         )}
