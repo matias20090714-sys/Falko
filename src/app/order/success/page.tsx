@@ -1,16 +1,18 @@
 import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { CheckCircle2, Download, ExternalLink, FileText, Lock, Mail, Package, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { processOrderLedger } from "@/lib/ledger";
+import { CheckCircle2, Download, ExternalLink, FileText, Clock, Mail, ShieldCheck, Sparkles, Zap, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 export default async function OrderSuccessPage({
   searchParams,
 }: {
-  searchParams: { orderNumber?: string; email?: string };
+  searchParams: { orderNumber?: string; email?: string; payment_id?: string; status?: string };
 }) {
   const orderNumber = searchParams.orderNumber;
   const queryEmail = searchParams.email;
+  const paymentIdParam = searchParams.payment_id;
 
   let order: any = null;
   if (orderNumber) {
@@ -28,6 +30,11 @@ export default async function OrderSuccessPage({
               },
             },
           },
+          affiliateProduct: {
+            include: {
+              affiliateProfile: true,
+            },
+          },
         },
       });
     } catch (err) {
@@ -35,8 +42,102 @@ export default async function OrderSuccessPage({
     }
   }
 
+  // If order is PENDING, attempt live verification with Mercado Pago API before granting access
+  if (order && order.status === "PENDING") {
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const checkPaymentId = order.paymentProviderId || paymentIdParam;
+
+    if (token && checkPaymentId && !checkPaymentId.startsWith("temp_")) {
+      try {
+        const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${checkPaymentId}`, {
+          headers: { Authorization: `Bearer ${token.trim()}` },
+          cache: "no-store",
+        });
+
+        if (mpRes.ok) {
+          const mpData = await mpRes.json();
+          if (mpData.status === "approved") {
+            // Confirm Order and process ledger
+            const affiliateUserId = order.affiliateProduct?.affiliateProfile?.userId || null;
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                status: "CONFIRMED",
+                payments: {
+                  updateMany: {
+                    where: { orderId: order.id },
+                    data: { status: "CONFIRMED", rawResponseJson: JSON.stringify(mpData) },
+                  },
+                },
+              },
+            });
+
+            await processOrderLedger({
+              orderId: order.id,
+              sellerId: order.items[0]?.product?.sellerId,
+              sellerAmount: order.sellerEarningAmount,
+              affiliateUserId,
+              affiliateAmount: order.affiliateCommissionAmount,
+              platformFeeAmount: order.platformFeeConverted,
+              currencyCode: order.currencyCode,
+              guaranteeDays: order.guaranteeDays,
+            });
+
+            order.status = "CONFIRMED";
+          }
+        }
+      } catch (err) {
+        console.warn("Live MP verification error on success page:", err);
+      }
+    }
+  }
+
+  const isConfirmed = order?.status === "CONFIRMED";
   const buyerEmail = order?.buyer?.email || queryEmail;
   const purchasedProduct = order?.items?.[0]?.product;
+
+  // Render PENDING / UNVERIFIED UI if payment is not confirmed
+  if (order && !isConfirmed) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
+        <div className="max-w-xl w-full glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/40 text-center shadow-glow relative space-y-6">
+          <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-amber-400 mx-auto">
+            <Clock className="w-8 h-8 animate-pulse" />
+          </div>
+
+          <div>
+            <span className="text-xs uppercase font-black text-amber-400 tracking-wider block mb-1">
+              Pago Pendiente de Verificación
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+              Esperando Confirmación de Mercado Pago
+            </h1>
+          </div>
+
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-950/70 p-4 rounded-2xl border border-white/10">
+            Tu orden <strong className="font-mono text-amber-300">{order.orderNumber}</strong> aún no ha sido confirmada por Mercado Pago. Tan pronto como tu pago sea acreditado, tus archivos y accesos se activarán en tu Biblioteca.
+          </p>
+
+          <div className="space-y-2.5 pt-2">
+            <Link
+              href={`/checkout?product=${purchasedProduct?.slug || ""}`}
+              className="btn-falcon-primary w-full text-center justify-center text-xs sm:text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
+            >
+              <Zap className="w-4 h-4" />
+              <span>Completar o Reintentar Pago</span>
+            </Link>
+
+            <Link
+              href="/marketplace"
+              className="btn-falcon-secondary w-full text-center justify-center text-xs py-2.5"
+            >
+              Volver al Marketplace
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
