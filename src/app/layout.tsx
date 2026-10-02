@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { LiveSocialProof } from "@/components/social-proof/LiveSocialProof";
+import { GeoDetector } from "@/components/layout/GeoDetector";
 import { getCurrentUser } from "@/lib/auth";
 
 export const viewport: Viewport = {
@@ -118,6 +119,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-[#05070e] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
         <Navbar initialUser={currentUser} />
+        <GeoDetector />
         <main className="flex-1 w-full pb-20 md:pb-0">{children}</main>
         <LiveSocialProof />
         <MobileBottomNav initialUser={currentUser} />

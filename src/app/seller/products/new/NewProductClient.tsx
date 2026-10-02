@@ -123,12 +123,11 @@ const PRODUCT_TEMPLATES = [
     badge: "Ideal Principiantes",
     desc: "Guías prácticas, plantillas de lectura, manuales y recetarios.",
     preset: {
-      title: "Guía Definitiva de Productividad y Hábitos de Alto Rendimiento",
-      shortDescription: "El manual paso a paso con plantillas accionables para duplicar tus resultados.",
+      title: "",
       price: "19.00",
       categorySlug: "negocios-finanzas",
       coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80",
-      description: "### ¿Qué aprenderás con esta guía?\n\n- Estrategias comprobadas de gestión del tiempo.\n- Hojas de cálculo y plantillas listas para usar.\n- Plan de acción de 30 días garantizado.",
+      description: "",
     },
   },
   {
@@ -138,13 +137,12 @@ const PRODUCT_TEMPLATES = [
     badge: "Más Vendido",
     desc: "Clases grabadas, módulos estructurados y material descargable.",
     preset: {
-      title: "Masterclass de Automatización con IA para Negocios Digitales",
-      shortDescription: "Domina las herramientas líderes de inteligencia artificial para escalar tus ingresos.",
+      title: "",
       price: "67.00",
       categorySlug: "inteligencia-artificial",
       coverUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80",
-      description: "### Programa Completo del Curso\n\n- **Módulo 1:** Fundamentos y configuración de agentes IA.\n- **Módulo 2:** Automatizaciones avanzadas con Zapier y Make.\n- **Módulo 3:** Casos de estudio y monetización directa.",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      description: "",
+      videoUrl: "",
     },
   },
   {
@@ -154,12 +152,11 @@ const PRODUCT_TEMPLATES = [
     badge: "Alta Conversión",
     desc: "Comandos para ChatGPT, Claude, Midjourney y plantillas Notion.",
     preset: {
-      title: "Mega Pack de 1,500+ Prompts Profesionales para Copywriting y Ventas",
-      shortDescription: "La colección definitiva de prompts probados para crear anuncios y cartas de venta que convierten.",
+      title: "",
       price: "27.00",
       categorySlug: "inteligencia-artificial",
       coverUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
-      description: "### Incluye:\n\n- 500+ Prompts para creación de contenido en redes sociales.\n- 400+ Fórmulas de copywriting persuasivo.\n- Tablero en Notion con actualizaciones mensuales de por vida.",
+      description: "",
     },
   },
   {
@@ -169,13 +166,12 @@ const PRODUCT_TEMPLATES = [
     badge: "Productor Tech",
     desc: "Boilerplates, código fuente, scripts, plugins o aplicaciones.",
     preset: {
-      title: "Next.js & Supabase SaaS Boilerplate con Pagos y Autenticación",
-      shortDescription: "Lanza tu aplicación web en horas con arquitectura lista para producción.",
+      title: "",
       price: "97.00",
       categorySlug: "desarrollo-software",
       coverUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80",
-      description: "### Stack Tecnológico:\n\n- Next.js 14 App Router con TypeScript y Tailwind CSS.\n- Base de datos PostgreSQL con Prisma ORM.\n- Pasarela de pagos integrada y webhooks automáticos.",
-      demoUrl: "https://falko-ruby.vercel.app",
+      description: "",
+      demoUrl: "",
     },
   },
   {
@@ -185,14 +181,13 @@ const PRODUCT_TEMPLATES = [
     badge: "Exclusivo",
     desc: "Acceso a grupo privado de Telegram/Discord o llamadas mensuales.",
     preset: {
-      title: "Pase VIP a Comunidad Privada de Creadores & Mentorías Semanales",
-      shortDescription: "Acceso exclusivo a nuestro círculo interno con sesiones en vivo y networking de alto nivel.",
+      title: "",
       price: "49.00",
       categorySlug: "negocios-finanzas",
       coverUrl: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
-      description: "### ¿Qué obtienes como miembro VIP?\n\n- Canal privado de Telegram para resolución de dudas 24/7.\n- 2 Sesiones grupales en vivo por Zoom cada mes.\n- Biblioteca con grabaciones de todas las mentorías anteriores.",
-      accessUrl: "https://t.me/+falko_vip_private_access",
-      accessInstructions: "Al confirmar tu compra, haz clic en el botón de acceso para unirte al canal privado.",
+      description: "",
+      accessUrl: "",
+      accessInstructions: "",
       productType: "DIGITAL" as const,
       stock: "0",
       shippingFee: "0",
@@ -206,12 +201,11 @@ const PRODUCT_TEMPLATES = [
     badge: "📦 Envío a Domicilio",
     desc: "Ropa, zapatillas, accesorios o merchandising con control de stock y despacho.",
     preset: {
-      title: "Remera Premium Oversize FALKO Edición Creador",
-      shortDescription: "100% Algodón peinado de alto gramaje con estampado de máxima durabilidad y corte moderno.",
+      title: "",
       price: "39.00",
       categorySlug: "negocios-finanzas",
       coverUrl: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
-      description: "### Especificaciones del Producto Físico\n\n- Material: 100% Algodón peinado 24/1 suave al tacto.\n- Corte: Oversize confort fit unisex.\n- Talles: S, M, L, XL, XXL disponibles.\n- Empaque: Caja protectora de diseño exclusivo con stickers de regalo.\n- Envío: Despacho asegurado con seguimiento online en tiempo real.",
+      description: "",
       productType: "PHYSICAL" as const,
       stock: "50",
       shippingFee: "0",
@@ -225,12 +219,11 @@ const PRODUCT_TEMPLATES = [
     badge: "📦 Físico Tech",
     desc: "Dispositivos, herramientas físicas, periféricos o artículos tecnológicos.",
     preset: {
-      title: "Controlador Físico MacroPad RGB para Creadores & Devs",
-      shortDescription: "Teclado mecánico macro de 9 teclas y 2 perillas giratorias de aluminio programables vía USB.",
+      title: "",
       price: "79.00",
       categorySlug: "desarrollo-software",
       coverUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80",
-      description: "### Contenido de la Caja\n\n- 1x MacroPad Pro con switches mecánicos hot-swap.\n- 1x Cable USB-C trenzado de 1.8 metros.\n- 1x Extractor de switches y teclas de repuesto.\n- 1x Manual de instrucciones y garantía de 12 meses.",
+      description: "",
       productType: "PHYSICAL" as const,
       stock: "25",
       shippingFee: "9.00",
@@ -362,9 +355,9 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     const matchedCategory = categories.find((c) => c.slug === template.preset.categorySlug) || categories[0];
     setFormData((prev) => ({
       ...prev,
-      title: template.preset.title || prev.title,
-      shortDescription: template.preset.shortDescription || prev.shortDescription,
-      description: template.preset.description || prev.description,
+      title: prev.title || "",
+      shortDescription: "",
+      description: prev.description || "",
       productType: (template.preset as any).productType || "DIGITAL",
       stock: (template.preset as any).stock || prev.stock,
       shippingFee: (template.preset as any).shippingFee || prev.shippingFee,
@@ -808,19 +801,19 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Subtítulo / Biografía del Producto (Resumen breve) *
+                    Biografía / Descripción del Producto *
                   </label>
-                  <input
-                    type="text"
-                    name="shortDescription"
-                    value={formData.shortDescription}
+                  <textarea
+                    name="description"
+                    value={formData.description}
                     onChange={handleChange}
-                    placeholder="Escribe el subtítulo o biografía breve de tu producto..."
-                    className="input-falcon text-xs w-full py-2.5"
+                    rows={4}
+                    placeholder="Escribe la biografía o descripción de tu producto (puede ser corta o detallada)..."
+                    className="input-falcon text-xs w-full py-2.5 resize-y"
                     required
                   />
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Este texto funcionará como subtítulo y biografía destacada en la tienda y en el marketplace.
+                    Esta biografía y descripción se mostrará a tus compradores en tu tienda y catálogo.
                   </p>
                 </div>
 
@@ -1065,7 +1058,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                         {formData.title || "Título del Producto"}
                       </h4>
                       <p className="text-[10px] text-slate-400 line-clamp-2 leading-snug">
-                        {formData.shortDescription || "Descripción breve del producto digital..."}
+                        {formData.description || "Biografía / descripción del producto..."}
                       </p>
 
                       <div className="pt-2 border-t border-white/10 flex items-center justify-between">
@@ -1901,19 +1894,19 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Subtítulo / Biografía del Producto (Resumen breve) *
+                  Biografía / Descripción del Producto *
                 </label>
-                <input
-                  type="text"
-                  name="shortDescription"
-                  value={formData.shortDescription}
+                <textarea
+                  name="description"
+                  value={formData.description}
                   onChange={handleChange}
+                  rows={4}
                   required
-                  placeholder="Escribe el subtítulo o biografía breve de tu producto..."
-                  className="input-falcon text-xs w-full py-2.5"
+                  placeholder="Escribe la biografía o descripción de tu producto (puede ser corta o detallada)..."
+                  className="input-falcon text-xs w-full py-2.5 resize-y"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Este texto funcionará como subtítulo y biografía destacada en la tienda y en el marketplace.
+                  Esta biografía y descripción se mostrará a tus compradores en tu tienda y catálogo.
                 </p>
               </div>
 

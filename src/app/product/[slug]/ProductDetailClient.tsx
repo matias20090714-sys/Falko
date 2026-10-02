@@ -51,31 +51,15 @@ export function ProductDetailClient({
   product,
   currentUser,
   affiliateProductRecord: initialAffiliateRecord,
-  hasPurchased: initialHasPurchased,
+  hasPurchased,
   refCodeParam,
 }: ProductDetailClientProps) {
   const router = useRouter();
   const [currency, setCurrency] = useState("USD");
   const [affiliateRecord, setAffiliateRecord] = useState<any>(initialAffiliateRecord);
-  const [hasPurchased, setHasPurchased] = useState<boolean>(initialHasPurchased);
   const [copiedLink, setCopiedLink] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (product?.id && currentUser) {
-      fetch(`/api/products/check-purchase?productId=${product.id}`, { cache: "no-store" })
-        .then((res) => res.json())
-        .then((data) => {
-          if (typeof data.hasPurchased === "boolean") {
-            setHasPurchased(data.hasPurchased);
-          }
-        })
-        .catch(() => {});
-    } else {
-      setHasPurchased(false);
-    }
-  }, [product?.id, currentUser]);
 
   const isPhysical = product.productType === "PHYSICAL";
   const isOutOfStock = isPhysical && product.stock !== null && product.stock <= 0;
@@ -633,12 +617,6 @@ export function ProductDetailClient({
             <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-heading font-black leading-[1.15] tracking-tight ${isLightStore ? "text-slate-900" : "text-white"}`}>
               {product.title}
             </h1>
-
-            {product.shortDescription && (
-              <p className={`text-base sm:text-lg leading-relaxed font-normal p-4 rounded-2xl border border-white/5 ${isLightStore ? "bg-white/90 text-slate-700" : "bg-slate-950/40 text-slate-300"}`}>
-                {product.shortDescription}
-              </p>
-            )}
 
             {/* Key Benefits & Features Card (if seller provided highlights) */}
             {parsedHighlights.length > 0 && (

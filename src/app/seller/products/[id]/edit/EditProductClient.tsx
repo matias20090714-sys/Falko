@@ -835,28 +835,15 @@ export function EditProductClient({
 
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-xs font-bold text-slate-300 block">
-                  Subtítulo / Gancho Rápido (1 línea)
-                </label>
-                <input
-                  type="text"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
-                  placeholder="Ej: Automatiza tus ventas en 7 pasos con bots y flujos probados"
-                  className="input-falcon w-full text-sm"
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 block">
-                  Descripción Completa del Producto *
+                  Biografía / Descripción del Producto *
                 </label>
                 <textarea
                   rows={5}
                   required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Explica qué incluye, los beneficios clave, a quién va dirigido y por qué deben comprarlo hoy..."
-                  className="input-falcon w-full text-sm leading-relaxed"
+                  placeholder="Escribe la biografía o descripción de tu producto (puede ser corta o detallada)..."
+                  className="input-falcon w-full text-sm leading-relaxed resize-y"
                 />
               </div>
             </div>
@@ -971,7 +958,7 @@ export function EditProductClient({
                         {title || "Título de tu producto"}
                       </h3>
                       <p className="text-xs text-slate-400 line-clamp-2 mt-0.5">
-                        {shortDescription || description || "Descripción corta del producto que engancha al cliente..."}
+                        {description || "Biografía o descripción del producto..."}
                       </p>
                     </div>
 

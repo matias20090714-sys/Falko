@@ -1,20 +1,16 @@
 import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { confirmOrderAndFulfill } from "@/lib/order-fulfillment";
-import { processOrderLedger } from "@/lib/ledger";
-import { CheckCircle2, Download, ExternalLink, FileText, Clock, Mail, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileText, Lock, Mail, Package, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 export default async function OrderSuccessPage({
   searchParams,
 }: {
-  searchParams: { orderNumber?: string; email?: string; payment_id?: string; collection_id?: string; status?: string };
+  searchParams: { orderNumber?: string; email?: string };
 }) {
   const orderNumber = searchParams.orderNumber;
   const queryEmail = searchParams.email;
-  // Mercado Pago passes real numeric payment ID in payment_id or collection_id
-  const realPaymentId = searchParams.payment_id || searchParams.collection_id;
 
   let order: any = null;
   if (orderNumber) {
@@ -32,11 +28,6 @@ export default async function OrderSuccessPage({
               },
             },
           },
-          affiliateProduct: {
-            include: {
-              affiliateProfile: true,
-            },
-          },
         },
       });
     } catch (err) {
@@ -44,79 +35,8 @@ export default async function OrderSuccessPage({
     }
   }
 
-  // Strictly require a real numeric payment ID from Mercado Pago redirect (never use preference ID)
-  if (order && order.status === "PENDING" && realPaymentId && /^\d+$/.test(realPaymentId.trim())) {
-    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
-
-    if (token) {
-      try {
-        const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${realPaymentId.trim()}`, {
-          headers: { Authorization: `Bearer ${token.trim()}` },
-          cache: "no-store",
-        });
-
-        if (mpRes.ok) {
-          const mpData = await mpRes.json();
-          // Verify payment status is approved and matches this order number
-          if (mpData.status === "approved" && (mpData.external_reference === orderNumber || mpData.external_reference === order.orderNumber)) {
-            const confirmedOrder = await confirmOrderAndFulfill(order.id, mpData);
-            if (confirmedOrder) {
-              order = confirmedOrder;
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Live MP verification error on success page:", err);
-      }
-    }
-  }
-
-  const isConfirmed = order?.status === "CONFIRMED";
   const buyerEmail = order?.buyer?.email || queryEmail;
   const purchasedProduct = order?.items?.[0]?.product;
-
-  // Render PENDING / UNVERIFIED UI if payment is not confirmed
-  if (order && !isConfirmed) {
-    return (
-      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
-        <div className="max-w-xl w-full glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/40 text-center shadow-glow relative space-y-6">
-          <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-amber-400 mx-auto">
-            <Clock className="w-8 h-8 animate-pulse" />
-          </div>
-
-          <div>
-            <span className="text-xs uppercase font-black text-amber-400 tracking-wider block mb-1">
-              Pago Pendiente de Verificación
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
-              Esperando Confirmación de Mercado Pago
-            </h1>
-          </div>
-
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-950/70 p-4 rounded-2xl border border-white/10">
-            Tu orden <strong className="font-mono text-amber-300">{order.orderNumber}</strong> aún no ha sido confirmada por Mercado Pago. Tan pronto como tu pago sea acreditado, tus archivos y accesos se activarán en tu Biblioteca.
-          </p>
-
-          <div className="space-y-2.5 pt-2">
-            <Link
-              href={`/checkout?product=${purchasedProduct?.slug || ""}`}
-              className="btn-falcon-primary w-full text-center justify-center text-xs sm:text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
-            >
-              <Zap className="w-4 h-4" />
-              <span>Completar o Reintentar Pago</span>
-            </Link>
-
-            <Link
-              href="/marketplace"
-              className="btn-falcon-secondary w-full text-center justify-center text-xs py-2.5"
-            >
-              Volver al Marketplace
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
@@ -239,6 +159,51 @@ export default async function OrderSuccessPage({
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* 1-Click Post-Purchase Upsell (OTO) Offer */}
+        {purchasedProduct?.upsellTitle && purchasedProduct?.upsellPrice && (
+          <div className="bg-gradient-to-br from-amber-950/60 via-slate-950 to-purple-950/40 border-2 border-amber-500/50 rounded-2xl p-5 text-left space-y-3.5 shadow-2xl relative overflow-hidden animate-in fade-in-50">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2 py-0.5 rounded-md">
+                ⚡ Oferta Exclusiva Post-Compra (Solo por esta sesión)
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-300">
+                ${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+                <span>{purchasedProduct.upsellTitle}</span>
+              </h3>
+              {purchasedProduct.upsellDescription && (
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  {purchasedProduct.upsellDescription}
+                </p>
+              )}
+            </div>
+
+            {purchasedProduct.upsellFileUrl ? (
+              <a
+                href={purchasedProduct.upsellFileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-falcon-primary w-full text-center justify-center text-xs py-3 font-bold flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:opacity-90 shadow-glow"
+              >
+                <Zap className="w-4 h-4 text-slate-950" />
+                <span>Añadir Oferta con 1-Clic (${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD)</span>
+              </a>
+            ) : (
+              <Link
+                href={`/checkout?product=${purchasedProduct.slug}&upsell=1`}
+                className="btn-falcon-primary w-full text-center justify-center text-xs py-3 font-bold flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:opacity-90 shadow-glow"
+              >
+                <Zap className="w-4 h-4 text-slate-950" />
+                <span>Añadir Oferta con 1-Clic (${parseFloat(purchasedProduct.upsellPrice).toFixed(2)} USD)</span>
+              </Link>
             )}
           </div>
         )}
