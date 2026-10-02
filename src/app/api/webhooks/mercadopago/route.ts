@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { confirmOrderAndFulfill } from "@/lib/order-fulfillment";
 import { processOrderLedger } from "@/lib/ledger";
 import { addSalesVolume } from "@/lib/ranking";
 import { triggerWebhooksForSeller } from "@/lib/webhooks";
@@ -71,138 +72,7 @@ export async function POST(req: NextRequest) {
 
     // If payment is approved and order is pending, confirm order and fulfill
     if (status === "approved" && order.status !== "CONFIRMED") {
-      const product = order.items[0]?.product;
-      const affiliateProduct = order.affiliateProduct;
-      const affiliateUserId = affiliateProduct?.affiliateProfile?.userId || null;
-
-      // Re-compute financial split for accuracy
-      const split = computeFinancialSplit({
-        productPrice: order.basePrice,
-        currencyCode: order.currencyCode,
-        affiliateCommissionPct: product?.affiliateCommissionPct || 0,
-        hasAffiliate: !!affiliateProduct,
-      });
-
-      // Update Order Status to CONFIRMED
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          status: "CONFIRMED",
-          payments: {
-            updateMany: {
-              where: { transactionId: order.paymentProviderId || paymentId },
-              data: {
-                status: "CONFIRMED",
-                rawResponseJson: JSON.stringify(paymentData),
-              },
-            },
-          },
-        },
-      });
-
-      // Process double-entry ledger & guarantee holds
-      await processOrderLedger({
-        orderId: order.id,
-        sellerId: product.sellerId,
-        sellerAmount: order.sellerEarningAmount,
-        affiliateUserId,
-        affiliateAmount: order.affiliateCommissionAmount,
-        platformFeeAmount: order.platformFeeConverted,
-        currencyCode: order.currencyCode,
-        guaranteeDays: order.guaranteeDays,
-      });
-
-      // Increment product sales count
-      if (product) {
-        await prisma.product.update({
-          where: { id: product.id },
-          data: { salesCount: { increment: 1 } },
-        });
-
-        // Add sales volume to seller
-        await addSalesVolume(product.sellerId, split.salesVolumeUsd);
-      }
-
-      // Increment affiliate conversions if applicable
-      if (affiliateProduct) {
-        await prisma.affiliateProduct.update({
-          where: { id: affiliateProduct.id },
-          data: { conversionsCount: { increment: 1 } },
-        });
-
-        if (affiliateUserId) {
-          await addSalesVolume(affiliateUserId, split.salesVolumeUsd);
-        }
-      }
-
-      // Seller in-app notification
-      if (product) {
-        await prisma.notification.create({
-          data: {
-            userId: product.sellerId,
-            title: "¡Nueva venta confirmada! 🎉",
-            message: `Has vendido "${product.title}" por ${order.sellerEarningAmount.toFixed(2)} ${order.currencyCode} netos.`,
-            type: "SALE",
-            linkUrl: "/seller",
-          },
-        });
-      }
-
-      // Affiliate in-app notification
-      if (affiliateUserId && product) {
-        await prisma.notification.create({
-          data: {
-            userId: affiliateUserId,
-            title: "¡Comisión de afiliado generada! 💰",
-            message: `Has generado una comisión de ${order.affiliateCommissionAmount.toFixed(2)} ${order.currencyCode} promocionando "${product.title}".`,
-            type: "COMMISSION",
-            linkUrl: "/affiliate",
-          },
-        });
-      }
-
-      // Trigger seller webhooks (Zapier/Make/CRM)
-      if (product) {
-        triggerWebhooksForSeller({
-          sellerId: product.sellerId,
-          productId: product.id,
-          event: "order.completed",
-          payload: {
-            event: "order.completed",
-            timestamp: new Date().toISOString(),
-            data: {
-              order_id: order.id,
-              order_number: order.orderNumber,
-              product: {
-                id: product.id,
-                title: product.title,
-                slug: product.slug,
-                price: product.price,
-              },
-              buyer: {
-                id: order.buyer.id,
-                name: `${order.buyer.firstName} ${order.buyer.lastName}`,
-                email: order.buyer.email,
-                country: order.buyer.countryCode,
-              },
-              amounts: {
-                total: order.totalAmount,
-                base_price: order.basePrice,
-                discount: order.discountAmount,
-                seller_earning: order.sellerEarningAmount,
-                affiliate_commission: order.affiliateCommissionAmount,
-                currency: order.currencyCode,
-              },
-              payment: {
-                provider: "MERCADOPAGO",
-                transaction_id: paymentId,
-                status: "CONFIRMED",
-              },
-              created_at: order.createdAt.toISOString(),
-            },
-          },
-        }).catch((whErr) => console.error("Webhook dispatch error:", whErr));
-      }
+      await confirmOrderAndFulfill(order.id, paymentData);
     }
 
     return NextResponse.json({ status: "processed", paymentStatus: status }, { status: 200 });

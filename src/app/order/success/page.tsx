@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { confirmOrderAndFulfill } from "@/lib/order-fulfillment";
 import { processOrderLedger } from "@/lib/ledger";
 import { CheckCircle2, Download, ExternalLink, FileText, Clock, Mail, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
@@ -58,33 +59,10 @@ export default async function OrderSuccessPage({
           const mpData = await mpRes.json();
           // Verify payment status is approved and matches this order number
           if (mpData.status === "approved" && (mpData.external_reference === orderNumber || mpData.external_reference === order.orderNumber)) {
-            const affiliateUserId = order.affiliateProduct?.affiliateProfile?.userId || null;
-            await prisma.order.update({
-              where: { id: order.id },
-              data: {
-                status: "CONFIRMED",
-                paymentProviderId: String(mpData.id),
-                payments: {
-                  updateMany: {
-                    where: { orderId: order.id },
-                    data: { status: "CONFIRMED", transactionId: String(mpData.id), rawResponseJson: JSON.stringify(mpData) },
-                  },
-                },
-              },
-            });
-
-            await processOrderLedger({
-              orderId: order.id,
-              sellerId: order.items[0]?.product?.sellerId,
-              sellerAmount: order.sellerEarningAmount,
-              affiliateUserId,
-              affiliateAmount: order.affiliateCommissionAmount,
-              platformFeeAmount: order.platformFeeConverted,
-              currencyCode: order.currencyCode,
-              guaranteeDays: order.guaranteeDays,
-            });
-
-            order.status = "CONFIRMED";
+            const confirmedOrder = await confirmOrderAndFulfill(order.id, mpData);
+            if (confirmedOrder) {
+              order = confirmedOrder;
+            }
           }
         }
       } catch (err) {
