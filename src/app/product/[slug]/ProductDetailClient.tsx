@@ -51,15 +51,31 @@ export function ProductDetailClient({
   product,
   currentUser,
   affiliateProductRecord: initialAffiliateRecord,
-  hasPurchased,
+  hasPurchased: initialHasPurchased,
   refCodeParam,
 }: ProductDetailClientProps) {
   const router = useRouter();
   const [currency, setCurrency] = useState("USD");
   const [affiliateRecord, setAffiliateRecord] = useState<any>(initialAffiliateRecord);
+  const [hasPurchased, setHasPurchased] = useState<boolean>(initialHasPurchased);
   const [copiedLink, setCopiedLink] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (product?.id && currentUser) {
+      fetch(`/api/products/check-purchase?productId=${product.id}`, { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.hasPurchased === "boolean") {
+            setHasPurchased(data.hasPurchased);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setHasPurchased(false);
+    }
+  }, [product?.id, currentUser]);
 
   const isPhysical = product.productType === "PHYSICAL";
   const isOutOfStock = isPhysical && product.stock !== null && product.stock <= 0;
