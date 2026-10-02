@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const targetEmail = searchParams.get("email")?.trim().toLowerCase();
 
     if (targetEmail) {
-      // User-specific reset
       const targetUser = await prisma.user.findUnique({
         where: { email: targetEmail },
         include: { wallet: true },
@@ -17,7 +19,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: `No se encontró el usuario ${targetEmail}` }, { status: 404 });
       }
 
-      // Delete orders and related items/payments for this user
       const userOrders = await prisma.order.findMany({
         where: { buyerId: targetUser.id },
         select: { id: true },
@@ -53,18 +54,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Full system reset (All test data)
-    await prisma.payment.deleteMany({});
-    await prisma.orderItem.deleteMany({});
-    await prisma.guaranteeHold.deleteMany({});
-    await prisma.walletTransaction.deleteMany({});
-    await prisma.refund.deleteMany({});
-    await prisma.review.deleteMany({});
-    await prisma.subscription.deleteMany({});
-    await prisma.abandonedCart.deleteMany({});
-    await prisma.notification.deleteMany({});
-    await prisma.rankingRecord.deleteMany({});
-    await prisma.order.deleteMany({});
+    // Full system wipe
+    const delPayments = await prisma.payment.deleteMany({});
+    const delItems = await prisma.orderItem.deleteMany({});
+    const delHolds = await prisma.guaranteeHold.deleteMany({});
+    const delTx = await prisma.walletTransaction.deleteMany({});
+    const delRefunds = await prisma.refund.deleteMany({});
+    const delReviews = await prisma.review.deleteMany({});
+    const delSubs = await prisma.subscription.deleteMany({});
+    const delCarts = await prisma.abandonedCart.deleteMany({});
+    const delNotifs = await prisma.notification.deleteMany({});
+    const delRankings = await prisma.rankingRecord.deleteMany({});
+    const delOrders = await prisma.order.deleteMany({});
 
     await prisma.product.updateMany({
       data: {
@@ -91,7 +92,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Todas las compras, ventas, billeteras y estadísticas de prueba fueron borradas con éxito en todo el sistema.",
+      deletedOrdersCount: delOrders.count,
+      deletedPaymentsCount: delPayments.count,
+      message: `Todas las compras (${delOrders.count}), ventas y estadísticas de prueba fueron borradas con éxito en todo el sistema.`,
     });
   } catch (error: any) {
     console.error("Reset test data error:", error);
