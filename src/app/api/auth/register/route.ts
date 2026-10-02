@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword, signToken } from "@/lib/auth";
-import { verifyVerificationToken } from "./send-code/route";
+import { verifyVerificationToken } from "@/lib/verification";
 
 export async function POST(req: NextRequest) {
   try {
