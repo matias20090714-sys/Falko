@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma generate && prisma db push --accept-data-loss && npx tsx prisma/seed.ts && next build",
+  "buildCommand": "export DATABASE_URL=\"postgresql://postgres:57823562PMXL@db.qyzhlmfcndkmkeosnjzf.supabase.co:5432/postgres\" && prisma generate && prisma db push --accept-data-loss && next build",
   "installCommand": "npm install",
   "framework": "nextjs"
 }
