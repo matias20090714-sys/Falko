@@ -28,10 +28,16 @@ export async function GET(req: NextRequest) {
       select: { id: true, email: true, firstName: true, lastName: true, roles: true },
     });
 
+    const subscriptions = await prisma.subscription.findMany({
+      select: { id: true, userId: true, productId: true, status: true },
+    });
+
     return NextResponse.json({
       success: true,
       totalOrders: orders.length,
+      totalSubscriptions: subscriptions.length,
       orders,
+      subscriptions,
       products,
       users,
     });
