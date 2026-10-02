@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       }
 
       await prisma.subscription.deleteMany({ where: { userId: targetUser.id } });
-      await prisma.abandonedCart.deleteMany({ where: { userId: targetUser.id } });
+      await prisma.abandonedCart.deleteMany({ where: { email: targetUser.email } });
 
       if (targetUser.wallet) {
         await prisma.walletTransaction.deleteMany({ where: { walletId: targetUser.wallet.id } });
