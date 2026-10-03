@@ -25,6 +25,13 @@ export async function POST(req: NextRequest) {
       // Execute strict ledger reversal
       await processRefundLedger(refund.orderId, notes || "Aprobado por administración en garantía");
 
+      await prisma.refund.update({
+        where: { id: refundId },
+        data: {
+          adminNotes: notes || "Aprobado por administración en garantía.",
+        },
+      });
+
       await prisma.notification.create({
         data: {
           userId: refund.buyerId,
