@@ -8,7 +8,7 @@ interface SendEmailParams {
 export async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<{ success: boolean; error?: string }> {
   try {
     const resendApiKey = process.env.RESEND_API_KEY;
-    const fromAddress = process.env.EMAIL_FROM || "FALKO Marketplace <notificaciones@falko.dpdns.org>";
+    const fromAddress = process.env.EMAIL_FROM || "FALKO Marketplace <onboarding@resend.dev>";
 
     // 1. Try Resend HTTP API if configured (Zero npm dependency, pure fetch)
     if (resendApiKey) {
