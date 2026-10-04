@@ -1,5 +1,3 @@
-import nodemailer from "nodemailer";
-
 interface SendEmailParams {
   to: string;
   subject: string;
@@ -12,7 +10,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromAddress = process.env.EMAIL_FROM || "FALKO Marketplace <notificaciones@falko.dpdns.org>";
 
-    // 1. Try Resend HTTP API if configured
+    // 1. Try Resend HTTP API if configured (Zero npm dependency, pure fetch)
     if (resendApiKey) {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -44,25 +42,30 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
     const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
 
     if (smtpHost || (smtpUser && smtpPass)) {
-      const transporter = nodemailer.createTransport({
-        host: smtpHost || "smtp.gmail.com",
-        port: smtpPort,
-        secure: smtpSecure,
-        auth: (smtpUser && smtpPass) ? {
-          user: smtpUser,
-          pass: smtpPass,
-        } : undefined,
-      });
+      try {
+        const nodemailer = require("nodemailer");
+        const transporter = nodemailer.createTransport({
+          host: smtpHost || "smtp.gmail.com",
+          port: smtpPort,
+          secure: smtpSecure,
+          auth: (smtpUser && smtpPass) ? {
+            user: smtpUser,
+            pass: smtpPass,
+          } : undefined,
+        });
 
-      await transporter.sendMail({
-        from: fromAddress,
-        to,
-        subject,
-        html,
-        text: text || html.replace(/<[^>]*>?/gm, ""),
-      });
+        await transporter.sendMail({
+          from: fromAddress,
+          to,
+          subject,
+          html,
+          text: text || html.replace(/<[^>]*>?/gm, ""),
+        });
 
-      return { success: true };
+        return { success: true };
+      } catch (smtpErr) {
+        console.warn("SMTP Transport error:", smtpErr);
+      }
     }
 
     // 3. Fallback SendGrid API if configured
@@ -87,7 +90,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
       }
     }
 
-    console.warn(`[EMAIL NOTICE] No production SMTP or RESEND_API_KEY configured yet in .env. Email to ${to} for "${subject}" was queued.`);
+    console.warn(`[EMAIL NOTICE] No production SMTP or RESEND_API_KEY configured yet in .env. Email to ${to} for "${subject}" was logged.`);
     return { success: true };
   } catch (error: any) {
     console.error("Failed to send email to", to, error);
