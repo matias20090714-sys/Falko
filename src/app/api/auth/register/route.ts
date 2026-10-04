@@ -34,45 +34,13 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.toLowerCase().trim();
     const cleanPhone = phone ? phone.trim() : "";
 
-    // 1. Validar Token y Código de Verificación OTP enviada al correo
-    if (!verificationCode || !verificationToken) {
-      return NextResponse.json(
-        { success: false, error: "Se requiere ingresar el código de 6 dígitos enviado a tu correo para completar el registro." },
-        { status: 400 }
-      );
-    }
-
-    const verificationResult = verifyVerificationToken(verificationToken);
-    if (!verificationResult.valid || !verificationResult.payload) {
-      return NextResponse.json(
-        { success: false, error: "El código de verificación de correo ha expirado o es inválido. Por favor solicita uno nuevo." },
-        { status: 400 }
-      );
-    }
-
-    const { email: tokenEmail, code: expectedCode } = verificationResult.payload;
-
-    if (tokenEmail !== cleanEmail) {
-      return NextResponse.json(
-        { success: false, error: "El correo electrónico no coincide con el código de verificación generado." },
-        { status: 400 }
-      );
-    }
-
-    if (verificationCode.trim() !== expectedCode.trim()) {
-      return NextResponse.json(
-        { success: false, error: "El código de 6 dígitos ingresado es incorrecto. Revisa tu correo e inténtalo nuevamente." },
-        { status: 400 }
-      );
-    }
-
-    // 2. Comprobar unicidad final de correo
+    // 1. Comprobar unicidad de correo electrónico
     const existingEmail = await prisma.user.findUnique({
       where: { email: cleanEmail },
     });
     if (existingEmail) {
       return NextResponse.json(
-        { success: false, error: "El correo electrónico ya se encuentra registrado con otra cuenta en FALKO." },
+        { success: false, error: "Este correo electrónico ya se encuentra registrado en FALKO. Inicia sesión." },
         { status: 400 }
       );
     }
