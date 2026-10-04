@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { processOrderLedger } from "@/lib/ledger";
 import { addSalesVolume } from "@/lib/ranking";
 import { triggerWebhooksForSeller } from "@/lib/webhooks";
+import { getEmailProvider } from "@/lib/emails";
 
 export async function confirmOrderAndFulfill(orderId: string, paymentData?: any) {
   const order = await prisma.order.findUnique({
@@ -126,7 +127,7 @@ export async function confirmOrderAndFulfill(orderId: string, paymentData?: any)
     }
   }
 
-  // 6. Create Notifications
+  // 6. Create Notifications & Send Real Purchase Confirmation Emails
   if (product) {
     await prisma.notification.create({
       data: {
@@ -149,6 +150,48 @@ export async function confirmOrderAndFulfill(orderId: string, paymentData?: any)
         linkUrl: "/affiliate",
       },
     });
+  }
+
+  // 6b. Send Email Notifications (Buyer purchase confirmation, Seller sale alert)
+  try {
+    const emailProvider = getEmailProvider();
+    
+    // Send Buyer Confirmation Email
+    if (order.buyer?.email) {
+      emailProvider.sendEmail({
+        to: order.buyer.email,
+        subject: `Confirmación de compra #${order.orderNumber} - FALKO`,
+        template: "PURCHASE_CONFIRMATION",
+        data: {
+          name: order.buyer.firstName || "Comprador",
+          orderNumber: order.orderNumber,
+          productTitle: product?.title || "Producto Digital",
+          amount: order.totalAmount,
+          currency: order.currencyCode,
+          guaranteeDays: order.guaranteeDays,
+        },
+      }).catch((err) => console.error("Error sending buyer purchase email:", err));
+    }
+
+    // Send Seller Sale Alert Email
+    if (product) {
+      prisma.user.findUnique({ where: { id: product.sellerId } }).then((seller) => {
+        if (seller?.email) {
+          emailProvider.sendEmail({
+            to: seller.email,
+            subject: `¡Nueva venta realizada! - "${product.title}"`,
+            template: "SELLER_SALE_ALERT",
+            data: {
+              productTitle: product.title,
+              netAmount: order.sellerEarningAmount,
+              currency: order.currencyCode,
+            },
+          }).catch((err) => console.error("Error sending seller sale email:", err));
+        }
+      }).catch((err) => console.error("Error fetching seller for email:", err));
+    }
+  } catch (emailErr) {
+    console.error("Order fulfillment email error:", emailErr);
   }
 
   // 7. Dispatch Webhooks
