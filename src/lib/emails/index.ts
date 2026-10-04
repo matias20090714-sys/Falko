@@ -1,3 +1,5 @@
+import { sendEmail } from "@/lib/email";
+
 export interface EmailPayload {
   to: string;
   subject: string;
@@ -22,37 +24,37 @@ export interface EmailProvider {
   sendEmail(payload: EmailPayload): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }
 
-export class MockEmailProvider implements EmailProvider {
-  name = "MOCK";
+export class ProductionEmailProvider implements EmailProvider {
+  name = "PRODUCTION";
 
-  async sendEmail(payload: EmailPayload): Promise<{ success: boolean; messageId?: string }> {
-    console.log(`[FALKO Email Sim] Template: ${payload.template} To: ${payload.to} Subject: "${payload.subject}"`);
+  async sendEmail(payload: EmailPayload) {
+    const { subject, body } = renderEmailTemplate(payload.template, payload.data);
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; background-color: #030712; color: #f8fafc; padding: 30px; border-radius: 16px;">
+        <h2 style="color: #06b6d4;">FALKO Marketplace</h2>
+        <div style="font-size: 14px; line-height: 1.6; color: #cbd5e1; white-space: pre-line;">${body}</div>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin-top: 30px;" />
+        <p style="font-size: 11px; color: #64748b;">Este es un mensaje automático enviado por FALKO Digital Marketplace.</p>
+      </div>
+    `;
+
+    const res = await sendEmail({
+      to: payload.to,
+      subject,
+      html: htmlBody,
+      text: body,
+    });
+
     return {
-      success: true,
-      messageId: `mock_msg_${Date.now()}`,
+      success: res.success,
+      messageId: res.success ? `email_${Date.now()}` : undefined,
+      error: res.error,
     };
   }
 }
 
-export class ResendEmailProvider implements EmailProvider {
-  name = "RESEND";
-
-  async sendEmail(payload: EmailPayload) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.warn("Resend API key missing, falling back to mock");
-      return { success: false, error: "Email Provider Not Configured: RESEND_API_KEY missing" };
-    }
-    throw new Error("Resend unconfigured");
-  }
-}
-
 export function getEmailProvider(): EmailProvider {
-  const provider = process.env.EMAIL_PROVIDER || "MOCK";
-  if (provider === "RESEND") {
-    return new ResendEmailProvider();
-  }
-  return new MockEmailProvider();
+  return new ProductionEmailProvider();
 }
 
 /**
