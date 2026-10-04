@@ -158,9 +158,12 @@ export async function confirmOrderAndFulfill(orderId: string, paymentData?: any)
     
     // Send Buyer Confirmation Email
     if (order.buyer?.email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://falko.vercel.app";
+      const directAccessUrl = product?.accessUrl || `${appUrl}/library`;
+
       emailProvider.sendEmail({
         to: order.buyer.email,
-        subject: `Confirmación de compra #${order.orderNumber} - FALKO`,
+        subject: `¡Tu compra está lista! 📥 Accede a "${product?.title || 'tu producto'}" - FALKO #${order.orderNumber}`,
         template: "PURCHASE_CONFIRMATION",
         data: {
           name: order.buyer.firstName || "Comprador",
@@ -169,6 +172,8 @@ export async function confirmOrderAndFulfill(orderId: string, paymentData?: any)
           amount: order.totalAmount,
           currency: order.currencyCode,
           guaranteeDays: order.guaranteeDays,
+          accessUrl: directAccessUrl,
+          accessInstructions: product?.accessInstructions || null,
         },
       }).catch((err) => console.error("Error sending buyer purchase email:", err));
     }

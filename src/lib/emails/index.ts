@@ -29,20 +29,67 @@ export class ProductionEmailProvider implements EmailProvider {
 
   async sendEmail(payload: EmailPayload) {
     const { subject, body } = renderEmailTemplate(payload.template, payload.data);
+    
+    let actionButtonHtml = "";
+    if (payload.template === "PURCHASE_CONFIRMATION" && payload.data.accessUrl) {
+      actionButtonHtml = `
+        <div style="margin: 32px 0; text-align: center;">
+          <a href="${payload.data.accessUrl}" target="_blank" style="background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: #ffffff; text-decoration: none; padding: 18px 36px; border-radius: 14px; font-weight: 900; font-size: 16px; display: inline-block; box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">
+            📥 Descargar / Acceder a mi Producto
+          </a>
+        </div>
+      `;
+    }
+
+    let instructionsHtml = "";
+    if (payload.data?.accessInstructions) {
+      instructionsHtml = `
+        <div style="background-color: #0f172a; border: 1px dashed #06b6d4; border-radius: 14px; padding: 20px; margin: 24px 0; color: #38bdf8;">
+          <strong style="color: #ffffff; display: block; margin-bottom: 8px; font-size: 15px;">📌 Instrucciones de Acceso del Vendedor:</strong>
+          <span style="font-size: 14px; line-height: 1.6; color: #cbd5e1;">${payload.data.accessInstructions}</span>
+        </div>
+      `;
+    }
+
     const htmlBody = `
-      <div style="font-family: Arial, sans-serif; background-color: #030712; color: #f8fafc; padding: 30px; border-radius: 16px;">
-        <h2 style="color: #06b6d4;">FALKO Marketplace</h2>
-        <div style="font-size: 14px; line-height: 1.6; color: #cbd5e1; white-space: pre-line;">${body}</div>
-        <hr style="border: 0; border-top: 1px solid #1e293b; margin-top: 30px;" />
-        <p style="font-size: 11px; color: #64748b;">Este es un mensaje automático enviado por FALKO Digital Marketplace.</p>
-      </div>
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <title>${subject}</title>
+      </head>
+      <body style="background-color: #030712; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px;">
+        <div style="max-width: 580px; margin: 20px auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; padding: 36px;">
+          <div style="font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #ffffff; text-transform: uppercase; text-align: center; margin-bottom: 24px;">
+            FAL<span style="color: #06b6d4;">KO</span>
+          </div>
+          
+          <div style="font-size: 15px; line-height: 1.7; color: #cbd5e1; white-space: pre-line;">${body}</div>
+          
+          ${instructionsHtml}
+          ${actionButtonHtml}
+
+          ${
+            payload.data?.accessUrl
+              ? `<div style="font-size: 12px; color: #64748b; text-align: center; margin-top: 16px;">Si el botón no abre, copia y pega este enlace en tu navegador:<br><a href="${payload.data.accessUrl}" style="color: #38bdf8; word-break: break-all;">${payload.data.accessUrl}</a></div>`
+              : ""
+          }
+
+          <hr style="border: 0; border-top: 1px solid #1e293b; margin-top: 36px; margin-bottom: 20px;" />
+          <p style="font-size: 11px; color: #64748b; text-align: center; margin: 0;">
+            FALKO Digital Marketplace • Seguridad Cifrada de Grado Bancario<br>
+            Este es un mensaje automático enviado por FALKO.
+          </p>
+        </div>
+      </body>
+      </html>
     `;
 
     const res = await sendEmail({
       to: payload.to,
       subject,
       html: htmlBody,
-      text: body,
+      text: body + (payload.data?.accessUrl ? `\n\nAccede a tu producto aquí: ${payload.data.accessUrl}` : ""),
     });
 
     return {
@@ -69,8 +116,8 @@ export function renderEmailTemplate(template: EmailPayload["template"], data: Re
       };
     case "PURCHASE_CONFIRMATION":
       return {
-        subject: `Confirmación de compra #${data.orderNumber} - FALKO`,
-        body: `Hola ${data.name},\n\nTu compra de "${data.productTitle}" por ${data.amount} ${data.currency} ha sido confirmada. Ya puedes acceder al contenido desde tu biblioteca privada con garantía de ${data.guaranteeDays} días.\n\nEquipo FALKO`,
+        subject: `¡Tu compra está lista! 📥 Accede a "${data.productTitle}" - FALKO #${data.orderNumber}`,
+        body: `Hola ${data.name},\n\n¡Gracias por tu compra en FALKO! Tu orden de "${data.productTitle}" por ${data.amount} ${data.currency} ha sido confirmada con exito.\n\nPuedes acceder directamente a tu contenido, descargar tu archivo (PDF, ZIP o recursos) o consultar tus instrucciones de acceso usando el botón a continuación.\n\nTu compra cuenta con ${data.guaranteeDays} días de garantía de satisfacción.\n\nEquipo FALKO`,
       };
     case "SELLER_SALE_ALERT":
       return {
