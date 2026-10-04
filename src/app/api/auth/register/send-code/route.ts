@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { signVerificationToken } from "@/lib/verification";
+import { sendVerificationCodeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
     const { firstName, lastName, email, phone, countryCode, password } = await req.json();
 
-    if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !phone?.trim() || !password) {
+    if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !password) {
       return NextResponse.json(
-        { success: false, error: "Por favor completa todos los campos (Nombre, Apellido, Correo, Teléfono y Contraseña)." },
+        { success: false, error: "Por favor completa todos los campos requeridos (Nombre, Apellido, Correo Electrónico y Contraseña)." },
         { status: 400 }
       );
     }
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const cleanPhone = phone.trim();
+    const cleanPhone = phone ? phone.trim() : "";
 
     // 1. Validar que el correo no esté registrado
     const existingEmail = await prisma.user.findUnique({
@@ -29,25 +30,27 @@ export async function POST(req: NextRequest) {
     });
     if (existingEmail) {
       return NextResponse.json(
-        { success: false, error: "Este correo electrónico ya se encuentra registrado con otra cuenta en FALKO." },
+        { success: false, error: "Este correo electrónico ya se encuentra registrado en FALKO. Inicia sesión con tu cuenta." },
         { status: 400 }
       );
     }
 
-    // 2. Validar que el número de teléfono no esté registrado
-    const existingPhone = await prisma.user.findFirst({
-      where: { phone: cleanPhone },
-    });
-    if (existingPhone) {
-      return NextResponse.json(
-        { success: false, error: "Este número de teléfono ya está asociado a otra cuenta en FALKO. Cada usuario debe tener un número único." },
-        { status: 400 }
-      );
+    // 2. Si se proporciona teléfono, verificar que no esté duplicado
+    if (cleanPhone) {
+      const existingPhone = await prisma.user.findFirst({
+        where: { phone: cleanPhone },
+      });
+      if (existingPhone) {
+        return NextResponse.json(
+          { success: false, error: "Este número de teléfono ya está asociado a otra cuenta en FALKO." },
+          { status: 400 }
+        );
+      }
     }
 
-    // 3. Generar código de verificación criptográficamente seguro de 6 dígitos
+    // 3. Generar código de verificación único de 6 dígitos
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos de validez
 
     const verificationToken = signVerificationToken({
       email: cleanEmail,
@@ -56,21 +59,20 @@ export async function POST(req: NextRequest) {
       expiresAt,
     });
 
-    // Enmascarar teléfono para visualización (ej: +598 99 *** 12)
-    const phoneVisible = cleanPhone.length > 5
-      ? `${cleanPhone.slice(0, 4)} *** ${cleanPhone.slice(-2)}`
-      : cleanPhone;
+    // 4. Enviar correo electrónico REAL con el código de verificación
+    const emailResult = await sendVerificationCodeEmail(cleanEmail, code, firstName.trim());
+    if (!emailResult.success) {
+      console.warn("Fallo al enviar correo electrónico:", emailResult.error);
+    }
 
     return NextResponse.json({
       success: true,
       verificationToken,
-      verificationCodePreview: code,
-      maskedPhone: phoneVisible,
       email: cleanEmail,
-      message: `Código de verificación de 6 dígitos generado exitosamente para ${cleanEmail} y ${cleanPhone}.`,
+      message: `Hemos enviado un código único de verificación de 6 dígitos a tu correo: ${cleanEmail}`,
     });
   } catch (error: any) {
     console.error("Error en send-code:", error);
-    return NextResponse.json({ success: false, error: error.message || "Error al generar código de verificación." }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || "Error al enviar código de verificación." }, { status: 500 });
   }
 }

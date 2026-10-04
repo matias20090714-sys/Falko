@@ -10,7 +10,6 @@ import {
   Lock,
   Mail,
   User,
-  Globe,
   ArrowRight,
   ShieldCheck,
   Phone,
@@ -25,7 +24,7 @@ import {
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [step, setStep] = useState<1 | 2>(1); // 1: Datos de usuario, 2: Verificación OTP
+  const [step, setStep] = useState<1 | 2>(1); // 1: Datos de usuario, 2: Verificación por Correo
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -39,12 +38,11 @@ export default function RegisterPage() {
 
   const [verificationToken, setVerificationToken] = useState("");
   const [verificationCodeInput, setVerificationCodeInput] = useState("");
-  const [demoOtpPreview, setDemoOtpPreview] = useState<string | null>(null);
-  const [maskedPhone, setMaskedPhone] = useState("");
   const [detectedCountryName, setDetectedCountryName] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Auto-detectar país y moneda al cargar la página
   useEffect(() => {
@@ -67,7 +65,7 @@ export default function RegisterPage() {
   }, []);
 
   const activeCountry = COUNTRIES[formData.countryCode] || COUNTRIES["UY"];
-  const fullPhone = `${activeCountry.phonePrefix} ${formData.phoneNumber.trim()}`;
+  const fullPhone = formData.phoneNumber.trim() ? `${activeCountry.phonePrefix} ${formData.phoneNumber.trim()}` : "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -83,13 +81,14 @@ export default function RegisterPage() {
     }
   };
 
-  // Paso 1: Enviar código y verificar unicidad de correo y teléfono
+  // Paso 1: Enviar código real por correo electrónico
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setResendSuccess(false);
 
-    if (!formData.phoneNumber.trim()) {
-      setError("Por favor ingresa tu número de teléfono móvil.");
+    if (!formData.email.trim() || !formData.email.includes("@")) {
+      setError("Por favor ingresa un correo electrónico válido.");
       return;
     }
 
@@ -112,26 +111,28 @@ export default function RegisterPage() {
       const data = await res.json();
       if (data.success) {
         setVerificationToken(data.verificationToken);
-        setDemoOtpPreview(data.verificationCodePreview || null);
-        setMaskedPhone(data.maskedPhone || fullPhone);
         setStep(2);
+        if (step === 2) {
+          setResendSuccess(true);
+          setTimeout(() => setResendSuccess(false), 4000);
+        }
       } else {
         setError(data.error || "Error al procesar la solicitud de registro.");
       }
     } catch {
-      setError("Error de conexión con los servidores de verificación de FALKO.");
+      setError("Error de conexión con los servidores de FALKO.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Paso 2: Validar código OTP y registrar al usuario
+  // Paso 2: Validar código de correo y completar registro
   const handleVerifyAndRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!verificationCodeInput.trim() || verificationCodeInput.trim().length !== 6) {
-      setError("Ingresa el código de verificación de 6 dígitos.");
+      setError("Ingresa el código de verificación de 6 dígitos enviado a tu correo.");
       return;
     }
 
@@ -156,11 +157,10 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (data.success) {
-        // Redirigir al dashboard con sesión activa
         router.push("/dashboard");
         router.refresh();
       } else {
-        setError(data.error || "Código incorrecto o registro fallido.");
+        setError(data.error || "Código de correo incorrecto o registro fallido.");
       }
     } catch {
       setError("Error de conexión al verificar el código.");
@@ -179,13 +179,18 @@ export default function RegisterPage() {
           <div className="text-center">
             <FalconLogo size="lg" className="justify-center mb-4" />
             <h2 className="text-2xl sm:text-3xl font-heading font-black text-white">
-              {step === 1 ? "Crear Cuenta en FALKO" : "Verificar Tu Identidad"}
+              {step === 1 ? "Crear Cuenta en FALKO" : "Verificar Tu Correo Electrónico"}
             </h2>
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
               {step === 1
-                ? "Registro con verificación instantánea de país, teléfono y correo único."
-                : `Ingresa el código de 6 dígitos enviado a ${formData.email} y ${maskedPhone}.`}
+                ? "Registro con verificación directa a tu correo electrónico real."
+                : `Hemos enviado un código único de 6 dígitos a tu bandeja de entrada en:`}
             </p>
+            {step === 2 && (
+              <span className="inline-block mt-1 font-mono text-cyan-300 font-bold bg-slate-950/70 border border-cyan-500/30 px-3 py-1 rounded-lg text-xs">
+                📧 {formData.email}
+              </span>
+            )}
           </div>
 
           {/* Detector Badge */}
@@ -195,6 +200,13 @@ export default function RegisterPage() {
               <span>
                 País detectado: <strong>{activeCountry.flag} {detectedCountryName}</strong> ({activeCountry.currency})
               </span>
+            </div>
+          )}
+
+          {resendSuccess && step === 2 && (
+            <div className="bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs p-3.5 rounded-xl flex items-center gap-2 shadow-glow">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>¡Nuevo código enviado a tu correo! Revisa tu bandeja de entrada o spam.</span>
             </div>
           )}
 
@@ -238,6 +250,28 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              {/* Correo Electrónico (CAMPO PRINCIPAL DE VERIFICACIÓN) */}
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Correo Electrónico Único <span className="text-cyan-400 font-bold">(Recibirá el Código)</span>
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                  <input
+                    type="email"
+                    required
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="tu.correo.real@ejemplo.com"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs font-semibold"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Enviaremos un código único de 6 dígitos a esta dirección para validar tu cuenta.
+                </p>
+              </div>
+
               {/* País y Moneda */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -273,10 +307,10 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Teléfono con prefijo de país */}
+              {/* Teléfono Móvil (Opcional) */}
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Número de Teléfono Móvil <span className="text-cyan-400 font-mono">({activeCountry.phonePrefix})</span>
+                  Número de Teléfono Móvil <span className="text-slate-400 font-normal">(Opcional)</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-slate-300 text-xs font-mono font-bold shrink-0 flex items-center gap-1">
@@ -284,10 +318,9 @@ export default function RegisterPage() {
                     <span>{activeCountry.phonePrefix}</span>
                   </span>
                   <div className="relative flex-1">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
                       type="tel"
-                      required
                       name="phoneNumber"
                       value={formData.phoneNumber}
                       onChange={handleChange}
@@ -295,26 +328,6 @@ export default function RegisterPage() {
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs font-mono"
                     />
                   </div>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Requerido para verificación por seguridad. No se puede reutilizar en otra cuenta.
-                </p>
-              </div>
-
-              {/* Correo Electrónico */}
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Correo Electrónico Único</label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                  <input
-                    type="email"
-                    required
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="tu.correo@ejemplo.com"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs"
-                  />
                 </div>
               </div>
 
@@ -356,51 +369,26 @@ export default function RegisterPage() {
                 disabled={loading}
                 className="w-full btn-falcon-primary py-3 text-sm font-bold justify-center mt-4 shadow-glow cursor-pointer"
               >
-                {loading ? "Verificando disponibilidad..." : "Continuar a Verificación"}
+                {loading ? "Enviando código a tu correo..." : "Enviar Código al Correo"}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
           ) : (
-            /* PASO 2: VERIFICACIÓN OTP */
+            /* PASO 2: VERIFICACIÓN POR CORREO */
             <form onSubmit={handleVerifyAndRegister} className="space-y-5">
-              <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-4 text-center space-y-2">
+              <div className="bg-slate-900/80 border border-cyan-500/30 rounded-2xl p-5 text-center space-y-2">
                 <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400">
                   <KeyRound className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-white">Código de Verificación Enviado</h3>
-                <p className="text-xs text-slate-300">
-                  Hemos generado un código de verificación de 6 dígitos para tu cuenta:
+                <h3 className="text-sm font-bold text-white">Revisa Tu Correo Electrónico</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Ingresa el código de 6 dígitos que enviamos a tu casilla de correo. Si no lo encuentras, revisa tu carpeta de <strong>Spam o Correo no Deseado</strong>.
                 </p>
-                <div className="text-xs font-mono text-cyan-300 bg-slate-950/60 py-1.5 px-3 rounded-lg border border-white/5 inline-block">
-                  📧 {formData.email} &bull; 📱 {maskedPhone}
-                </div>
               </div>
-
-              {/* Simulación en pantalla de código generado */}
-              {demoOtpPreview && (
-                <div className="bg-emerald-950/50 border border-emerald-500/40 rounded-xl p-3 text-xs text-emerald-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <div>
-                      <span className="font-semibold text-white">Código de prueba generado:</span>{" "}
-                      <span className="font-mono font-black text-emerald-300 text-sm tracking-widest">
-                        {demoOtpPreview}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCodeInput(demoOtpPreview)}
-                    className="text-[11px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30 font-semibold cursor-pointer transition-colors"
-                  >
-                    Autocompletar
-                  </button>
-                </div>
-              )}
 
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-2 text-center">
-                  Ingresa el Código de 6 Dígitos
+                  Código de Verificación (6 dígitos)
                 </label>
                 <input
                   type="text"
@@ -420,7 +408,7 @@ export default function RegisterPage() {
                   disabled={loading || verificationCodeInput.length !== 6}
                   className="w-full btn-falcon-primary py-3 text-sm font-bold justify-center shadow-glow cursor-pointer disabled:opacity-50"
                 >
-                  {loading ? "Verificando..." : "Verificar y Crear Cuenta"}
+                  {loading ? "Verificando correo..." : "Verificar Correo y Crear Cuenta"}
                   <CheckCircle2 className="w-4 h-4" />
                 </button>
 
@@ -434,7 +422,7 @@ export default function RegisterPage() {
                     className="text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    Editar datos
+                    Cambiar correo
                   </button>
 
                   <button
@@ -444,7 +432,7 @@ export default function RegisterPage() {
                     className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                    Reenviar código
+                    Reenviar correo
                   </button>
                 </div>
               </div>

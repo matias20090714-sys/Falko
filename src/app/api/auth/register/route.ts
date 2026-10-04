@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
       verificationToken,
     } = await req.json();
 
-    if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !phone?.trim() || !password) {
+    if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !password) {
       return NextResponse.json(
-        { success: false, error: "Todos los campos son obligatorios (Nombre, Apellido, Correo, Teléfono, País y Contraseña)." },
+        { success: false, error: "Por favor completa los campos requeridos (Nombre, Apellido, Correo Electrónico y Contraseña)." },
         { status: 400 }
       );
     }
@@ -32,12 +32,12 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const cleanPhone = phone.trim();
+    const cleanPhone = phone ? phone.trim() : "";
 
-    // 1. Validar Token y Código de Verificación OTP
+    // 1. Validar Token y Código de Verificación OTP enviada al correo
     if (!verificationCode || !verificationToken) {
       return NextResponse.json(
-        { success: false, error: "Se requiere ingresar el código de verificación de 6 dígitos para completar el registro." },
+        { success: false, error: "Se requiere ingresar el código de 6 dígitos enviado a tu correo para completar el registro." },
         { status: 400 }
       );
     }
@@ -45,23 +45,23 @@ export async function POST(req: NextRequest) {
     const verificationResult = verifyVerificationToken(verificationToken);
     if (!verificationResult.valid || !verificationResult.payload) {
       return NextResponse.json(
-        { success: false, error: "El código de verificación ha expirado o es inválido. Por favor solicita uno nuevo." },
+        { success: false, error: "El código de verificación de correo ha expirado o es inválido. Por favor solicita uno nuevo." },
         { status: 400 }
       );
     }
 
-    const { email: tokenEmail, phone: tokenPhone, code: expectedCode } = verificationResult.payload;
+    const { email: tokenEmail, code: expectedCode } = verificationResult.payload;
 
-    if (tokenEmail !== cleanEmail || tokenPhone !== cleanPhone) {
+    if (tokenEmail !== cleanEmail) {
       return NextResponse.json(
-        { success: false, error: "Los datos de verificación no coinciden con la cuenta que intentas registrar." },
+        { success: false, error: "El correo electrónico no coincide con el código de verificación generado." },
         { status: 400 }
       );
     }
 
     if (verificationCode.trim() !== expectedCode.trim()) {
       return NextResponse.json(
-        { success: false, error: "El código de 6 dígitos ingresado es incorrecto. Verifica el código e inténtalo nuevamente." },
+        { success: false, error: "El código de 6 dígitos ingresado es incorrecto. Revisa tu correo e inténtalo nuevamente." },
         { status: 400 }
       );
     }
@@ -77,15 +77,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Comprobar unicidad final de teléfono
-    const existingPhone = await prisma.user.findFirst({
-      where: { phone: cleanPhone },
-    });
-    if (existingPhone) {
-      return NextResponse.json(
-        { success: false, error: "El número de teléfono ya se encuentra registrado con otra cuenta en FALKO." },
-        { status: 400 }
-      );
+    // 3. Comprobar unicidad final de teléfono si fue proporcionado
+    if (cleanPhone) {
+      const existingPhone = await prisma.user.findFirst({
+        where: { phone: cleanPhone },
+      });
+      if (existingPhone) {
+        return NextResponse.json(
+          { success: false, error: "El número de teléfono ya se encuentra registrado en otra cuenta." },
+          { status: 400 }
+        );
+      }
     }
 
     const passwordHash = await hashPassword(password);
