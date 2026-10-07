@@ -128,10 +128,11 @@ async function main() {
       availableBalance: 0.0,
       pendingBalance: 0.0,
       totalBalance: 0.0,
-      currencyCode: "UYU",
+      currencyCode: "USD",
     },
     update: {
       isPlatformOwner: true,
+      currencyCode: "USD",
     },
   });
 

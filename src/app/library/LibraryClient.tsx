@@ -380,30 +380,14 @@ export function LibraryClient({
                     </button>
                   )}
 
-                  {hasRefundRequested ? (
-                    <div className="text-[11px] font-bold text-center">
-                      {order.refunds[0]?.status === "REQUESTED" ? (
-                        <span className="text-amber-300 bg-amber-950/60 border border-amber-500/40 px-2.5 py-1.5 rounded-xl block shadow-sm">
-                          ⏳ Reembolso en Revisión Manual por Administración
-                        </span>
-                      ) : order.refunds[0]?.status === "REJECTED" ? (
-                        <span className="text-rose-300 bg-rose-950/60 border border-rose-500/40 px-2.5 py-1.5 rounded-xl block shadow-sm">
-                          ❌ Reembolso Rechazado por Admin
-                        </span>
-                      ) : (
-                        <span className="text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-1.5 rounded-xl block shadow-sm">
-                          ✓ Reembolso Aprobado
-                        </span>
-                      )}
-                    </div>
-                  ) : isWithinGuarantee ? (
+                  {isWithinGuarantee && !hasRefundRequested && (
                     <button
                       onClick={() => setSelectedOrderForRefund(order)}
                       className="text-xs text-rose-400 hover:text-rose-300 bg-rose-950/20 hover:bg-rose-950/40 border border-rose-900/40 py-1.5 px-3 rounded-lg text-center transition-colors"
                     >
                       Solicitar Reembolso
                     </button>
-                  ) : null}
+                  )}
                 </div>
               </div>
 

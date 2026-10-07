@@ -33,10 +33,11 @@ export async function getPlatformOwnerWallet() {
           pendingBalance: 0,
           withdrawnBalance: 0,
           totalBalance: 0,
-          currencyCode: "UYU",
+          currencyCode: "USD",
         },
         update: {
           isPlatformOwner: true,
+          currencyCode: "USD",
         },
       });
     }
@@ -62,7 +63,7 @@ export async function getUserWallet(userId: string, defaultCurrency = "USD") {
         pendingBalance: 0,
         withdrawnBalance: 0,
         totalBalance: 0,
-        currencyCode: defaultCurrency,
+        currencyCode: "USD",
       },
     });
   }
@@ -90,7 +91,7 @@ export async function processOrderLedger(params: {
     affiliateUserId,
     affiliateAmount = 0,
     platformFeeAmount,
-    currencyCode,
+    currencyCode = "USD",
     guaranteeDays,
   } = params;
 
@@ -100,26 +101,28 @@ export async function processOrderLedger(params: {
   return await prisma.$transaction(async (tx) => {
     // 1. Seller Earning (Held in Pending until guarantee period expires)
     if (sellerAmount > 0) {
-      const sellerWallet = await getUserWallet(sellerId, currencyCode);
-      const newPending = parseFloat((sellerWallet.pendingBalance + sellerAmount).toFixed(2));
-      const newTotal = parseFloat((sellerWallet.totalBalance + sellerAmount).toFixed(2));
+      const initialWallet = await getUserWallet(sellerId, "USD");
+      const currentWallet = (await tx.wallet.findUnique({ where: { id: initialWallet.id } })) || initialWallet;
+      const newPending = parseFloat((currentWallet.pendingBalance + sellerAmount).toFixed(2));
+      const newTotal = parseFloat((currentWallet.availableBalance + newPending).toFixed(2));
 
       await tx.wallet.update({
-        where: { id: sellerWallet.id },
+        where: { id: currentWallet.id },
         data: {
           pendingBalance: newPending,
           totalBalance: newTotal,
+          currencyCode: "USD",
         },
       });
 
       await tx.walletTransaction.create({
         data: {
-          walletId: sellerWallet.id,
+          walletId: currentWallet.id,
           orderId,
           type: "SELLER_EARNING",
           amount: sellerAmount,
           balanceAfter: newTotal,
-          currencyCode,
+          currencyCode: "USD",
           description: `Venta producto - Retenido por garantía (${guaranteeDays} días)`,
         },
       });
@@ -127,9 +130,9 @@ export async function processOrderLedger(params: {
       await tx.guaranteeHold.create({
         data: {
           orderId,
-          walletId: sellerWallet.id,
+          walletId: currentWallet.id,
           amount: sellerAmount,
-          currencyCode,
+          currencyCode: "USD",
           status: "HELD",
           releaseDate,
         },
@@ -138,26 +141,28 @@ export async function processOrderLedger(params: {
 
     // 2. Affiliate Commission (Held in Pending until guarantee period expires)
     if (affiliateUserId && affiliateAmount > 0) {
-      const affiliateWallet = await getUserWallet(affiliateUserId, currencyCode);
-      const newPending = parseFloat((affiliateWallet.pendingBalance + affiliateAmount).toFixed(2));
-      const newTotal = parseFloat((affiliateWallet.totalBalance + affiliateAmount).toFixed(2));
+      const initialWallet = await getUserWallet(affiliateUserId, "USD");
+      const currentWallet = (await tx.wallet.findUnique({ where: { id: initialWallet.id } })) || initialWallet;
+      const newPending = parseFloat((currentWallet.pendingBalance + affiliateAmount).toFixed(2));
+      const newTotal = parseFloat((currentWallet.availableBalance + newPending).toFixed(2));
 
       await tx.wallet.update({
-        where: { id: affiliateWallet.id },
+        where: { id: currentWallet.id },
         data: {
           pendingBalance: newPending,
           totalBalance: newTotal,
+          currencyCode: "USD",
         },
       });
 
       await tx.walletTransaction.create({
         data: {
-          walletId: affiliateWallet.id,
+          walletId: currentWallet.id,
           orderId,
           type: "AFFILIATE_COMMISSION",
           amount: affiliateAmount,
           balanceAfter: newTotal,
-          currencyCode,
+          currencyCode: "USD",
           description: `Comisión de afiliado - Retenida por garantía (${guaranteeDays} días)`,
         },
       });
@@ -165,9 +170,9 @@ export async function processOrderLedger(params: {
       await tx.guaranteeHold.create({
         data: {
           orderId,
-          walletId: affiliateWallet.id,
+          walletId: currentWallet.id,
           amount: affiliateAmount,
-          currencyCode,
+          currencyCode: "USD",
           status: "HELD",
           releaseDate,
         },
@@ -176,26 +181,28 @@ export async function processOrderLedger(params: {
 
     // 3. FALKO Platform Fee (Credited to Platform Owner Wallet)
     if (platformFeeAmount > 0) {
-      const ownerWallet = await getPlatformOwnerWallet();
-      const newAvailable = parseFloat((ownerWallet.availableBalance + platformFeeAmount).toFixed(2));
-      const newTotal = parseFloat((ownerWallet.totalBalance + platformFeeAmount).toFixed(2));
+      const initialOwnerWallet = await getPlatformOwnerWallet();
+      const currentOwnerWallet = (await tx.wallet.findUnique({ where: { id: initialOwnerWallet.id } })) || initialOwnerWallet;
+      const newAvailable = parseFloat((currentOwnerWallet.availableBalance + platformFeeAmount).toFixed(2));
+      const newTotal = parseFloat((newAvailable + currentOwnerWallet.pendingBalance).toFixed(2));
 
       await tx.wallet.update({
-        where: { id: ownerWallet.id },
+        where: { id: currentOwnerWallet.id },
         data: {
           availableBalance: newAvailable,
           totalBalance: newTotal,
+          currencyCode: "USD",
         },
       });
 
       await tx.walletTransaction.create({
         data: {
-          walletId: ownerWallet.id,
+          walletId: currentOwnerWallet.id,
           orderId,
           type: "PLATFORM_COMMISSION",
           amount: platformFeeAmount,
           balanceAfter: newTotal,
-          currencyCode,
+          currencyCode: "USD",
           description: `Comisión fija FALKO por procesamiento de orden`,
         },
       });

@@ -100,7 +100,7 @@ function LoginForm() {
             disabled={loading}
             className="w-full btn-falcon-primary py-3 text-sm font-bold justify-center mt-2 shadow-glow cursor-pointer"
           >
-            {loading ? "Iniciando sesión..." : "Ingresar a FALKO"}
+            {loading ? "Verificando..." : "Ingresar a FALKO"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
