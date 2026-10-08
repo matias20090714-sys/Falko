@@ -128,7 +128,14 @@ export function EditProductClient({
   );
   const [currencyCode, setCurrencyCode] = useState(initialProduct.currencyCode || "USD");
   const [categoryId, setCategoryId] = useState(initialProduct.categoryId || (categories[0]?.id || ""));
-  const [guaranteeDays, setGuaranteeDays] = useState(initialProduct.guaranteeDays?.toString() || "7");
+  const [guaranteeDays, setGuaranteeDays] = useState(
+    initialProduct.guaranteeDays !== undefined && initialProduct.guaranteeDays !== null
+      ? initialProduct.guaranteeDays.toString()
+      : "7"
+  );
+  const [inMarketplace, setInMarketplace] = useState<boolean>(
+    initialProduct.inMarketplace !== undefined ? Boolean(initialProduct.inMarketplace) : true
+  );
   const [status, setStatus] = useState(initialProduct.status || "APPROVED");
   const [storeTheme, setStoreTheme] = useState(initialProduct.storeTheme || "dark");
 
@@ -381,7 +388,8 @@ export function EditProductClient({
         trialDays: parseInt(trialDays) || 0,
         currencyCode,
         categoryId,
-        guaranteeDays: parseInt(guaranteeDays) || 7,
+        guaranteeDays: !isNaN(parseInt(guaranteeDays)) ? parseInt(guaranteeDays) : 0,
+        inMarketplace,
         status,
         storeTheme,
         primaryColor,
@@ -706,19 +714,74 @@ export function EditProductClient({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-300 block">
-                  Garantía Incondicional (Días)
+                  Garantía Protegida (Días)
                 </label>
                 <select
                   value={guaranteeDays}
                   onChange={(e) => setGuaranteeDays(e.target.value)}
                   className="input-falcon w-full text-sm"
                 >
-                  <option value="0">Sin garantía (Venta final)</option>
-                  <option value="7">7 Días de garantía</option>
+                  <option value="0">0 días (Sin Garantía / Pago Inmediato)</option>
+                  <option value="7">7 Días de garantía incondicional</option>
                   <option value="14">14 Días de garantía</option>
                   <option value="30">30 Días de garantía (Recomendado)</option>
                   <option value="60">60 Días de garantía</option>
                 </select>
+              </div>
+
+              {/* Visibilidad Marketplace vs Link Directo */}
+              <div className="md:col-span-2 bg-slate-950/80 p-4 sm:p-5 rounded-2xl border border-white/5 space-y-3">
+                <div className="flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+                  <Globe className="w-4 h-4" />
+                  <span>Visibilidad del Producto</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setInMarketplace(true)}
+                    className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                      inMarketplace
+                        ? "bg-cyan-950/60 border-cyan-400 text-white shadow-glow"
+                        : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${inMarketplace ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                      <Store className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span>🌐 Público en Marketplace</span>
+                        {inMarketplace && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                        Aparece listado en el Marketplace general de FALKO y en búsquedas públicas.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setInMarketplace(false)}
+                    className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                      !inMarketplace
+                        ? "bg-cyan-950/60 border-cyan-400 text-white shadow-glow"
+                        : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${!inMarketplace ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                      <LinkIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span>🔗 Oculto (Solo con Link Directo)</span>
+                        {!inMarketplace && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                        Oculto del catálogo público. Solo podrán acceder y comprar quienes tengan tu link.
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Pricing settings */}

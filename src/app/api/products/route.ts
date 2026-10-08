@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     }
 
     const products = await prisma.product.findMany({
-      where: { status: "APPROVED" },
+      where: { status: "APPROVED", inMarketplace: true },
       include: {
         category: true,
         seller: { select: { firstName: true, lastName: true, avatarUrl: true, isVerifiedSeller: true } },
@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
       estimatedDeliveryDays,
       categoryId,
       guaranteeDays = 7,
+      inMarketplace = true,
       storeTheme = "dark",
       primaryColor = "#06b6d4",
       secondaryColor = "#3b82f6",
@@ -115,8 +116,8 @@ export async function POST(req: NextRequest) {
     const validatedStock = isPhysical ? Math.max(0, parseInt(stock?.toString() || "0") || 0) : null;
     const validatedShippingFee = isPhysical ? Math.max(0, parseFloat(shippingFee?.toString() || "0") || 0) : 0;
 
-    // Server-side validation: Guarantee minimum 7 days
-    const validatedGuarantee = Math.max(7, parseInt(guaranteeDays) || 7);
+    // Server-side validation: Guarantee 0 (no guarantee / immediate release) or minimum 0 days
+    const validatedGuarantee = Math.max(0, parseInt(guaranteeDays?.toString() || "0") || 0);
     const validatedComm = Math.min(90, Math.max(5, parseFloat(affiliateCommissionPct) || 20));
 
     // Generate unique slug
@@ -158,6 +159,7 @@ export async function POST(req: NextRequest) {
         shippingFee: validatedShippingFee,
         estimatedDeliveryDays: isPhysical ? (estimatedDeliveryDays || "24-48 hs hábiles") : null,
         requiresShipping: isPhysical,
+        inMarketplace: inMarketplace !== undefined ? Boolean(inMarketplace) : true,
         categoryId,
         guaranteeDays: validatedGuarantee,
         storeTheme: storeTheme || "dark",
@@ -375,7 +377,8 @@ export async function PUT(req: NextRequest) {
     if (upsellFileUrl !== undefined) updateData.upsellFileUrl = upsellFileUrl || null;
     if (currencyCode) updateData.currencyCode = currencyCode;
     if (categoryId) updateData.categoryId = categoryId;
-    if (guaranteeDays !== undefined) updateData.guaranteeDays = Math.max(7, parseInt(guaranteeDays) || 7);
+    if (body.inMarketplace !== undefined) updateData.inMarketplace = Boolean(body.inMarketplace);
+    if (guaranteeDays !== undefined) updateData.guaranteeDays = Math.max(0, parseInt(guaranteeDays?.toString() || "0") || 0);
     if (affiliateEnabled !== undefined) updateData.affiliateEnabled = Boolean(affiliateEnabled);
     if (affiliateCommissionPct !== undefined) {
       updateData.affiliateCommissionPct = Math.min(90, Math.max(5, parseFloat(affiliateCommissionPct) || 20));

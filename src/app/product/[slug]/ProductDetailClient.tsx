@@ -183,10 +183,19 @@ export function ProductDetailClient({
         ? "El pedido es despachado de forma segura a tu dirección registrada con número de seguimiento y notificación por correo."
         : "El acceso es inmediato y automático. En cuanto tu pago es procesado, serás redirigido a tu bóveda personal con tus enlaces de acceso o archivos descargables.",
     },
-    {
-      q: `¿Cómo funciona la garantía protegida de ${product.guaranteeDays} días?`,
-      a: `Tu dinero está completamente protegido en garantía por FALKO durante ${product.guaranteeDays} días. Si el producto no cumple con lo prometido en la descripción, puedes solicitar un reembolso directo desde tu panel.`,
-    },
+    ...(product.guaranteeDays && Number(product.guaranteeDays) > 0
+      ? [
+          {
+            q: `¿Cómo funciona la garantía protegida de ${product.guaranteeDays} días?`,
+            a: `Tu dinero está completamente protegido en garantía por FALKO durante ${product.guaranteeDays} días. Si el producto no cumple con lo prometido en la descripción, puedes solicitar un reembolso directo desde tu panel.`,
+          },
+        ]
+      : [
+          {
+            q: "¿Cómo es el soporte y la entrega del producto?",
+            a: "La entrega es 100% inmediata y definitiva. Una vez aprobado el pago obtienes acceso instantáneo en tu bóveda privada con soporte directo del creador.",
+          },
+        ]),
     {
       q: "¿Qué medios de pago están disponibles?",
       a: "Aceptamos tarjetas de crédito/débito internacionales, Mercado Pago, Criptomonedas USDT (Solana/Polygon 0% fee) y métodos locales según tu país (PIX, SPEI, PSE).",
@@ -211,12 +220,16 @@ export function ProductDetailClient({
     return defaultFaqs;
   }, [product.customFaqsJson, product.guaranteeDays, isPhysical, product.pricingType, product.billingInterval]);
 
+  const hasGuarantee = product.guaranteeDays && Number(product.guaranteeDays) > 0;
+
   const customCtaText = product.ctaButtonText || (
     product.pricingType === "SUBSCRIPTION"
       ? `Suscribirme (${formatCurrency(convertedPrice, currency)}${product.billingInterval === "YEARLY" ? "/año" : "/mes"})`
       : isPhysical
       ? "Comprar y Recibir Pedido"
-      : "Comprar con Garantía Protegida"
+      : hasGuarantee
+      ? "Comprar con Garantía Protegida"
+      : "Comprar y Obtener Acceso Inmediato"
   );
 
   const customCtaSubtext = product.ctaSubtext || (
@@ -354,10 +367,17 @@ export function ProductDetailClient({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10">
         {/* Top Conversion Trust Bar */}
         <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-3 sm:p-3.5 backdrop-blur-xl grid grid-cols-2 md:grid-cols-4 gap-2.5 text-center text-xs shadow-lg">
-          <div className="flex items-center justify-center gap-2 text-emerald-400">
-            <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span className="font-bold">Garantía {product.guaranteeDays} Días Protegida</span>
-          </div>
+          {hasGuarantee ? (
+            <div className="flex items-center justify-center gap-2 text-emerald-400">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span className="font-bold">Garantía {product.guaranteeDays} Días Protegida</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-cyan-300">
+              <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="font-bold">Compra Segura FALKO</span>
+            </div>
+          )}
           {isPhysical ? (
             <div className="flex items-center justify-center gap-2 text-amber-300">
               <Truck className="w-4 h-4 text-amber-400 shrink-0" />
@@ -665,11 +685,23 @@ export function ProductDetailClient({
                   <span>⭐ 100% Calidad Garantizada</span>
                 </div>
               )}
-              <span>•</span>
-              <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Garantía de Satisfacción {product.guaranteeDays} Días</span>
-              </div>
+              {hasGuarantee ? (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Garantía de Satisfacción {product.guaranteeDays} Días</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1.5 text-cyan-300 font-bold">
+                    <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                    <span>Compra Protegida FALKO</span>
+                  </div>
+                </>
+              )}
               <span>•</span>
               <div className="flex items-center gap-1.5 text-purple-300 font-semibold">
                 <Lock className="w-3.5 h-3.5 text-purple-400" />
@@ -687,8 +719,12 @@ export function ProductDetailClient({
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              <strong className="text-xs font-bold text-white block">Garantía Total</strong>
-              <span className="text-[11px] text-slate-400 block leading-tight">{product.guaranteeDays} días de prueba segura</span>
+              <strong className="text-xs font-bold text-white block">
+                {hasGuarantee ? "Garantía Total" : "Bóveda Oficial"}
+              </strong>
+              <span className="text-[11px] text-slate-400 block leading-tight">
+                {hasGuarantee ? `${product.guaranteeDays} días de prueba segura` : "Acceso directo y verificado"}
+              </span>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
               <Lock className="w-5 h-5 text-purple-400" />
@@ -873,27 +909,49 @@ export function ProductDetailClient({
             </div>
           </div>
 
-          {/* Money Back Zero-Risk Guarantee Seal Box */}
-          <div className="bg-gradient-to-r from-emerald-950/60 via-slate-950 to-slate-950 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-glow">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border-2 border-emerald-400/60 flex flex-col items-center justify-center text-center p-2 shrink-0 shadow-lg">
-              <ShieldCheck className="w-9 h-9 text-emerald-400 mb-1" />
-              <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider">
-                {product.guaranteeDays} DÍAS
-              </span>
+          {/* Guarantee / Verified Seal Box */}
+          {hasGuarantee ? (
+            <div className="bg-gradient-to-r from-emerald-950/60 via-slate-950 to-slate-950 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-glow">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border-2 border-emerald-400/60 flex flex-col items-center justify-center text-center p-2 shrink-0 shadow-lg">
+                <ShieldCheck className="w-9 h-9 text-emerald-400 mb-1" />
+                <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider">
+                  {product.guaranteeDays} DÍAS
+                </span>
+              </div>
+              <div className="space-y-2 text-center sm:text-left">
+                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                  Garantía Total de Satisfacción 100% Cero Riesgo
+                </span>
+                <h4 className="text-lg sm:text-xl font-heading font-black text-white">
+                  Pruébalo con Total Tranquilidad
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Adquiere este producto hoy y explóralo sin riesgo. Si dentro de los primeros{" "}
+                  <strong className="text-white font-bold">{product.guaranteeDays} días</strong> sientes que no cumple tus expectativas, puedes solicitar el reembolso de tu dinero con un solo clic desde tu panel.
+                </p>
+              </div>
             </div>
-            <div className="space-y-2 text-center sm:text-left">
-              <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                Garantía Total de Satisfacción 100% Cero Riesgo
-              </span>
-              <h4 className="text-lg sm:text-xl font-heading font-black text-white">
-                Pruébalo con Total Tranquilidad
-              </h4>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Adquiere este producto hoy y explóralo sin riesgo. Si dentro de los primeros{" "}
-                <strong className="text-white font-bold">{product.guaranteeDays} días</strong> sientes que no cumple tus expectativas, puedes solicitar el reembolso de tu dinero con un solo clic desde tu panel.
-              </p>
+          ) : (
+            <div className="bg-gradient-to-r from-cyan-950/60 via-slate-950 to-slate-950 border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-glow">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border-2 border-cyan-400/60 flex flex-col items-center justify-center text-center p-2 shrink-0 shadow-lg">
+                <Zap className="w-9 h-9 text-cyan-400 mb-1" />
+                <span className="text-[10px] font-black uppercase text-cyan-300 tracking-wider">
+                  INSTANTÁNEO
+                </span>
+              </div>
+              <div className="space-y-2 text-center sm:text-left">
+                <span className="text-[11px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                  Entrega Inmediata & Bóveda Permanente
+                </span>
+                <h4 className="text-lg sm:text-xl font-heading font-black text-white">
+                  Acceso Verificado & Directo
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Al completar tu pago, este contenido se asocia inmediatamente a tu cuenta de comprador con descargas de alta velocidad, actualizaciones y soporte continuo.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Product FAQ Accordion */}
           <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-4">
@@ -1032,14 +1090,24 @@ export function ProductDetailClient({
               backgroundColor: `${backgroundColor}f5`,
             }}
           >
-            {/* Guarantee Tag */}
-            <div className="bg-emerald-950/60 border border-emerald-500/40 rounded-2xl p-3.5 flex items-center gap-3 text-emerald-300 text-xs">
-              <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" />
-              <div>
-                <strong className="block text-white">Garantía Protegida {product.guaranteeDays} Días</strong>
-                <span className="text-[11px] text-slate-300">Reembolso 100% automático si no cumple tus expectativas.</span>
+            {/* Guarantee / Verified Tag */}
+            {hasGuarantee ? (
+              <div className="bg-emerald-950/60 border border-emerald-500/40 rounded-2xl p-3.5 flex items-center gap-3 text-emerald-300 text-xs">
+                <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" />
+                <div>
+                  <strong className="block text-white">Garantía Protegida {product.guaranteeDays} Días</strong>
+                  <span className="text-[11px] text-slate-300">Reembolso 100% automático si no cumple tus expectativas.</span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-cyan-950/60 border border-cyan-500/40 rounded-2xl p-3.5 flex items-center gap-3 text-cyan-300 text-xs">
+                <ShieldCheck className="w-6 h-6 text-cyan-400 shrink-0" />
+                <div>
+                  <strong className="block text-white">Entrega Instantánea & Bóveda Privada</strong>
+                  <span className="text-[11px] text-slate-300">Acceso inmediato y permanente con soporte verificado.</span>
+                </div>
+              </div>
+            )}
 
             {/* Price Display */}
             <div>
@@ -1333,10 +1401,17 @@ export function ProductDetailClient({
       {/* Standalone Store Footer for Buyers */}
       <footer className="mt-16 pt-8 pb-12 border-t border-white/10 text-center space-y-4">
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
-          <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-            <ShieldCheck className="w-4 h-4" />
-            Garantía {product.guaranteeDays} Días
-          </span>
+          {hasGuarantee ? (
+            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+              <ShieldCheck className="w-4 h-4" />
+              Garantía {product.guaranteeDays} Días
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-cyan-400 font-semibold">
+              <ShieldCheck className="w-4 h-4" />
+              Compra Protegida FALKO
+            </span>
+          )}
           <span className="flex items-center gap-1.5 text-cyan-400 font-semibold">
             <Lock className="w-4 h-4" />
             Cifrado Bancario SSL 256-bit

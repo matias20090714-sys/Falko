@@ -258,6 +258,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
     currencyCode: "USD",
     categoryId: categories[0]?.id || "",
     guaranteeDays: 7,
+    inMarketplace: true,
     storeTheme: "dark",
     primaryColor: "#06b6d4",
     secondaryColor: "#3b82f6",
@@ -528,7 +529,8 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
         trialDays: parseInt(formData.trialDays?.toString() || "0") || 0,
         currencyCode: formData.currencyCode,
         categoryId: formData.categoryId,
-        guaranteeDays: parseInt(formData.guaranteeDays.toString()) || 7,
+        guaranteeDays: !isNaN(parseInt(formData.guaranteeDays.toString())) ? parseInt(formData.guaranteeDays.toString()) : 0,
+        inMarketplace: formData.inMarketplace !== undefined ? Boolean(formData.inMarketplace) : true,
         storeTheme: formData.storeTheme || "dark",
         primaryColor: formData.primaryColor || "#06b6d4",
         secondaryColor: formData.secondaryColor || "#3b82f6",
@@ -954,7 +956,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                     </select>
                   </div>
 
-                  <div>
+                    <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                       Garantía Protegida FALKO
                     </label>
@@ -964,10 +966,66 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                       onChange={handleChange}
                       className="input-falcon text-xs w-full py-2.5"
                     >
+                      <option value={0}>Sin garantía (0 días - Pago Inmediato / Sin retención)</option>
                       <option value={7}>7 días de garantía incondicional</option>
                       <option value={14}>14 días de garantía</option>
-                      <option value={30}>30 días de garantía (Recomendada para mayor conversión)</option>
+                      <option value={30}>30 días de garantía (Recomendada)</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Visibilidad & Distribución del Producto */}
+                <div className="bg-slate-950/80 p-4 rounded-2xl border border-white/5 space-y-3">
+                  <label className="block text-xs font-bold text-white flex items-center gap-1.5">
+                    <Globe className="w-4 h-4 text-cyan-400" />
+                    <span>Visibilidad del Producto:</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, inMarketplace: true }))}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                        formData.inMarketplace
+                          ? "bg-cyan-950/60 border-cyan-400 text-white shadow-glow"
+                          : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg ${formData.inMarketplace ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                        <Store className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold flex items-center gap-1.5">
+                          <span>🌐 Público en Marketplace</span>
+                          {formData.inMarketplace && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                          Aparece en el catálogo general, buscador, categorías y marketplace de FALKO.
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, inMarketplace: false }))}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                        !formData.inMarketplace
+                          ? "bg-cyan-950/60 border-cyan-400 text-white shadow-glow"
+                          : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg ${!formData.inMarketplace ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                        <LinkIcon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold flex items-center gap-1.5">
+                          <span>🔗 Oculto (Solo Link Directo)</span>
+                          {!formData.inMarketplace && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                          Oculto del marketplace y catálogo. Solo accesible mediante tu link directo.
+                        </p>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -1035,7 +1093,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   {/* Live Marketplace Card Simulator */}
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider block">
-                      👁️ Vista Previa en Marketplace:
+                      👁️ Vista Previa {formData.inMarketplace ? "en Marketplace" : "(Modo Oculto)"}:
                     </span>
                     <div className="glass-panel p-3.5 rounded-2xl border border-cyan-500/30 bg-[#05070e] space-y-2.5 shadow-lg max-w-[280px] mx-auto">
                       <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 border border-white/10">
@@ -1066,7 +1124,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                           ${parseFloat(formData.price || "0").toFixed(2)} USD
                         </span>
                         <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-0.5">
-                          🛡️ {formData.guaranteeDays}d garantía
+                          {Number(formData.guaranteeDays) === 0 ? "⚡ Sin Garantía (Inmediato)" : `🛡️ ${formData.guaranteeDays}d garantía`}
                         </span>
                       </div>
                     </div>
@@ -1930,7 +1988,7 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Garantía (días)
+                  Garantía Protegida
                 </label>
                 <select
                   name="guaranteeDays"
@@ -1938,10 +1996,66 @@ export function NewProductClient({ categories, currentUser }: NewProductClientPr
                   onChange={handleChange}
                   className="input-falcon text-xs w-full py-2.5"
                 >
-                  <option value={7}>7 días</option>
-                  <option value={14}>14 días</option>
-                  <option value={30}>30 días</option>
+                  <option value={0}>0 días (Sin Garantía / Pago Inmediato)</option>
+                  <option value={7}>7 días de garantía</option>
+                  <option value={14}>14 días de garantía</option>
+                  <option value={30}>30 días de garantía</option>
                 </select>
+              </div>
+
+              {/* Visibilidad Pro */}
+              <div className="sm:col-span-2 bg-slate-950/80 p-4 rounded-2xl border border-white/5 space-y-3">
+                <label className="block text-xs font-bold text-white flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-cyan-400" />
+                  <span>Visibilidad & Distribución:</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, inMarketplace: true }))}
+                    className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                      formData.inMarketplace
+                        ? "bg-cyan-950/60 border-cyan-400 text-white shadow-glow"
+                        : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${formData.inMarketplace ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                      <Store className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span>🌐 Público en Marketplace</span>
+                        {formData.inMarketplace && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                        Aparece en catálogo, buscador y marketplace de FALKO.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, inMarketplace: false }))}
+                    className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                      !formData.inMarketplace
+                        ? "bg-cyan-950/60 border-cyan-400 text-white shadow-glow"
+                        : "bg-slate-900/60 border-white/5 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${!formData.inMarketplace ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                      <LinkIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span>🔗 Oculto (Solo Link Directo)</span>
+                        {!formData.inMarketplace && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                        No visible en catálogo. Solo accesible con tu enlace directo.
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Formato Pro */}

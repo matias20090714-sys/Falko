@@ -29,6 +29,7 @@ export default async function MarketplacePage({
     const dbProducts = await prisma.product.findMany({
       where: {
         status: "APPROVED",
+        inMarketplace: true,
         ...(searchParams.type === "PHYSICAL" || searchParams.type === "DIGITAL"
           ? { productType: searchParams.type }
           : {}),

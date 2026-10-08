@@ -95,88 +95,147 @@ export async function processOrderLedger(params: {
     guaranteeDays,
   } = params;
 
+  const isImmediate = !guaranteeDays || guaranteeDays <= 0;
   const releaseDate = new Date();
-  releaseDate.setDate(releaseDate.getDate() + guaranteeDays);
+  if (!isImmediate) {
+    releaseDate.setDate(releaseDate.getDate() + guaranteeDays);
+  }
 
   return await prisma.$transaction(async (tx) => {
-    // 1. Seller Earning (Held in Pending until guarantee period expires)
+    // 1. Seller Earning (Held in Pending if guarantee > 0, otherwise credited immediately to Available)
     if (sellerAmount > 0) {
       const initialWallet = await getUserWallet(sellerId, "USD");
       const currentWallet = (await tx.wallet.findUnique({ where: { id: initialWallet.id } })) || initialWallet;
-      const newPending = parseFloat((currentWallet.pendingBalance + sellerAmount).toFixed(2));
-      const newTotal = parseFloat((currentWallet.availableBalance + newPending).toFixed(2));
+      
+      if (isImmediate) {
+        // Immediate release (0 days guarantee)
+        const newAvailable = parseFloat((currentWallet.availableBalance + sellerAmount).toFixed(2));
+        const newTotal = parseFloat((newAvailable + currentWallet.pendingBalance).toFixed(2));
 
-      await tx.wallet.update({
-        where: { id: currentWallet.id },
-        data: {
-          pendingBalance: newPending,
-          totalBalance: newTotal,
-          currencyCode: "USD",
-        },
-      });
+        await tx.wallet.update({
+          where: { id: currentWallet.id },
+          data: {
+            availableBalance: newAvailable,
+            totalBalance: newTotal,
+            currencyCode: "USD",
+          },
+        });
 
-      await tx.walletTransaction.create({
-        data: {
-          walletId: currentWallet.id,
-          orderId,
-          type: "SELLER_EARNING",
-          amount: sellerAmount,
-          balanceAfter: newTotal,
-          currencyCode: "USD",
-          description: `Venta producto - Retenido por garantía (${guaranteeDays} días)`,
-        },
-      });
+        await tx.walletTransaction.create({
+          data: {
+            walletId: currentWallet.id,
+            orderId,
+            type: "SELLER_EARNING",
+            amount: sellerAmount,
+            balanceAfter: newTotal,
+            currencyCode: "USD",
+            description: `Venta producto - Disponible de inmediato (Sin retención / 0 días garantía)`,
+          },
+        });
+      } else {
+        // Held in Pending until guarantee period expires
+        const newPending = parseFloat((currentWallet.pendingBalance + sellerAmount).toFixed(2));
+        const newTotal = parseFloat((currentWallet.availableBalance + newPending).toFixed(2));
 
-      await tx.guaranteeHold.create({
-        data: {
-          orderId,
-          walletId: currentWallet.id,
-          amount: sellerAmount,
-          currencyCode: "USD",
-          status: "HELD",
-          releaseDate,
-        },
-      });
+        await tx.wallet.update({
+          where: { id: currentWallet.id },
+          data: {
+            pendingBalance: newPending,
+            totalBalance: newTotal,
+            currencyCode: "USD",
+          },
+        });
+
+        await tx.walletTransaction.create({
+          data: {
+            walletId: currentWallet.id,
+            orderId,
+            type: "SELLER_EARNING",
+            amount: sellerAmount,
+            balanceAfter: newTotal,
+            currencyCode: "USD",
+            description: `Venta producto - Retenido por garantía (${guaranteeDays} días)`,
+          },
+        });
+
+        await tx.guaranteeHold.create({
+          data: {
+            orderId,
+            walletId: currentWallet.id,
+            amount: sellerAmount,
+            currencyCode: "USD",
+            status: "HELD",
+            releaseDate,
+          },
+        });
+      }
     }
 
-    // 2. Affiliate Commission (Held in Pending until guarantee period expires)
+    // 2. Affiliate Commission (Held in Pending if guarantee > 0, otherwise credited immediately)
     if (affiliateUserId && affiliateAmount > 0) {
       const initialWallet = await getUserWallet(affiliateUserId, "USD");
       const currentWallet = (await tx.wallet.findUnique({ where: { id: initialWallet.id } })) || initialWallet;
-      const newPending = parseFloat((currentWallet.pendingBalance + affiliateAmount).toFixed(2));
-      const newTotal = parseFloat((currentWallet.availableBalance + newPending).toFixed(2));
 
-      await tx.wallet.update({
-        where: { id: currentWallet.id },
-        data: {
-          pendingBalance: newPending,
-          totalBalance: newTotal,
-          currencyCode: "USD",
-        },
-      });
+      if (isImmediate) {
+        const newAvailable = parseFloat((currentWallet.availableBalance + affiliateAmount).toFixed(2));
+        const newTotal = parseFloat((newAvailable + currentWallet.pendingBalance).toFixed(2));
 
-      await tx.walletTransaction.create({
-        data: {
-          walletId: currentWallet.id,
-          orderId,
-          type: "AFFILIATE_COMMISSION",
-          amount: affiliateAmount,
-          balanceAfter: newTotal,
-          currencyCode: "USD",
-          description: `Comisión de afiliado - Retenida por garantía (${guaranteeDays} días)`,
-        },
-      });
+        await tx.wallet.update({
+          where: { id: currentWallet.id },
+          data: {
+            availableBalance: newAvailable,
+            totalBalance: newTotal,
+            currencyCode: "USD",
+          },
+        });
 
-      await tx.guaranteeHold.create({
-        data: {
-          orderId,
-          walletId: currentWallet.id,
-          amount: affiliateAmount,
-          currencyCode: "USD",
-          status: "HELD",
-          releaseDate,
-        },
-      });
+        await tx.walletTransaction.create({
+          data: {
+            walletId: currentWallet.id,
+            orderId,
+            type: "AFFILIATE_COMMISSION",
+            amount: affiliateAmount,
+            balanceAfter: newTotal,
+            currencyCode: "USD",
+            description: `Comisión de afiliado - Disponible de inmediato (Sin retención / 0 días garantía)`,
+          },
+        });
+      } else {
+        const newPending = parseFloat((currentWallet.pendingBalance + affiliateAmount).toFixed(2));
+        const newTotal = parseFloat((currentWallet.availableBalance + newPending).toFixed(2));
+
+        await tx.wallet.update({
+          where: { id: currentWallet.id },
+          data: {
+            pendingBalance: newPending,
+            totalBalance: newTotal,
+            currencyCode: "USD",
+          },
+        });
+
+        await tx.walletTransaction.create({
+          data: {
+            walletId: currentWallet.id,
+            orderId,
+            type: "AFFILIATE_COMMISSION",
+            amount: affiliateAmount,
+            balanceAfter: newTotal,
+            currencyCode: "USD",
+            description: `Comisión de afiliado - Retenida por garantía (${guaranteeDays} días)`,
+          },
+        });
+
+        await tx.guaranteeHold.create({
+          data: {
+            orderId,
+            walletId: currentWallet.id,
+            amount: affiliateAmount,
+            currencyCode: "USD",
+            status: "HELD",
+            releaseDate,
+          },
+        });
+      }
     }
 
     // 3. FALKO Platform Fee (Credited to Platform Owner Wallet)

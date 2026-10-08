@@ -19,6 +19,7 @@ export default async function AffiliateProductsCatalogPage() {
   const products = await prisma.product.findMany({
     where: {
       status: "APPROVED",
+      inMarketplace: true,
       affiliateEnabled: true,
     },
     include: {

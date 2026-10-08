@@ -32,6 +32,8 @@ interface ProductItem {
   coverImageUrl: string;
   salesCount: number;
   status: string;
+  inMarketplace?: boolean;
+  guaranteeDays?: number;
   affiliateEnabled: boolean;
   affiliateCommissionPct: number;
   affiliateApprovalMode: string;
@@ -222,6 +224,21 @@ export function SellerProductsList({ initialProducts }: SellerProductsListProps)
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
                       {p.status}
                     </span>
+                    <span>•</span>
+                    {p.inMarketplace === false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                        🔗 Solo Link Directo
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center gap-1">
+                        🌐 Marketplace
+                      </span>
+                    )}
+                    {p.guaranteeDays !== undefined && (
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {p.guaranteeDays === 0 ? "⚡ Sin garantía" : `🛡️ ${p.guaranteeDays}d`}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

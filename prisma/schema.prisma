@@ -98,7 +98,8 @@ model Product {
   shippingFee            Float?                @default(0.0)
   estimatedDeliveryDays  String?
   requiresShipping       Boolean               @default(false)
-  guaranteeDays          Int                   @default(7) // Minimum 7
+  inMarketplace          Boolean               @default(true) // true = Marketplace público, false = Solo link directo
+  guaranteeDays          Int                   @default(7) // 0 = Sin garantía (pago inmediato), 7, 14, 30...
   storeTheme             String                @default("dark") // dark | light | vibrant | custom
   primaryColor           String?               @default("#06b6d4") // Cyan default
   secondaryColor         String?               @default("#3b82f6") // Blue default

@@ -165,7 +165,11 @@ export async function confirmOrderPayment(params: {
     data: {
       userId: product.sellerId,
       title: "¡Nueva venta confirmada! 🎉",
-      message: `Has vendido "${product.title}" por $${order.sellerEarningAmount.toFixed(2)} USD netos (retenidos por garantía ${order.guaranteeDays}d).`,
+      message: `Has vendido "${product.title}" por $${order.sellerEarningAmount.toFixed(2)} USD netos ${
+        order.guaranteeDays > 0
+          ? `(retenidos por garantía ${order.guaranteeDays}d)`
+          : `(acreditados de inmediato sin retención)`
+      }.`,
       type: "SALE",
       linkUrl: "/seller",
     },
