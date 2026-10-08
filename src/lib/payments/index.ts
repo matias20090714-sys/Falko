@@ -84,6 +84,7 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
         external_reference: req.orderNumber,
         statement_descriptor: "FALKO DIGITAL",
         binary_mode: true, // Only approve or reject, no pending ambiguity
+        notification_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://falko.dpdns.org"}/api/webhooks/mercadopago`,
       };
 
       const res = await fetch("https://api.mercadopago.com/checkout/preferences", {

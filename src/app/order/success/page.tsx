@@ -1,18 +1,44 @@
 import React from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { CheckCircle2, Download, ExternalLink, FileText, Lock, Mail, Package, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  ExternalLink,
+  FileText,
+  Lock,
+  Mail,
+  Package,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+  AlertOctagon,
+  ArrowLeft,
+  RefreshCw,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { confirmOrderPayment, rejectOrderPayment, verifyMercadoPagoPayment } from "@/lib/orders";
 
 export default async function OrderSuccessPage({
   searchParams,
 }: {
-  searchParams: { orderNumber?: string; email?: string };
+  searchParams: {
+    orderNumber?: string;
+    email?: string;
+    payment_id?: string;
+    collection_id?: string;
+    collection_status?: string;
+    status?: string;
+    external_reference?: string;
+  };
 }) {
-  const orderNumber = searchParams.orderNumber;
+  const orderNumber = searchParams.orderNumber || searchParams.external_reference;
   const queryEmail = searchParams.email;
+  const paymentId = searchParams.payment_id || searchParams.collection_id;
+  const paymentStatus = (searchParams.collection_status || searchParams.status || "").toLowerCase();
 
   let order: any = null;
+
   if (orderNumber) {
     try {
       order = await prisma.order.findUnique({
@@ -31,13 +57,182 @@ export default async function OrderSuccessPage({
         },
       });
     } catch (err) {
-      console.warn("OrderSuccessPage query fallback:", err);
+      console.warn("OrderSuccessPage query error:", err);
     }
   }
 
-  const buyerEmail = order?.buyer?.email || queryEmail;
-  const purchasedProduct = order?.items?.[0]?.product;
+  // 1. If Mercado Pago explicitly marked payment as REJECTED or CANCELLED
+  const isExplicitlyRejected =
+    paymentStatus === "rejected" ||
+    paymentStatus === "cancelled" ||
+    paymentStatus === "null";
 
+  if (isExplicitlyRejected && order) {
+    if (order.status === "PENDING") {
+      await rejectOrderPayment(order.orderNumber, "Pago rechazado en pasarela Mercado Pago");
+    }
+  }
+
+  // 2. If payment is APPROVED or needs verification with Mercado Pago API
+  let isPaymentApproved = order?.status === "CONFIRMED";
+
+  if (!isPaymentApproved && order && order.status !== "REJECTED" && !isExplicitlyRejected) {
+    if (paymentStatus === "approved") {
+      try {
+        const confirmRes = await confirmOrderPayment({
+          orderNumber: order.orderNumber,
+          paymentId: paymentId || order.paymentProviderId || undefined,
+          paymentProvider: "MERCADOPAGO",
+        });
+        if (confirmRes.success) {
+          isPaymentApproved = true;
+          order.status = "CONFIRMED";
+        }
+      } catch (err) {
+        console.error("Order confirmation error on return:", err);
+      }
+    } else if (paymentId) {
+      // Verify directly with Mercado Pago API
+      const mpVerification = await verifyMercadoPagoPayment(paymentId);
+      if (mpVerification.valid && mpVerification.status === "approved") {
+        try {
+          const confirmRes = await confirmOrderPayment({
+            orderNumber: order.orderNumber,
+            paymentId: paymentId.toString(),
+            paymentProvider: "MERCADOPAGO",
+            rawResponse: mpVerification,
+          });
+          if (confirmRes.success) {
+            isPaymentApproved = true;
+            order.status = "CONFIRMED";
+          }
+        } catch (err) {
+          console.error("Order API verification confirmation error:", err);
+        }
+      } else if (mpVerification.valid && (mpVerification.status === "rejected" || mpVerification.status === "cancelled")) {
+        await rejectOrderPayment(order.orderNumber, `Rechazado en Mercado Pago (${mpVerification.status})`);
+        order.status = "REJECTED";
+      }
+    }
+  }
+
+  const purchasedProduct = order?.items?.[0]?.product;
+  const buyerEmail = order?.buyer?.email || queryEmail;
+
+  // VIEW A: PAYMENT REJECTED / INSUFFICIENT BALANCE SCREEN
+  if (isExplicitlyRejected || order?.status === "REJECTED") {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
+        <div className="max-w-xl w-full glass-panel rounded-3xl p-6 sm:p-8 border border-rose-500/40 text-center shadow-2xl relative space-y-6 bg-rose-950/20">
+          <div className="w-16 h-16 rounded-full bg-rose-950/80 border border-rose-500/40 flex items-center justify-center text-rose-400 mx-auto">
+            <AlertOctagon className="w-8 h-8" />
+          </div>
+
+          <div>
+            <span className="text-xs uppercase font-black text-rose-400 tracking-wider block mb-1">
+              Pago No Completado / Rechazado
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+              No se pudo procesar tu pago
+            </h1>
+            <p className="text-xs text-rose-200/80 mt-2 leading-relaxed">
+              Mercado Pago ha informado que la tarjeta no cuenta con saldo suficiente o fue denegada por la entidad emisora.
+            </p>
+          </div>
+
+          <div className="bg-slate-950/80 border border-rose-500/20 rounded-2xl p-4 text-xs text-left space-y-2">
+            <div className="flex justify-between pb-2 border-b border-white/5">
+              <span className="text-slate-400">Estado de la transacción:</span>
+              <span className="font-bold text-rose-400">Rechazado (Sin cargo realizado)</span>
+            </div>
+            {order && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Producto:</span>
+                <span className="font-bold text-white truncate max-w-[240px]">
+                  {purchasedProduct?.title || "Recurso Digital"}
+                </span>
+              </div>
+            )}
+            <p className="text-[11px] text-slate-400 pt-1">
+              No se descontó dinero de tu cuenta. Puedes intentar nuevamente con otra tarjeta o elegir otro medio de pago.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            {purchasedProduct?.slug ? (
+              <Link
+                href={`/checkout?product=${purchasedProduct.slug}`}
+                className="btn-falcon-primary w-full text-center justify-center text-xs sm:text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Intentar con Otra Tarjeta o Método de Pago</span>
+              </Link>
+            ) : (
+              <Link
+                href="/marketplace"
+                className="btn-falcon-primary w-full text-center justify-center text-xs sm:text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Volver al Catálogo</span>
+              </Link>
+            )}
+
+            <Link
+              href="/marketplace"
+              className="btn-falcon-secondary w-full text-center justify-center text-xs py-2.5"
+            >
+              Explorar el Marketplace
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VIEW B: PAYMENT PENDING SCREEN (User visited URL directly without completing checkout)
+  if (!isPaymentApproved) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
+        <div className="max-w-xl w-full glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/40 text-center shadow-2xl relative space-y-6 bg-amber-950/20">
+          <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-amber-400 mx-auto">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div>
+            <span className="text-xs uppercase font-black text-amber-400 tracking-wider block mb-1">
+              Orden Pendiente de Confirmación
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-heading font-black text-white">
+              Esperando Confirmación del Pago
+            </h1>
+            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+              Los archivos protegidos y accesos se desbloquean inmediatamente una vez que la pasarela de pago aprueba la transacción.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            {purchasedProduct?.slug && (
+              <Link
+                href={`/checkout?product=${purchasedProduct.slug}`}
+                className="btn-falcon-primary w-full text-center justify-center text-xs sm:text-sm py-3.5 shadow-glow font-bold flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Completar Pago en Mercado Pago</span>
+              </Link>
+            )}
+            <Link
+              href="/marketplace"
+              className="btn-falcon-secondary w-full text-center justify-center text-xs py-2.5"
+            >
+              Volver al Marketplace
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VIEW C: PAYMENT APPROVED SUCCESS SCREEN
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
       <div className="max-w-xl w-full glass-panel rounded-3xl p-6 sm:p-8 border border-emerald-500/40 text-center shadow-glow relative space-y-6">

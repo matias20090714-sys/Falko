@@ -1,87 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { confirmOrderAndFulfill } from "@/lib/order-fulfillment";
-import { processOrderLedger } from "@/lib/ledger";
-import { addSalesVolume } from "@/lib/ranking";
-import { triggerWebhooksForSeller } from "@/lib/webhooks";
-import { computeFinancialSplit } from "@/lib/currency";
+import { confirmOrderPayment, rejectOrderPayment, verifyMercadoPagoPayment } from "@/lib/orders";
 
 export async function POST(req: NextRequest) {
   try {
-    const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
-    const body = await req.json().catch(() => ({}));
-    const searchParams = req.nextUrl.searchParams;
+    const url = new URL(req.url);
+    const topic = url.searchParams.get("topic") || url.searchParams.get("type");
+    const idFromQuery = url.searchParams.get("id") || url.searchParams.get("data.id");
 
-    // Mercado Pago sends payment ID either in body.data.id or searchParams 'data.id' / 'id'
-    const paymentId = body?.data?.id || searchParams.get("data.id") || searchParams.get("id");
-    const topic = body?.type || body?.topic || searchParams.get("topic") || searchParams.get("type");
+    let paymentId = idFromQuery;
 
-    if (!paymentId || (topic && topic !== "payment")) {
-      return NextResponse.json({ status: "ignored" }, { status: 200 });
+    try {
+      const body = await req.json();
+      if (body?.data?.id) {
+        paymentId = body.data.id;
+      } else if (body?.id) {
+        paymentId = body.id;
+      }
+    } catch {
+      // Body may be empty in some IPN callbacks
     }
 
-    if (!token) {
-      console.error("MercadoPago webhook error: MERCADOPAGO_ACCESS_TOKEN not set");
-      return NextResponse.json({ error: "Missing token" }, { status: 500 });
+    if (!paymentId) {
+      return NextResponse.json({ success: true, message: "Ignored, no payment id" });
     }
 
-    // Fetch full payment details from Mercado Pago API
-    const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: {
-        Authorization: `Bearer ${token.trim()}`,
-      },
-    });
+    // Verify payment directly with Mercado Pago API
+    const paymentVerification = await verifyMercadoPagoPayment(paymentId);
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      console.error("Failed to fetch payment details from Mercado Pago:", errData);
-      return NextResponse.json({ error: "Failed to fetch payment" }, { status: 400 });
+    if (!paymentVerification.valid) {
+      console.warn("Mercado Pago webhook verification failed:", paymentVerification.errorMessage);
+      return NextResponse.json({ success: false, error: paymentVerification.errorMessage }, { status: 400 });
     }
 
-    const paymentData = await res.json();
-    const orderNumber = paymentData.external_reference;
-    const status = paymentData.status;
-
-    if (!orderNumber) {
-      console.warn("Mercado Pago payment missing external_reference:", paymentId);
-      return NextResponse.json({ status: "no_order_reference" }, { status: 200 });
+    const externalRef = paymentVerification.externalReference;
+    if (!externalRef) {
+      return NextResponse.json({ success: true, message: "Ignored, no external reference" });
     }
 
-    // Find corresponding order in database
-    const order = await prisma.order.findUnique({
-      where: { orderNumber },
-      include: {
-        buyer: true,
-        items: {
-          include: {
-            product: true,
-          },
-        },
-        affiliateProduct: {
-          include: {
-            affiliateProfile: true,
-          },
-        },
-      },
-    });
-
-    if (!order) {
-      console.warn("Order not found for Mercado Pago payment:", orderNumber);
-      return NextResponse.json({ status: "order_not_found" }, { status: 200 });
+    if (paymentVerification.status === "approved") {
+      await confirmOrderPayment({
+        orderNumber: externalRef,
+        paymentId: paymentId.toString(),
+        paymentProvider: "MERCADOPAGO",
+        rawResponse: paymentVerification,
+      });
+      console.log(`✅ Order ${externalRef} CONFIRMED via Mercado Pago Webhook (Payment ID: ${paymentId})`);
+    } else if (paymentVerification.status === "rejected" || paymentVerification.status === "cancelled") {
+      await rejectOrderPayment(externalRef, `Pago ${paymentVerification.status} en Mercado Pago`);
+      console.log(`❌ Order ${externalRef} REJECTED via Mercado Pago Webhook (Payment ID: ${paymentId})`);
     }
 
-    // If payment is approved and order is pending, confirm order and fulfill
-    if (status === "approved" && order.status !== "CONFIRMED") {
-      await confirmOrderAndFulfill(order.id, paymentData);
-    }
-
-    return NextResponse.json({ status: "processed", paymentStatus: status }, { status: 200 });
+    return NextResponse.json({ success: true, status: paymentVerification.status });
   } catch (error: any) {
     console.error("Mercado Pago Webhook Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
-export async function GET() {
-  return NextResponse.json({ status: "MercadoPago Webhook Receiver Active" });
+export async function GET(req: NextRequest) {
+  // Support GET webhooks/IPN from Mercado Pago
+  return POST(req);
 }
