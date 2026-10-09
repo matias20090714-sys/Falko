@@ -156,9 +156,17 @@ export function AffiliateCatalogClient({ products }: AffiliateCatalogClientProps
                     <h3 className="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-snug">
                       {p.title}
                     </h3>
-                    <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-2 hidden sm:block">
-                      {p.shortDescription || p.description}
-                    </p>
+                    {(() => {
+                      const rawDesc = p.shortDescription || p.description || "";
+                      const cleanText = rawDesc.replace(/\s+/g, " ").trim();
+                      const isLong = cleanText.length > 90;
+                      const truncated = isLong ? `${cleanText.slice(0, 90).trim()}...` : cleanText;
+                      return (
+                        <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-2 leading-relaxed" title={cleanText}>
+                          {truncated}
+                        </p>
+                      );
+                    })()}
 
                     {isPhysical && p.stock !== null && (
                       <span className="text-[10px] text-slate-400 block font-mono">

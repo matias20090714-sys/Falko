@@ -413,8 +413,17 @@ export function MarketplaceClient({
                   </div>
 
                   <div className="absolute bottom-2 right-2 bg-slate-950/90 text-[9px] sm:text-[10px] text-emerald-400 font-semibold px-1.5 py-0.5 rounded border border-emerald-900/60 flex items-center gap-0.5">
-                    <ShieldCheck className="w-2.5 h-2.5" />
-                    <span>{p.guaranteeDays}d</span>
+                    {p.guaranteeDays && Number(p.guaranteeDays) > 0 ? (
+                      <>
+                        <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+                        <span>{p.guaranteeDays}d</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-2.5 h-2.5 text-cyan-400" />
+                        <span className="text-cyan-300">0d</span>
+                      </>
+                    )}
                   </div>
                 </Link>
 
@@ -422,13 +431,21 @@ export function MarketplaceClient({
                 <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3">
                   <div>
                     <Link href={`/product/${p.slug}`}>
-                      <h3 className="text-xs sm:text-sm font-heading font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 mb-1 leading-snug">
+                      <h3 className="text-xs sm:text-sm font-heading font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 mb-1.5 leading-snug">
                         {p.title}
                       </h3>
                     </Link>
-                    <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-2 leading-relaxed hidden sm:block">
-                      {p.shortDescription || p.description}
-                    </p>
+                    {(() => {
+                      const rawDesc = p.shortDescription || p.description || "";
+                      const cleanText = rawDesc.replace(/\s+/g, " ").trim();
+                      const isLong = cleanText.length > 95;
+                      const truncated = isLong ? `${cleanText.slice(0, 95).trim()}...` : cleanText;
+                      return (
+                        <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-2 leading-relaxed" title={cleanText}>
+                          {truncated}
+                        </p>
+                      );
+                    })()}
                   </div>
 
                   <div className="space-y-2 sm:space-y-2.5">
